@@ -51,10 +51,10 @@
             "kcat": "38 s⁻¹",
             "km": "0.18 mM",
             "projectedYield": "85%",
-            "vendor": "Enzyme Works",
+            "vendor": "",
             "vendorLogo": "",
-            "price": "$320.00 / 1mg",
-            "catalogNumber": "EW-2541"
+            "price": "",
+            "catalogNumber": ""
           },
           {
             "id": "enz-1c",
@@ -102,10 +102,10 @@
             "kcat": "12 s⁻¹",
             "km": "0.04 mM",
             "projectedYield": "88%",
-            "vendor": "Sigma-Aldrich",
+            "vendor": "",
             "vendorLogo": "",
-            "price": "$195.00 / 1mg",
-            "catalogNumber": "SAE0055"
+            "price": "",
+            "catalogNumber": ""
           }
         ]
       },
@@ -298,10 +298,10 @@
             "kcat": "22 s⁻¹",
             "km": "0.11 mM",
             "projectedYield": "76%",
-            "vendor": "Prozomix",
+            "vendor": "",
             "vendorLogo": "",
-            "price": "$480.00 / 1mg",
-            "catalogNumber": "PRO-9101"
+            "price": "",
+            "catalogNumber": ""
           }
         ]
       },
@@ -443,10 +443,10 @@
             "kcat": "19 s⁻¹",
             "km": "0.22 mM",
             "projectedYield": "68%",
-            "vendor": "Creative Enzymes",
+            "vendor": "",
             "vendorLogo": "",
-            "price": "$350.00 / 1mg",
-            "catalogNumber": "CE-5502"
+            "price": "",
+            "catalogNumber": ""
           }
         ]
       }
