@@ -1,0 +1,76 @@
+/* === DARK MODE === */
+
+/* Backgrounds */
+--bg-primary: #0A0F0D;           /* Main background (dark green-black) */
+--bg-secondary: #0F1612;         /* Cards/surfaces */
+--bg-tertiary: #1A2420;          /* Hover states, input backgrounds */
+--bg-elevated: #141C18;          /* Modals, popovers */
+
+/* Text */
+--text-primary: #E6F3ED;         /* Main text, headings (slight green tint) */
+--text-secondary: #8B9E94;       /* Secondary text, descriptions */
+--text-tertiary: #6E7F76;        /* Tertiary text, labels */
+--text-disabled: #4A5751;        /* Disabled state */
+
+/* Borders */
+--border-default: #2D3932;       /* Default borders (green-gray) */
+--border-emphasis: #3D4F44;      /* Emphasized borders, dividers */
+--border-interactive: #3FB950;   /* Focus states */
+
+/* Primary Actions (Green) */
+--primary-50: #0D2B1C;           /* Very dark background */
+--primary-100: #0F4429;          /* Dark background */
+--primary-500: #10B981;          /* Primary buttons, links */
+--primary-600: #34D399;          /* Hover state */
+--primary-700: #6EE7B7;          /* Active/pressed state */
+--primary-800: #A7F3D0;          /* Bright variant */
+
+/* Success/High Confidence (Bright Green) */
+--success-50: #0D2B1C;           /* Dark background */
+--success-100: #0F4429;          /* Darker background */
+--success-500: #3FB950;          /* High confidence (90%+) */
+--success-600: #56D364;          /* Strong confidence */
+--success-700: #7EE787;          /* Very high confidence */
+
+/* Info/Secondary Actions (Cyan) */
+--info-50: #0B2B3C;              /* Dark background */
+--info-100: #0F3D54;             /* Darker background */
+--info-500: #06B6D4;             /* Info messages, secondary actions */
+--info-600: #22D3EE;             /* Hover state */
+--info-700: #67E8F9;             /* Active state */
+
+/* Warning/Medium Confidence (Amber) */
+--warning-50: #2D2000;           /* Dark background */
+--warning-100: #4D3600;          /* Darker background */
+--warning-500: #F59E0B;          /* Medium confidence (60-89%) */
+--warning-600: #FBBF24;          /* Hover state */
+--warning-700: #FCD34D;          /* Active state */
+
+/* Danger/Low Confidence (Red) */
+--danger-50: #2D0B0B;            /* Dark background */
+--danger-100: #4D1616;           /* Darker background */
+--danger-500: #F87171;           /* Low confidence (<60%), errors */
+--danger-600: #FCA5A5;           /* Hover state */
+--danger-700: #FECACA;           /* Active state */
+
+/* Neutral Grays (Green-tinted) */
+--gray-50: #0A0F0D;
+--gray-100: #0F1612;
+--gray-200: #1A2420;
+--gray-300: #2D3932;
+--gray-400: #4A5751;
+--gray-500: #6E7F76;
+--gray-600: #8B9E94;
+--gray-700: #A8B8AE;
+--gray-800: #C5D4CB;
+--gray-900: #E6F3ED;
+
+/* Shadows (with green tint) */
+--shadow-sm: 0 1px 2px 0 rgba(16, 185, 129, 0.2);
+--shadow-md: 0 4px 6px -1px rgba(16, 185, 129, 0.3), 0 2px 4px -1px rgba(16, 185, 129, 0.2);
+--shadow-lg: 0 10px 15px -3px rgba(16, 185, 129, 0.3), 0 4px 6px -2px rgba(16, 185, 129, 0.2);
+--shadow-xl: 0 20px 25px -5px rgba(16, 185, 129, 0.4), 0 10px 10px -5px rgba(16, 185, 129, 0.3);
+
+/* Green glow for primary elements */
+--glow-primary: 0 0 0 3px rgba(16, 185, 129, 0.15);
+--glow-success: 0 0 12px rgba(63, 185, 80, 0.3);

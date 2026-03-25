@@ -1,0 +1,31 @@
+/* === TYPOGRAPHY === */
+
+/* Font Families */
+--font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+--font-mono: 'JetBrains Mono', 'SF Mono', 'Consolas', 'Monaco', monospace;
+
+/* Font Sizes */
+--text-xs: 0.75rem;      /* 12px - EC numbers, small labels */
+--text-sm: 0.875rem;     /* 14px - Enzyme names, descriptions */
+--text-base: 1rem;       /* 16px - Body text */
+--text-lg: 1.125rem;     /* 18px - Section headers */
+--text-xl: 1.25rem;      /* 20px - Pathway steps */
+--text-2xl: 1.5rem;      /* 24px - Pathway title */
+--text-3xl: 1.875rem;    /* 30px - Main title */
+--text-4xl: 2.25rem;     /* 36px - Hero text */
+
+/* Font Weights */
+--font-normal: 400;
+--font-medium: 500;
+--font-semibold: 600;
+--font-bold: 700;
+
+/* Line Heights */
+--leading-tight: 1.25;
+--leading-normal: 1.5;
+--leading-relaxed: 1.75;
+
+/* Letter Spacing */
+--tracking-tight: -0.01em;   /* For monospace */
+--tracking-normal: 0;
+--tracking-wide: 0.025em;    /* For uppercase labels */

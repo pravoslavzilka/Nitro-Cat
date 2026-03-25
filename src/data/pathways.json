@@ -1,0 +1,367 @@
+[
+  {
+    "id": "1",
+    "name": "Shikimic Acid Biosynthesis",
+    "description": "Conversion pathway from D-Erythrose 4-Phosphate to Shikimic Acid via key aromatic intermediates",
+    "createdAt": "2025-01-15T10:00:00Z",
+    "updatedAt": "2025-01-20T14:30:00Z",
+    "status": "complete",
+    "steps": [
+      {
+        "id": "step-1",
+        "fromSubstrate": "D-Erythrose 4-Phosphate",
+        "toSubstrate": "3-Deoxy-D-arabino-heptulosonate 7-phosphate (DAHP)",
+        "reactionType": "Aldol condensation",
+        "hasBruteForce": false,
+        "enzymes": [
+          {
+            "id": "enz-1a",
+            "name": "DAHP Synthase (AroG)",
+            "ecNumber": "EC 2.5.1.54",
+            "score": 0.94,
+            "organism": "E. coli K-12",
+            "description": "Catalyzes the first committed step in aromatic amino acid biosynthesis. This feedback-resistant variant shows enhanced stability.",
+            "optimalPh": "6.8–7.2",
+            "optimalTemp": "37°C",
+            "kcat": "45 s⁻¹",
+            "km": "0.12 mM",
+            "projectedYield": "92%",
+            "vendor": "Sigma-Aldrich",
+            "vendorLogo": "",
+            "price": "$285.00 / 1mg",
+            "catalogNumber": "SAE0148"
+          },
+          {
+            "id": "enz-1b",
+            "name": "DAHP Synthase (AroF)",
+            "ecNumber": "EC 2.5.1.54",
+            "score": 0.87,
+            "organism": "E. coli BL21",
+            "description": "Tyrosine-sensitive variant. Lower feedback resistance but high catalytic efficiency under controlled conditions.",
+            "optimalPh": "7.0–7.5",
+            "optimalTemp": "30°C",
+            "kcat": "38 s⁻¹",
+            "km": "0.18 mM",
+            "projectedYield": "85%",
+            "vendor": "Enzyme Works",
+            "vendorLogo": "",
+            "price": "$320.00 / 1mg",
+            "catalogNumber": "EW-2541"
+          },
+          {
+            "id": "enz-1c",
+            "name": "DAHP Synthase (AroH)",
+            "ecNumber": "EC 2.5.1.54",
+            "score": 0.76,
+            "organism": "B. subtilis",
+            "description": "Tryptophan-sensitive isoenzyme. Moderate activity, useful for alternative host organisms.",
+            "optimalPh": "7.0",
+            "optimalTemp": "37°C",
+            "kcat": "28 s⁻¹",
+            "km": "0.25 mM",
+            "projectedYield": "72%",
+            "vendor": "Prozomix",
+            "vendorLogo": "",
+            "price": "$410.00 / 1mg",
+            "catalogNumber": "PRO-8812"
+          }
+        ]
+      },
+      {
+        "id": "step-2",
+        "fromSubstrate": "DAHP",
+        "toSubstrate": "3-Dehydroquinate (DHQ)",
+        "reactionType": "Cyclization",
+        "hasBruteForce": false,
+        "enzymes": [
+          {
+            "id": "enz-2a",
+            "name": "DHQ Synthase (AroB)",
+            "ecNumber": "EC 4.2.3.4",
+            "score": 0.91,
+            "organism": "E. coli K-12",
+            "description": "NAD⁺ and Co²⁺ dependent enzyme catalyzing the complex cyclization of DAHP to 3-dehydroquinate.",
+            "optimalPh": "7.0",
+            "optimalTemp": "37°C",
+            "kcat": "12 s⁻¹",
+            "km": "0.04 mM",
+            "projectedYield": "88%",
+            "vendor": "Sigma-Aldrich",
+            "vendorLogo": "",
+            "price": "$195.00 / 1mg",
+            "catalogNumber": "SAE0055"
+          }
+        ]
+      },
+      {
+        "id": "step-3",
+        "fromSubstrate": "DHQ",
+        "toSubstrate": "3-Dehydroshikimate",
+        "reactionType": "Dehydration",
+        "hasBruteForce": true,
+        "enzymes": []
+      },
+      {
+        "id": "step-4",
+        "fromSubstrate": "3-Dehydroshikimate",
+        "toSubstrate": "Shikimic Acid",
+        "reactionType": "NADPH-dependent reduction",
+        "hasBruteForce": false,
+        "enzymes": [
+          {
+            "id": "enz-4a",
+            "name": "Shikimate Dehydrogenase (AroE)",
+            "ecNumber": "EC 1.1.1.25",
+            "score": 0.89,
+            "organism": "E. coli K-12",
+            "description": "NADPH-dependent reduction of 3-dehydroshikimate. Critical enzyme for shikimic acid production.",
+            "optimalPh": "7.2",
+            "optimalTemp": "30°C",
+            "kcat": "55 s⁻¹",
+            "km": "0.08 mM",
+            "projectedYield": "90%",
+            "vendor": "Sigma-Aldrich",
+            "vendorLogo": "",
+            "price": "$340.00 / 1mg",
+            "catalogNumber": "SAE0201"
+          },
+          {
+            "id": "enz-4b",
+            "name": "Shikimate DH (YdiB)",
+            "ecNumber": "EC 1.1.1.282",
+            "score": 0.72,
+            "organism": "E. coli",
+            "description": "Dual-specificity quinate/shikimate dehydrogenase. Can use both NAD⁺ and NADP⁺ as cofactors.",
+            "optimalPh": "7.5",
+            "optimalTemp": "37°C",
+            "kcat": "32 s⁻¹",
+            "km": "0.15 mM",
+            "projectedYield": "68%",
+            "vendor": "Creative Enzymes",
+            "vendorLogo": "",
+            "price": "$520.00 / 1mg",
+            "catalogNumber": "CE-9934"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2",
+    "name": "Tryptophan Biosynthesis",
+    "description": "Synthesis of L-tryptophan from chorismate via anthranilate and indole-3-glycerol phosphate",
+    "createdAt": "2025-02-01T10:00:00Z",
+    "updatedAt": "2025-02-10T14:00:00Z",
+    "status": "analyzing",
+    "steps": [
+      {
+        "id": "trp-step-1",
+        "fromSubstrate": "Chorismate",
+        "toSubstrate": "Anthranilate",
+        "reactionType": "Amination / pyruvate elimination",
+        "hasBruteForce": false,
+        "enzymes": [
+          {
+            "id": "trp-enz-1a",
+            "name": "Anthranilate Synthase (TrpE/TrpG)",
+            "ecNumber": "EC 4.1.3.27",
+            "score": 0.93,
+            "organism": "E. coli K-12",
+            "description": "Heterodimeric enzyme catalyzing the first committed step of tryptophan biosynthesis. Uses glutamine as amino donor.",
+            "optimalPh": "7.5",
+            "optimalTemp": "37°C",
+            "kcat": "8 s⁻¹",
+            "km": "0.05 mM",
+            "projectedYield": "91%",
+            "vendor": "Sigma-Aldrich",
+            "vendorLogo": "",
+            "price": "$420.00 / 1mg",
+            "catalogNumber": "SAE0312"
+          }
+        ]
+      },
+      {
+        "id": "trp-step-2",
+        "fromSubstrate": "Anthranilate",
+        "toSubstrate": "N-(5-phospho-ribosyl)-anthranilate",
+        "reactionType": "Phosphoribosyl transfer",
+        "hasBruteForce": false,
+        "enzymes": [
+          {
+            "id": "trp-enz-2a",
+            "name": "Anthranilate Phosphoribosyltransferase (TrpD)",
+            "ecNumber": "EC 2.4.2.18",
+            "score": 0.88,
+            "organism": "E. coli K-12",
+            "description": "Transfers phosphoribosyl group from PRPP to anthranilate in the second step of tryptophan synthesis.",
+            "optimalPh": "7.0",
+            "optimalTemp": "37°C",
+            "kcat": "5 s⁻¹",
+            "km": "0.09 mM",
+            "projectedYield": "85%",
+            "vendor": "BioVendor",
+            "vendorLogo": "",
+            "price": "$380.00 / 1mg",
+            "catalogNumber": "BV-TrpD"
+          }
+        ]
+      },
+      {
+        "id": "trp-step-3",
+        "fromSubstrate": "N-(5-phospho-ribosyl)-anthranilate",
+        "toSubstrate": "Indole-3-glycerol phosphate",
+        "reactionType": "Isomerization / ring closure",
+        "hasBruteForce": false,
+        "enzymes": [
+          {
+            "id": "trp-enz-3a",
+            "name": "Indole-3-glycerol-phosphate Synthase (TrpC)",
+            "ecNumber": "EC 4.1.1.48",
+            "score": 0.85,
+            "organism": "E. coli K-12",
+            "description": "Bifunctional enzyme with both phosphoribosylanthranilate isomerase and indole-3-glycerol-phosphate synthase activities.",
+            "optimalPh": "7.4",
+            "optimalTemp": "37°C",
+            "kcat": "18 s⁻¹",
+            "km": "0.07 mM",
+            "projectedYield": "83%",
+            "vendor": "Sigma-Aldrich",
+            "vendorLogo": "",
+            "price": "$310.00 / 1mg",
+            "catalogNumber": "SAE0289"
+          },
+          {
+            "id": "trp-enz-3b",
+            "name": "InGPS (Thermostable variant)",
+            "ecNumber": "EC 4.1.1.48",
+            "score": 0.78,
+            "organism": "T. thermophilus",
+            "description": "Thermostable variant offering enhanced stability at elevated temperatures. Suitable for industrial fermentation.",
+            "optimalPh": "7.8",
+            "optimalTemp": "65°C",
+            "kcat": "22 s⁻¹",
+            "km": "0.11 mM",
+            "projectedYield": "76%",
+            "vendor": "Prozomix",
+            "vendorLogo": "",
+            "price": "$480.00 / 1mg",
+            "catalogNumber": "PRO-9101"
+          }
+        ]
+      },
+      {
+        "id": "trp-step-4",
+        "fromSubstrate": "Indole-3-glycerol phosphate",
+        "toSubstrate": "L-Tryptophan",
+        "reactionType": "β-substitution (serine + indole)",
+        "hasBruteForce": false,
+        "enzymes": [
+          {
+            "id": "trp-enz-4a",
+            "name": "Tryptophan Synthase (TrpAB)",
+            "ecNumber": "EC 4.2.1.20",
+            "score": 0.96,
+            "organism": "E. coli K-12",
+            "description": "Bifunctional αβ-complex. The α subunit cleaves indole-3-glycerol phosphate; the β subunit condenses indole with serine via PLP catalysis.",
+            "optimalPh": "7.8",
+            "optimalTemp": "37°C",
+            "kcat": "72 s⁻¹",
+            "km": "0.03 mM",
+            "projectedYield": "95%",
+            "vendor": "Sigma-Aldrich",
+            "vendorLogo": "",
+            "price": "$260.00 / 1mg",
+            "catalogNumber": "SAE0401"
+          }
+        ]
+      },
+      {
+        "id": "trp-step-5",
+        "fromSubstrate": "L-Tryptophan",
+        "toSubstrate": "5-Hydroxy-L-tryptophan",
+        "reactionType": "Hydroxylation",
+        "hasBruteForce": true,
+        "enzymes": []
+      }
+    ]
+  },
+  {
+    "id": "3",
+    "name": "Chorismate Mutase Pathway",
+    "description": "Conversion of chorismate to prephenate as a branch point toward phenylalanine and tyrosine",
+    "createdAt": "2025-03-01T10:00:00Z",
+    "updatedAt": "2025-03-05T09:00:00Z",
+    "status": "draft",
+    "steps": [
+      {
+        "id": "cho-step-1",
+        "fromSubstrate": "Chorismate",
+        "toSubstrate": "Prephenate",
+        "reactionType": "Claisen rearrangement",
+        "hasBruteForce": false,
+        "enzymes": [
+          {
+            "id": "cho-enz-1a",
+            "name": "Chorismate Mutase (PheA/TyrA domain)",
+            "ecNumber": "EC 5.4.99.5",
+            "score": 0.92,
+            "organism": "E. coli K-12",
+            "description": "Catalyzes the Claisen rearrangement of chorismate to prephenate. Often fused with prephenate dehydratase (PheA) or dehydrogenase (TyrA).",
+            "optimalPh": "7.5",
+            "optimalTemp": "37°C",
+            "kcat": "30 s⁻¹",
+            "km": "0.13 mM",
+            "projectedYield": "89%",
+            "vendor": "Sigma-Aldrich",
+            "vendorLogo": "",
+            "price": "$220.00 / 1mg",
+            "catalogNumber": "SAE0188"
+          }
+        ]
+      },
+      {
+        "id": "cho-step-2",
+        "fromSubstrate": "Prephenate",
+        "toSubstrate": "Phenylpyruvate",
+        "reactionType": "Decarboxylation / dehydration",
+        "hasBruteForce": false,
+        "enzymes": [
+          {
+            "id": "cho-enz-2a",
+            "name": "Prephenate Dehydratase (PheA)",
+            "ecNumber": "EC 4.2.1.51",
+            "score": 0.83,
+            "organism": "E. coli K-12",
+            "description": "Converts prephenate to phenylpyruvate with decarboxylation and dehydration. Feedback-inhibited by phenylalanine.",
+            "optimalPh": "7.0",
+            "optimalTemp": "37°C",
+            "kcat": "24 s⁻¹",
+            "km": "0.18 mM",
+            "projectedYield": "80%",
+            "vendor": "Enzyme Works",
+            "vendorLogo": "",
+            "price": "$295.00 / 1mg",
+            "catalogNumber": "EW-3214"
+          },
+          {
+            "id": "cho-enz-2b",
+            "name": "Prephenate Dehydratase (feedback-resistant)",
+            "ecNumber": "EC 4.2.1.51",
+            "score": 0.71,
+            "organism": "C. glutamicum",
+            "description": "Feedback-resistant variant from Corynebacterium. Suitable for high-yield phenylalanine production.",
+            "optimalPh": "7.2",
+            "optimalTemp": "30°C",
+            "kcat": "19 s⁻¹",
+            "km": "0.22 mM",
+            "projectedYield": "68%",
+            "vendor": "Creative Enzymes",
+            "vendorLogo": "",
+            "price": "$350.00 / 1mg",
+            "catalogNumber": "CE-5502"
+          }
+        ]
+      }
+    ]
+  }
+]

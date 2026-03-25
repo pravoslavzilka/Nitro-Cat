@@ -1,0 +1,27 @@
+/* Light Mode */
+background: var(--bg-secondary);
+border: 1px solid var(--border-default);
+border-left: 3px solid var(--success-500); /* Green accent */
+
+.confidence-score {
+  color: var(--success-600);
+  font-family: var(--font-mono);
+  font-weight: var(--font-semibold);
+}
+
+/* Dark Mode */
+background: var(--bg-secondary);
+border: 1px solid var(--border-default);
+border-left: 3px solid var(--success-500);
+
+&:hover {
+  background: var(--bg-tertiary);
+  box-shadow: var(--glow-success);
+}
+
+.confidence-score {
+  color: var(--success-600);
+  font-family: var(--font-mono);
+  font-weight: var(--font-semibold);
+  text-shadow: 0 0 8px rgba(63, 185, 80, 0.3); /* Subtle glow */
+}

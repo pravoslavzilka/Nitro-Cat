@@ -1,4 +1,4 @@
-import { Enzyme } from "@/data/pathwayData";
+import type { Enzyme } from "@/types/enzyme";
 import {
   Dialog,
   DialogContent,
@@ -23,7 +23,14 @@ export const EnzymeModal = ({ enzyme, open, onClose }: EnzymeModalProps) => {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="bg-card border-border max-w-lg">
+      <DialogContent
+        className="max-w-lg"
+        style={{
+          background: 'var(--bg-elevated)',
+          borderColor: 'var(--border-emphasis)',
+          boxShadow: 'var(--shadow-xl)',
+        }}
+      >
         <DialogHeader>
           <DialogTitle className="text-foreground text-glow text-xl">
             {enzyme.name}
@@ -62,7 +69,7 @@ export const EnzymeModal = ({ enzyme, open, onClose }: EnzymeModalProps) => {
           <div className="w-full bg-muted rounded-full h-2">
             <div
               className="h-2 rounded-full bg-primary transition-all"
-              style={{ width: `${scorePercent}%`, boxShadow: '0 0 8px hsl(142 70% 45% / 0.5)' }}
+              style={{ width: `${scorePercent}%`, boxShadow: '0 0 8px hsl(var(--success) / 0.5)' }}
             />
           </div>
           <div className="flex justify-between text-xs text-muted-foreground mt-1">
