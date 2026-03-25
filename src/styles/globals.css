@@ -1,106 +1,173 @@
+/* 1. Font imports FIRST */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* 2. Theme imports */
+@import './themes/light.css';
+@import './themes/dark.css';
+
+/* 3. Tailwind directives LAST */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
-@import './themes/light.css';
-@import './themes/dark.css';
-
 @layer base {
   :root {
-    /* Light Mode — mapped from design tokens */
-    --background: 0 0% 100%;
-    --foreground: 0 0% 10%;
+    /* ── Tailwind semantic tokens (HSL channel values, used as hsl(var(--x))) ── */
 
-    --card: 150 33% 97%;
+    /* Backgrounds */
+    --background: 0 0% 100%;           /* #FFFFFF */
+    --foreground: 0 0% 10%;            /* #1A1A1A */
+
+    --card: 150 33% 97%;               /* #F7FBF9 */
     --card-foreground: 0 0% 10%;
 
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 10%;
 
-    --primary: 160 84% 39%;
+    /* Primary — Green */
+    --primary: 160 84% 39%;            /* #10B981 */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 154 30% 95%;
-    --secondary-foreground: 218 17% 35%;
+    /* Secondary / surfaces */
+    --secondary: 154 30% 95%;          /* #EFF6F3 */
+    --secondary-foreground: 217 19% 35%; /* #4A5568 */
 
-    --muted: 214 32% 91%;
-    --muted-foreground: 216 16% 52%;
+    --muted: 215 31% 91%;              /* #E2E8F0 */
+    --muted-foreground: 216 14% 51%;   /* #718096 */
 
     --accent: 154 30% 95%;
     --accent-foreground: 160 84% 39%;
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 84% 60%;          /* #EF4444 */
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 160 84% 39%;
+    --border: 215 31% 91%;             /* #E2E8F0 */
+    --input: 215 31% 91%;
+    --ring: 161 94% 30%;               /* #059669 focus ring */
 
     --radius: 0.5rem;
 
-    --success: 160 84% 39%;
+    /* Semantic status colors */
+    --success: 160 84% 39%;            /* #10B981 — high confidence ≥90% */
     --success-foreground: 0 0% 100%;
 
-    --warning: 38 92% 50%;
+    --warning: 38 92% 50%;             /* #F59E0B — medium confidence 60-89% */
     --warning-foreground: 0 0% 0%;
 
-    --danger: 0 84% 60%;
-    --danger-foreground: 0 0% 98%;
+    --danger: 0 84% 60%;               /* #EF4444 — low confidence <60% */
+    --danger-foreground: 0 0% 100%;
 
-    --info: 217 91% 60%;
+    --info: 217 91% 60%;               /* #3B82F6 — secondary actions */
     --info-foreground: 0 0% 100%;
 
+    /* Sidebar */
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 218 17% 35%;
+    --sidebar-foreground: 217 19% 35%;
     --sidebar-primary: 160 84% 39%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 154 30% 95%;
-    --sidebar-accent-foreground: 218 17% 35%;
-    --sidebar-border: 214 32% 91%;
+    --sidebar-accent-foreground: 217 19% 35%;
+    --sidebar-border: 215 31% 91%;
     --sidebar-ring: 160 84% 39%;
+
+    /* ── Raw design token variables (hex, for inline styles / non-Tailwind use) ── */
+
+    /* Backgrounds */
+    --bg-primary: #FFFFFF;
+    --bg-secondary: #F7FBF9;
+    --bg-tertiary: #EFF6F3;
+    --bg-elevated: #FFFFFF;
+
+    /* Text */
+    --text-primary: #1A1A1A;
+    --text-secondary: #4A5568;
+    --text-tertiary: #718096;
+    --text-disabled: #A0AEC0;
+
+    /* Borders */
+    --border-default: #E2E8F0;
+    --border-emphasis: #CBD5E0;
+    --border-interactive: #059669;
+
+    /* Primary scale */
+    --primary-50: #ECFDF5;
+    --primary-100: #D1FAE5;
+    --primary-500: #10B981;
+    --primary-600: #059669;
+    --primary-700: #047857;
+    --primary-800: #065F46;
+
+    /* Success scale — high confidence ≥90% */
+    --success-50: #ECFDF5;
+    --success-100: #D1FAE5;
+    --success-500: #10B981;
+    --success-600: #059669;
+    --success-700: #047857;
+
+    /* Info scale — blue, secondary actions */
+    --info-50: #EFF6FF;
+    --info-100: #DBEAFE;
+    --info-500: #3B82F6;
+    --info-600: #2563EB;
+    --info-700: #1D4ED8;
+
+    /* Warning scale — medium confidence 60-89% */
+    --warning-50: #FFFBEB;
+    --warning-100: #FEF3C7;
+    --warning-500: #F59E0B;
+    --warning-600: #D97706;
+    --warning-700: #B45309;
+
+    /* Danger scale — low confidence <60%, errors */
+    --danger-50: #FEF2F2;
+    --danger-100: #FEE2E2;
+    --danger-500: #EF4444;
+    --danger-600: #DC2626;
+    --danger-700: #B91C1C;
   }
 
   .dark {
-    /* Dark Mode — mapped from design tokens */
-    --background: 150 25% 6%;
-    --foreground: 152 35% 93%;
+    /* ── Tailwind semantic tokens (dark) ── */
 
-    --card: 150 22% 8%;
+    --background: 150 25% 6%;          /* #0A0F0D */
+    --foreground: 152 35% 93%;         /* #E6F3ED */
+
+    --card: 150 22% 8%;                /* #0F1612 */
     --card-foreground: 152 35% 93%;
 
-    --popover: 150 17% 9%;
+    --popover: 155 16% 10%;            /* #141C18 */
     --popover-foreground: 152 35% 93%;
 
-    --primary: 160 84% 39%;
+    --primary: 160 84% 39%;            /* #10B981 */
     --primary-foreground: 0 0% 0%;
 
-    --secondary: 156 16% 12%;
-    --secondary-foreground: 148 10% 58%;
+    --secondary: 156 16% 12%;          /* #1A2420 */
+    --secondary-foreground: 148 10% 58%; /* #8B9E94 */
 
-    --muted: 145 12% 20%;
-    --muted-foreground: 148 7% 46%;
+    --muted: 150 14% 20%;              /* #2D3932 */
+    --muted-foreground: 152 7% 46%;    /* #6E7F76 */
 
     --accent: 156 16% 12%;
     --accent-foreground: 160 84% 39%;
 
-    --destructive: 0 91% 71%;
+    --destructive: 0 91% 71%;          /* #F87171 */
     --destructive-foreground: 0 0% 0%;
 
-    --border: 145 12% 20%;
+    --border: 150 14% 20%;             /* #2D3932 */
     --input: 156 16% 12%;
-    --ring: 160 84% 39%;
+    --ring: 133 53% 57%;               /* #3FB950 focus ring */
 
-    --success: 128 49% 49%;
+    --success: 128 49% 49%;            /* #3FB950 */
     --success-foreground: 0 0% 0%;
 
-    --warning: 38 92% 50%;
+    --warning: 38 92% 50%;             /* #F59E0B */
     --warning-foreground: 0 0% 0%;
 
-    --danger: 0 91% 71%;
+    --danger: 0 91% 71%;               /* #F87171 */
     --danger-foreground: 0 0% 0%;
 
-    --info: 189 94% 43%;
+    --info: 189 94% 43%;               /* #06B6D4 */
     --info-foreground: 0 0% 0%;
 
     --sidebar-background: 150 25% 6%;
@@ -109,8 +176,55 @@
     --sidebar-primary-foreground: 0 0% 0%;
     --sidebar-accent: 156 16% 12%;
     --sidebar-accent-foreground: 148 10% 58%;
-    --sidebar-border: 145 12% 20%;
+    --sidebar-border: 150 14% 20%;
     --sidebar-ring: 160 84% 39%;
+
+    /* ── Raw design token variables (hex, dark) ── */
+
+    --bg-primary: #0A0F0D;
+    --bg-secondary: #0F1612;
+    --bg-tertiary: #1A2420;
+    --bg-elevated: #141C18;
+
+    --text-primary: #E6F3ED;
+    --text-secondary: #8B9E94;
+    --text-tertiary: #6E7F76;
+    --text-disabled: #4A5751;
+
+    --border-default: #2D3932;
+    --border-emphasis: #3D4F44;
+    --border-interactive: #3FB950;
+
+    --primary-50: #0D2B1C;
+    --primary-100: #0F4429;
+    --primary-500: #10B981;
+    --primary-600: #34D399;
+    --primary-700: #6EE7B7;
+    --primary-800: #A7F3D0;
+
+    --success-50: #0D2B1C;
+    --success-100: #0F4429;
+    --success-500: #3FB950;
+    --success-600: #56D364;
+    --success-700: #7EE787;
+
+    --info-50: #0B2B3C;
+    --info-100: #0F3D54;
+    --info-500: #06B6D4;
+    --info-600: #22D3EE;
+    --info-700: #67E8F9;
+
+    --warning-50: #2D2000;
+    --warning-100: #4D3600;
+    --warning-500: #F59E0B;
+    --warning-600: #FBBF24;
+    --warning-700: #FCD34D;
+
+    --danger-50: #2D0B0B;
+    --danger-100: #4D1616;
+    --danger-500: #F87171;
+    --danger-600: #FCA5A5;
+    --danger-700: #FECACA;
   }
 }
 
@@ -125,16 +239,21 @@
 }
 
 @layer utilities {
+  /* Green glow utilities */
   .glow-green {
-    box-shadow: 0 0 15px hsl(160 84% 39% / 0.3), 0 0 30px hsl(160 84% 39% / 0.1);
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.3), 0 0 30px rgba(16, 185, 129, 0.1);
   }
   .glow-green-sm {
-    box-shadow: 0 0 8px hsl(160 84% 39% / 0.2);
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.2);
   }
   .text-glow {
-    text-shadow: 0 0 10px hsl(160 84% 39% / 0.5);
+    text-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
   }
+  /* Success glow — used on enzyme cards hover and high-confidence elements */
   .glow-success {
-    box-shadow: 0 0 8px hsl(var(--success) / 0.25);
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
+  }
+  .dark .glow-success {
+    box-shadow: 0 0 12px rgba(63, 185, 80, 0.3);
   }
 }

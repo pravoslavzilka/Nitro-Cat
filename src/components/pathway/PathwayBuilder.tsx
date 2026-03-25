@@ -11,7 +11,7 @@ interface PathwayBuilderProps {
 const SubstrateNode = ({ name }: { name: string }) => (
   <div className="flex items-center gap-3 ml-2">
     <div className="w-3 h-3 rounded-full bg-primary/30 border-2 border-primary glow-green-sm" />
-    <span className="text-lg font-semibold text-foreground">{name}</span>
+    <span className="text-lg font-semibold font-mono text-foreground">{name}</span>
   </div>
 );
 

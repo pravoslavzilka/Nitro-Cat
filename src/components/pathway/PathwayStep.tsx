@@ -40,7 +40,8 @@ export const PathwayStep = ({ step, onEnzymeClick }: PathwayStepProps) => {
               <Button
                 size="sm"
                 variant="outline"
-                className="border-destructive/50 text-destructive hover:bg-destructive/10 hover:text-destructive font-mono text-xs"
+                className="border-warning/50 text-warning-foreground bg-warning/10 hover:bg-warning/20 hover:border-warning font-mono text-xs"
+                style={{ color: 'var(--warning-700)' }}
               >
                 <Zap className="w-3 h-3 mr-1" />
                 Brute force search
