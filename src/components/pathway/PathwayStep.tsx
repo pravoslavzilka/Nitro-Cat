@@ -33,8 +33,8 @@ export const PathwayStep = ({ step, onEnzymeClick }: PathwayStepProps) => {
         </span>
 
         {step.enzymes.length > 0 ? (
-          /* Enzyme cards — flex-col items-start so cards only take natural width */
-          <div className="flex flex-col items-start gap-1.5">
+          /* Enzyme cards — indented further to visually group within the step */
+          <div className="flex flex-col items-start gap-1.5 pl-8">
             {step.enzymes.map((enzyme) => (
               <EnzymeCard
                 key={enzyme.id}
