@@ -19,7 +19,7 @@ export const PathwayDetailPage = () => {
       </ResizablePanel>
       <ResizableHandle withHandle />
       <ResizablePanel defaultSize={45} minSize={30} className="overflow-hidden">
-        <ChatPanel />
+        <ChatPanel pathway={pathway} />
       </ResizablePanel>
     </ResizablePanelGroup>
   );
