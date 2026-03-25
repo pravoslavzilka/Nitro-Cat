@@ -23,12 +23,12 @@ const statusColors: Record<string, string> = {
 
 // Molecule node — dot on the timeline + name + structure visualization
 const MoleculeNode = ({ molecule }: { molecule: Molecule }) => (
-  <div className="relative flex items-start gap-5 py-4">
-    {/* Dot sits on the absolute line */}
-    <div className="w-6 shrink-0 flex justify-center pt-3">
+  <div className="relative flex items-start gap-5 pt-8 pb-4">
+    {/* Dot sits on the absolute line — pt-1 aligns dot center with first text line */}
+    <div className="w-6 shrink-0 flex justify-center pt-1">
       <div
         className="relative z-10 w-4 h-4 rounded-full bg-primary border-2 border-primary-600 shrink-0"
-        style={{ boxShadow: '0 0 0 3px hsl(var(--background))' }}
+        style={{ boxShadow: '0 0 0 4px hsl(var(--background))' }}
       />
     </div>
     {/* Content */}
@@ -93,10 +93,11 @@ export const PathwayBuilder = ({ pathway }: PathwayBuilderProps) => {
           top-6 = 24px = py-4 (16px) + half of h-4 dot (8px) → starts at center of first dot.
           bottom-6 = same calculation from bottom → ends at center of last dot.
         */}
+        {/* Full-height dotted line — z-0 so dots (z-10) appear on top of it */}
         <div
-          className={`absolute ${LINE_X} top-6 bottom-6 w-0.5`}
+          className={`absolute ${LINE_X} top-0 bottom-0 w-0.5 z-0`}
           style={{
-            backgroundImage: 'repeating-linear-gradient(to bottom, hsl(var(--primary) / 0.5) 0px, hsl(var(--primary) / 0.5) 5px, transparent 5px, transparent 13px)',
+            backgroundImage: 'repeating-linear-gradient(to bottom, hsl(var(--primary) / 0.55) 0px, hsl(var(--primary) / 0.55) 6px, transparent 6px, transparent 14px)',
           }}
         />
 
