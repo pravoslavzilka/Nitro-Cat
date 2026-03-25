@@ -1,39 +1,13 @@
-export interface Enzyme {
-  id: string;
-  name: string;
-  ecNumber: string;
-  score: number;
-  organism: string;
-  description: string;
-  optimalPh: string;
-  optimalTemp: string;
-  kcat: string;
-  km: string;
-  projectedYield: string;
-  vendor: string;
-  vendorLogo: string;
-  price: string;
-  catalogNumber: string;
-}
-
-export interface PathwayStep {
-  id: string;
-  fromSubstrate: string;
-  toSubstrate: string;
-  reactionType: string;
-  enzymes: Enzyme[];
-  hasBruteForce: boolean;
-}
-
-export interface Pathway {
-  name: string;
-  description: string;
-  steps: PathwayStep[];
-}
+import type { Enzyme } from '@/types/enzyme';
+import type { Pathway } from '@/types/pathway';
 
 export const samplePathway: Pathway = {
+  id: '1',
   name: "Shikimic Acid Biosynthesis",
   description: "Conversion pathway from D-Erythrose 4-Phosphate to Shikimic Acid via key intermediates",
+  createdAt: '2025-01-15T10:00:00Z',
+  updatedAt: '2025-01-20T14:30:00Z',
+  status: 'complete',
   steps: [
     {
       id: "step-1",
@@ -57,7 +31,7 @@ export const samplePathway: Pathway = {
           vendorLogo: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Sigma-Aldrich_logo.svg/200px-Sigma-Aldrich_logo.svg.png",
           price: "$285.00 / 1mg",
           catalogNumber: "SAE0148",
-        },
+        } as Enzyme,
         {
           id: "enz-1b",
           name: "DAHP Synthase (AroF)",
@@ -74,7 +48,7 @@ export const samplePathway: Pathway = {
           vendorLogo: "",
           price: "$320.00 / 1mg",
           catalogNumber: "EW-2541",
-        },
+        } as Enzyme,
         {
           id: "enz-1c",
           name: "DAHP Synthase (AroH)",
@@ -91,7 +65,7 @@ export const samplePathway: Pathway = {
           vendorLogo: "",
           price: "$410.00 / 1mg",
           catalogNumber: "PRO-8812",
-        },
+        } as Enzyme,
       ],
       hasBruteForce: false,
     },
@@ -117,7 +91,7 @@ export const samplePathway: Pathway = {
           vendorLogo: "",
           price: "$195.00 / 1mg",
           catalogNumber: "SAE0055",
-        },
+        } as Enzyme,
       ],
       hasBruteForce: false,
     },
@@ -151,7 +125,7 @@ export const samplePathway: Pathway = {
           vendorLogo: "",
           price: "$340.00 / 1mg",
           catalogNumber: "SAE0201",
-        },
+        } as Enzyme,
         {
           id: "enz-4b",
           name: "Shikimate DH (YdiB)",
@@ -168,7 +142,7 @@ export const samplePathway: Pathway = {
           vendorLogo: "",
           price: "$520.00 / 1mg",
           catalogNumber: "CE-9934",
-        },
+        } as Enzyme,
       ],
       hasBruteForce: false,
     },

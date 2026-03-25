@@ -8,15 +8,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Send, Bot, User, Sparkles, Paperclip, Globe, ChevronDown } from "lucide-react";
+import { Send, Bot, Sparkles, Paperclip, Globe, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-interface Message {
-  id: string;
-  role: "user" | "ai";
-  content: string;
-  timestamp: Date;
-}
+import { ChatMessage, type Message } from "./ChatMessage";
 
 const models = [
   { id: "enzym-4", name: "EnzymAI-4", desc: "Most capable" },
@@ -34,7 +28,7 @@ const initialMessages: Message[] = [
   },
 ];
 
-export const AiChatConsole = () => {
+export const ChatPanel = () => {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -126,28 +120,7 @@ export const AiChatConsole = () => {
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
         {messages.map((msg) => (
-          <div key={msg.id} className={cn("flex gap-3", msg.role === "user" && "justify-end")}>
-            {msg.role === "ai" && (
-              <div className="w-7 h-7 rounded-full bg-primary/15 flex items-center justify-center shrink-0 mt-0.5">
-                <Bot className="w-4 h-4 text-primary" />
-              </div>
-            )}
-            <div
-              className={cn(
-                "max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed",
-                msg.role === "user"
-                  ? "bg-primary text-primary-foreground rounded-br-md"
-                  : "bg-secondary text-foreground rounded-bl-md"
-              )}
-            >
-              {msg.content}
-            </div>
-            {msg.role === "user" && (
-              <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center shrink-0 mt-0.5">
-                <User className="w-4 h-4 text-muted-foreground" />
-              </div>
-            )}
-          </div>
+          <ChatMessage key={msg.id} message={msg} />
         ))}
         {isTyping && (
           <div className="flex gap-3">
@@ -165,7 +138,7 @@ export const AiChatConsole = () => {
         )}
       </div>
 
-      {/* Input area — Copilot style */}
+      {/* Input area */}
       <div className="px-4 pb-4">
         <div className="border border-border rounded-2xl bg-card focus-within:border-primary/50 transition-colors">
           <Textarea

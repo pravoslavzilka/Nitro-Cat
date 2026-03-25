@@ -3,14 +3,16 @@
 @tailwind utilities;
 
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+@import './themes/light.css';
+@import './themes/dark.css';
 
 @layer base {
   :root {
-    /* Light Mode */
-    --background: 150 29% 98%;
+    /* Light Mode — mapped from design tokens */
+    --background: 0 0% 100%;
     --foreground: 0 0% 10%;
 
-    --card: 150 29% 98%;
+    --card: 150 33% 97%;
     --card-foreground: 0 0% 10%;
 
     --popover: 0 0% 100%;
@@ -37,14 +39,17 @@
 
     --radius: 0.5rem;
 
+    --success: 160 84% 39%;
+    --success-foreground: 0 0% 100%;
+
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 0%;
 
+    --danger: 0 84% 60%;
+    --danger-foreground: 0 0% 98%;
+
     --info: 217 91% 60%;
     --info-foreground: 0 0% 100%;
-
-    --success: 160 84% 39%;
-    --success-foreground: 0 0% 100%;
 
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 218 17% 35%;
@@ -57,10 +62,11 @@
   }
 
   .dark {
-    --background: 156 20% 5%;
+    /* Dark Mode — mapped from design tokens */
+    --background: 150 25% 6%;
     --foreground: 152 35% 93%;
 
-    --card: 146 19% 7%;
+    --card: 150 22% 8%;
     --card-foreground: 152 35% 93%;
 
     --popover: 150 17% 9%;
@@ -85,16 +91,19 @@
     --input: 156 16% 12%;
     --ring: 160 84% 39%;
 
+    --success: 128 49% 49%;
+    --success-foreground: 0 0% 0%;
+
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 0%;
+
+    --danger: 0 91% 71%;
+    --danger-foreground: 0 0% 0%;
 
     --info: 189 94% 43%;
     --info-foreground: 0 0% 0%;
 
-    --success: 128 49% 49%;
-    --success-foreground: 0 0% 0%;
-
-    --sidebar-background: 156 20% 5%;
+    --sidebar-background: 150 25% 6%;
     --sidebar-foreground: 148 10% 58%;
     --sidebar-primary: 160 84% 39%;
     --sidebar-primary-foreground: 0 0% 0%;
@@ -124,5 +133,8 @@
   }
   .text-glow {
     text-shadow: 0 0 10px hsl(160 84% 39% / 0.5);
+  }
+  .glow-success {
+    box-shadow: 0 0 8px hsl(var(--success) / 0.25);
   }
 }

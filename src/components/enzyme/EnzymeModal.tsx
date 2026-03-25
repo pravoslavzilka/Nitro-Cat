@@ -1,4 +1,4 @@
-import { Enzyme } from "@/data/pathwayData";
+import type { Enzyme } from "@/types/enzyme";
 import {
   Dialog,
   DialogContent,
