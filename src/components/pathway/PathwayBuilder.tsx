@@ -93,13 +93,8 @@ export const PathwayBuilder = ({ pathway }: PathwayBuilderProps) => {
           top-6 = 24px = py-4 (16px) + half of h-4 dot (8px) → starts at center of first dot.
           bottom-6 = same calculation from bottom → ends at center of last dot.
         */}
-        {/* Full-height dotted line — z-0 so dots (z-10) appear on top of it */}
-        <div
-          className={`absolute ${LINE_X} top-0 bottom-0 w-0.5 z-0`}
-          style={{
-            backgroundImage: 'repeating-linear-gradient(to bottom, hsl(var(--primary) / 0.55) 0px, hsl(var(--primary) / 0.55) 6px, transparent 6px, transparent 14px)',
-          }}
-        />
+        {/* Full-height dotted line — border-l renders reliably; dots use z-10 to sit on top */}
+        <div className="absolute top-0 bottom-0 border-l-2 border-dashed border-primary/40 z-0" style={{ left: '11px' }} />
 
         <div>
           {pathway.steps.map((step, idx) => (
