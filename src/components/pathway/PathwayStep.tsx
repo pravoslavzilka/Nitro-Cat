@@ -85,20 +85,25 @@ export const PathwayStep = ({ step, onEnzymeClick }: PathwayStepProps) => {
   return (
     <div className="px-2 py-1">
       {/* Reaction type — bigger, centered */}
-      <p className="text-sm font-semibold text-foreground text-center mb-2.5">
+      <p className="text-lg font-semibold text-foreground text-center mb-2.5">
         {step.reactionType}
       </p>
 
       {step.enzymes.length > 0 ? (
-        <div className="flex flex-col items-start gap-1.5 pl-4">
-          {step.enzymes.map((enzyme) => (
-            <EnzymeCard
-              key={enzyme.id}
-              enzyme={enzyme}
-              onClick={() => onEnzymeClick(enzyme)}
-            />
-          ))}
-        </div>
+        <div className="pl-20%">
+
+          <div className="flex flex-col ml-[20%] items-start gap-1.5 pl-4">
+            <span className="italic items-start mb-5">Possible enzymes:</span>
+            {step.enzymes.map((enzyme) => (
+              <EnzymeCard
+                key={enzyme.id}
+                enzyme={enzyme}
+                onClick={() => onEnzymeClick(enzyme)}
+              />
+            ))}
+          </div>
+        </div>    
+        
       ) : (
         <div className="flex flex-col items-center gap-2">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
