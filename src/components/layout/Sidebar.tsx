@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
+import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 
 interface ChatSession {
@@ -31,6 +32,8 @@ export const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { resolvedTheme } = useTheme();
+  const logo = resolvedTheme === "dark" ? "/images/logo3.png" : "/images/logo4.png";
 
   const grouped = {
     Today: pastSessions.filter((s) => s.date === "Today"),
@@ -51,7 +54,7 @@ export const Sidebar = () => {
       <div className="flex items-center justify-between p-3 border-b border-sidebar-border">
         {!collapsed && (
           <div className="flex items-center gap-2">
-            <img src="/images/logo3.png" className="h-10" />
+            <img src={logo} className="h-10" />
             <span className="text-sm font-semibold text-foreground">NitroCat</span>
           </div>
         )}

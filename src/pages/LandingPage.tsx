@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { FlaskConical, Zap, Shield, BarChart3 } from "lucide-react";
 
@@ -20,15 +21,17 @@ const features = [
   },
 ];
 
-export const LandingPage = () => {  
+export const LandingPage = () => {
   const navigate = useNavigate();
+  const { resolvedTheme } = useTheme();
+  const logo = resolvedTheme === "dark" ? "/images/logo3.png" : "/images/logo4.png";
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <img src="/images/logo.png"  className="h-[100px]"  />
+          <img src={logo}  className="h-10"  />
           <span className="text-lg font-bold text-foreground">NitroCat</span>
         </div>
         <Button variant="outline" onClick={() => navigate('/login')}>
@@ -39,7 +42,7 @@ export const LandingPage = () => {
       {/* Hero */}
       <section className="flex flex-col items-center justify-center text-center px-6 py-24 gap-6">
         
-        <img src="/images/logo.png"  className="h-[300px]"  />
+        <img src={logo}  className="h-[300px]"  />
         <h1 className="text-4xl sm:text-5xl font-bold text-foreground text-glow max-w-2xl">
           Discover optimal enzyme pathways with AI
         </h1>
