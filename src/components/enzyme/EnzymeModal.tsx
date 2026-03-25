@@ -105,15 +105,21 @@ export const EnzymeModal = ({ enzyme, open, onClose }: EnzymeModalProps) => {
               </div>
             </div>
           ) : (
-            <div className="flex items-center gap-3 rounded-lg border border-dashed border-primary/40 bg-primary/5 px-4 py-3">
-              <FlaskConical className="w-5 h-5 text-primary shrink-0" />
-              <div>
-                <p className="text-sm font-semibold text-foreground">No vendor detected</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Try and test this enzyme with{" "}
-                  <span className="font-semibold text-primary">Nitroduck</span>
-                </p>
+            <div className="flex items-center justify-between gap-3 rounded-lg border border-dashed border-primary/40 bg-primary/5 px-4 py-3">
+              <div className="flex items-center gap-3">
+                <FlaskConical className="w-5 h-5 text-primary shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-foreground">No vendor detected</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Try and test this enzyme with{" "}
+                    <span className="font-semibold text-primary">Nitroduck</span>
+                  </p>
+                </div>
               </div>
+              <Button size="sm" className="shrink-0 gap-1.5">
+                <FlaskConical className="w-3 h-3" />
+                Order test
+              </Button>
             </div>
           )}
         </div>
