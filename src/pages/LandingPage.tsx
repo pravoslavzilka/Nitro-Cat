@@ -20,7 +20,7 @@ const features = [
   },
 ];
 
-export const LandingPage = () => {
+export const LandingPage = () => {  
   const navigate = useNavigate();
 
   return (
@@ -28,8 +28,8 @@ export const LandingPage = () => {
       {/* Header */}
       <header className="border-b border-border px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <FlaskConical className="w-6 h-6 text-primary" />
-          <span className="text-lg font-bold text-foreground">EnzymAI</span>
+          <img src="/images/logo.png"  className="h-[100px]"  />
+          <span className="text-lg font-bold text-foreground">NitroCat</span>
         </div>
         <Button variant="outline" onClick={() => navigate('/login')}>
           Sign In
@@ -38,14 +38,13 @@ export const LandingPage = () => {
 
       {/* Hero */}
       <section className="flex flex-col items-center justify-center text-center px-6 py-24 gap-6">
-        <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center glow-green mb-2">
-          <FlaskConical className="w-8 h-8 text-primary" />
-        </div>
+        
+        <img src="/images/logo.png"  className="h-[300px]"  />
         <h1 className="text-4xl sm:text-5xl font-bold text-foreground text-glow max-w-2xl">
           Discover optimal enzyme pathways with AI
         </h1>
         <p className="text-lg text-muted-foreground max-w-xl">
-          EnzymAI combines cutting-edge machine learning with biochemistry databases to accelerate your metabolic engineering research.
+          NitroCat combines cutting-edge machine learning with biochemistry databases to accelerate your metabolic engineering research.
         </p>
         <div className="flex gap-3 flex-wrap justify-center">
           <Button size="lg" onClick={() => navigate('/login')} className="glow-green">

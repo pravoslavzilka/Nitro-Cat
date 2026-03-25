@@ -18,31 +18,24 @@ interface EnzymeModalProps {
   onClose: () => void;
 }
 
-// Color palette per confidence level
 const confidenceConfig = {
   high: {
-    headerBg: 'var(--success-50)',
-    headerBorder: 'var(--success-500)',
+    accentBorder: 'var(--success-500)',
     accent: 'var(--success-600)',
     barColor: 'var(--success-500)',
-    iconBg: 'var(--success-100)',
-    iconColor: 'var(--success-700)',
+    iconColor: 'var(--success-600)',
   },
   medium: {
-    headerBg: 'var(--warning-50)',
-    headerBorder: 'var(--warning-500)',
+    accentBorder: 'var(--warning-500)',
     accent: 'var(--warning-600)',
     barColor: 'var(--warning-500)',
-    iconBg: 'var(--warning-100)',
-    iconColor: 'var(--warning-700)',
+    iconColor: 'var(--warning-600)',
   },
   low: {
-    headerBg: 'var(--danger-50)',
-    headerBorder: 'var(--danger-500)',
+    accentBorder: 'var(--danger-500)',
     accent: 'var(--danger-600)',
     barColor: 'var(--danger-500)',
-    iconBg: 'var(--danger-100)',
-    iconColor: 'var(--danger-700)',
+    iconColor: 'var(--danger-600)',
   },
 } as const;
 
@@ -59,18 +52,13 @@ export const EnzymeModal = ({ enzyme, open, onClose }: EnzymeModalProps) => {
         className="max-w-lg p-0 overflow-hidden gap-0"
         style={{
           background: 'var(--bg-elevated)',
-          borderColor: 'var(--border-emphasis)',
-          boxShadow: 'var(--shadow-xl)',
+          boxShadow: '0 10px 15px -3px rgba(0,0,0,0.15), 0 4px 6px -4px rgba(0,0,0,0.1)',
+          borderLeftColor: cfg.accentBorder,
+          borderLeftWidth: '3px',
         }}
       >
-        {/* ── Colored header ── */}
-        <div
-          className="px-6 pt-6 pb-4 border-b"
-          style={{
-            background: cfg.headerBg,
-            borderBottomColor: cfg.headerBorder + '40',
-          }}
-        >
+        {/* ── Header ── */}
+        <div className="px-6 pt-6 pb-4 border-b">
           <DialogHeader className="space-y-0">
             <DialogTitle className="text-xl font-bold text-foreground">
               {enzyme.name}
@@ -80,8 +68,8 @@ export const EnzymeModal = ({ enzyme, open, onClose }: EnzymeModalProps) => {
                 className="inline-flex items-center text-xs font-mono font-semibold px-2 py-0.5 rounded border"
                 style={{
                   color: cfg.accent,
-                  borderColor: cfg.headerBorder + '60',
-                  background: cfg.iconBg,
+                  borderColor: cfg.accentBorder + '60',
+                  background: cfg.accentBorder + '15',
                 }}
               >
                 {enzyme.ecNumber}
@@ -112,8 +100,7 @@ export const EnzymeModal = ({ enzyme, open, onClose }: EnzymeModalProps) => {
               ].map(({ icon, label, value }) => (
                 <div
                   key={label}
-                  className="flex items-center gap-2.5 rounded-lg p-2.5"
-                  style={{ background: cfg.iconBg }}
+                  className="flex items-center gap-2.5 rounded-lg p-2.5 bg-muted/50"
                 >
                   <span style={{ color: cfg.iconColor }}>{icon}</span>
                   <div>
@@ -126,21 +113,17 @@ export const EnzymeModal = ({ enzyme, open, onClose }: EnzymeModalProps) => {
           </div>
 
           {/* Match score bar */}
-          <div className="rounded-lg border p-3 space-y-1.5" style={{ borderColor: cfg.headerBorder + '30', background: cfg.headerBg }}>
+          <div className="rounded-lg border p-3 space-y-1.5">
             <div className="flex items-center justify-between">
               <span className="text-xs text-muted-foreground font-medium">Match Score</span>
               <span className="text-sm font-mono font-bold" style={{ color: cfg.accent }}>
                 {scorePercent}%
               </span>
             </div>
-            <div className="w-full bg-black/10 rounded-full h-2">
+            <div className="w-full bg-muted rounded-full h-2">
               <div
                 className="h-2 rounded-full transition-all"
-                style={{
-                  width: `${scorePercent}%`,
-                  background: cfg.barColor,
-                  boxShadow: `0 0 6px ${cfg.barColor}80`,
-                }}
+                style={{ width: `${scorePercent}%`, background: cfg.barColor }}
               />
             </div>
             <p className="text-xs text-muted-foreground">Projected yield: {enzyme.projectedYield}</p>
@@ -151,10 +134,7 @@ export const EnzymeModal = ({ enzyme, open, onClose }: EnzymeModalProps) => {
           {/* Vendor row */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div
-                className="w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold border"
-                style={{ background: cfg.iconBg, color: cfg.accent, borderColor: cfg.headerBorder + '40' }}
-              >
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold border bg-muted text-muted-foreground">
                 {enzyme.vendor.substring(0, 2).toUpperCase()}
               </div>
               <div>
