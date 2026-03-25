@@ -8,9 +8,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { ExternalLink, ShoppingCart, Thermometer, Droplets, Activity, Target } from "lucide-react";
+import { ExternalLink, ShoppingCart, Thermometer, Droplets, Activity, Target, TrendingUp } from "lucide-react";
 import { ConfidenceScore } from "./ConfidenceScore";
-import { formatConfidenceLabel } from "@/lib/utils/formatting";
 
 interface EnzymeModalProps {
   enzyme: Enzyme | null;
@@ -18,33 +17,8 @@ interface EnzymeModalProps {
   onClose: () => void;
 }
 
-const confidenceConfig = {
-  high: {
-    accentBorder: 'var(--success-500)',
-    accent: 'var(--success-600)',
-    barColor: 'var(--success-500)',
-    iconColor: 'var(--success-600)',
-  },
-  medium: {
-    accentBorder: 'var(--warning-500)',
-    accent: 'var(--warning-600)',
-    barColor: 'var(--warning-500)',
-    iconColor: 'var(--warning-600)',
-  },
-  low: {
-    accentBorder: 'var(--danger-500)',
-    accent: 'var(--danger-600)',
-    barColor: 'var(--danger-500)',
-    iconColor: 'var(--danger-600)',
-  },
-} as const;
-
 export const EnzymeModal = ({ enzyme, open, onClose }: EnzymeModalProps) => {
   if (!enzyme) return null;
-
-  const scorePercent = Math.round(enzyme.score * 100);
-  const confidence = formatConfidenceLabel(enzyme.score);
-  const cfg = confidenceConfig[confidence];
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -53,8 +27,6 @@ export const EnzymeModal = ({ enzyme, open, onClose }: EnzymeModalProps) => {
         style={{
           background: 'var(--bg-elevated)',
           boxShadow: '0 10px 15px -3px rgba(0,0,0,0.15), 0 4px 6px -4px rgba(0,0,0,0.1)',
-          borderLeftColor: cfg.accentBorder,
-          borderLeftWidth: '3px',
         }}
       >
         {/* ── Header ── */}
@@ -64,16 +36,7 @@ export const EnzymeModal = ({ enzyme, open, onClose }: EnzymeModalProps) => {
               {enzyme.name}
             </DialogTitle>
             <div className="flex items-center gap-2 pt-2 flex-wrap">
-              <span
-                className="inline-flex items-center text-xs font-mono font-semibold px-2 py-0.5 rounded border"
-                style={{
-                  color: cfg.accent,
-                  borderColor: cfg.accentBorder + '60',
-                  background: cfg.accentBorder + '15',
-                }}
-              >
-                {enzyme.ecNumber}
-              </span>
+              <Badge variant="outline" className="text-xs font-mono">{enzyme.ecNumber}</Badge>
               <Badge variant="secondary" className="text-xs font-mono">{enzyme.organism}</Badge>
               <ConfidenceScore score={enzyme.score} />
             </div>
@@ -85,6 +48,15 @@ export const EnzymeModal = ({ enzyme, open, onClose }: EnzymeModalProps) => {
 
         {/* ── Body ── */}
         <div className="px-6 py-5 space-y-5">
+
+          {/* Projected yield — prominent */}
+          <div className="flex items-center gap-3 rounded-lg border bg-muted/30 px-4 py-3">
+            <TrendingUp className="w-5 h-5 text-primary shrink-0" />
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Projected Yield</p>
+              <p className="text-2xl font-bold font-mono text-foreground">{enzyme.projectedYield}</p>
+            </div>
+          </div>
 
           {/* Kinetic metrics grid */}
           <div>
@@ -98,11 +70,8 @@ export const EnzymeModal = ({ enzyme, open, onClose }: EnzymeModalProps) => {
                 { icon: <Activity className="w-4 h-4" />, label: "k_cat", value: enzyme.kcat },
                 { icon: <Target className="w-4 h-4" />, label: "K_m", value: enzyme.km },
               ].map(({ icon, label, value }) => (
-                <div
-                  key={label}
-                  className="flex items-center gap-2.5 rounded-lg p-2.5 bg-muted/50"
-                >
-                  <span style={{ color: cfg.iconColor }}>{icon}</span>
+                <div key={label} className="flex items-center gap-2.5 rounded-lg p-2.5 bg-muted/50">
+                  <span className="text-muted-foreground">{icon}</span>
                   <div>
                     <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</p>
                     <p className="text-sm font-mono font-medium text-foreground">{value}</p>
@@ -110,23 +79,6 @@ export const EnzymeModal = ({ enzyme, open, onClose }: EnzymeModalProps) => {
                 </div>
               ))}
             </div>
-          </div>
-
-          {/* Match score bar */}
-          <div className="rounded-lg border p-3 space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-muted-foreground font-medium">Match Score</span>
-              <span className="text-sm font-mono font-bold" style={{ color: cfg.accent }}>
-                {scorePercent}%
-              </span>
-            </div>
-            <div className="w-full bg-muted rounded-full h-2">
-              <div
-                className="h-2 rounded-full transition-all"
-                style={{ width: `${scorePercent}%`, background: cfg.barColor }}
-              />
-            </div>
-            <p className="text-xs text-muted-foreground">Projected yield: {enzyme.projectedYield}</p>
           </div>
 
           <Separator />
@@ -143,15 +95,11 @@ export const EnzymeModal = ({ enzyme, open, onClose }: EnzymeModalProps) => {
               </div>
             </div>
             <div className="text-right">
-              <p className="text-sm font-bold" style={{ color: cfg.accent }}>{enzyme.price}</p>
-              <Button
-                size="sm"
-                className="mt-1 text-white"
-                style={{ background: cfg.barColor }}
-              >
-                <ShoppingCart className="w-3 h-3 mr-1" />
+              <p className="text-sm font-bold text-foreground">{enzyme.price}</p>
+              <Button size="sm" className="mt-1 gap-1.5">
+                <ShoppingCart className="w-3 h-3" />
                 Buy
-                <ExternalLink className="w-3 h-3 ml-1" />
+                <ExternalLink className="w-3 h-3" />
               </Button>
             </div>
           </div>

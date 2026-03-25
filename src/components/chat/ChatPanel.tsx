@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import type { Pathway } from "@/types/pathway";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -18,18 +19,57 @@ const models = [
   { id: "enzym-3.5", name: "EnzymAI-3.5", desc: "Balanced" },
 ];
 
-const initialMessages: Message[] = [
-  {
+function buildWelcomeMessage(pathway: Pathway): Message {
+  const startMol = pathway.steps[0]?.startMolecule.name ?? "the starting compound";
+  const endMol = pathway.steps[pathway.steps.length - 1]?.productMolecule.name ?? "the product";
+  const totalEnzymes = pathway.steps.reduce((n, s) => n + s.enzymes.length, 0);
+  const topEnzyme = pathway.steps[0]?.enzymes[0];
+
+  return {
     id: "1",
     role: "ai",
-    content:
-      "Hello! I'm your pathway analysis assistant. I can help you understand enzyme selections, reaction conditions, and optimization strategies. What would you like to explore?",
-    timestamp: new Date(),
-  },
-];
+    content: `Hello! I'm your pathway analysis assistant for **${pathway.name}**.
 
-export const ChatPanel = () => {
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
+This pathway converts **${startMol}** → **${endMol}** across **${pathway.steps.length} reaction steps** with **${totalEnzymes} enzyme candidates** identified.${topEnzyme ? `\n\nTop-ranked candidate for the first step is **${topEnzyme.name}** (${topEnzyme.ecNumber}, ${Math.round(topEnzyme.score * 100)}% match score).` : ""}
+
+Ask me about enzyme selection, reaction conditions, yield optimization, or any step in the pathway.`,
+    timestamp: new Date(),
+  };
+}
+
+function buildSimulatedResponse(pathway: Pathway, userMessage: string, modelName: string): string {
+  const steps = pathway.steps;
+  const allEnzymes = steps.flatMap((s) => s.enzymes);
+  const topEnzyme = [...allEnzymes].sort((a, b) => b.score - a.score)[0];
+  const lowMsg = userMessage.toLowerCase();
+
+  if (lowMsg.includes("enzyme") || lowMsg.includes("catalyst")) {
+    return `For **${pathway.name}**, the highest-scoring enzyme is **${topEnzyme?.name ?? "N/A"}** with a ${topEnzyme ? Math.round(topEnzyme.score * 100) + "%" : "—"} match score (${topEnzyme?.ecNumber ?? "—"}). It operates at ${topEnzyme?.optimalTemp ?? "—"} and pH ${topEnzyme?.optimalPh ?? "—"}, with a k_cat of ${topEnzyme?.kcat ?? "—"}.`;
+  }
+
+  if (lowMsg.includes("step") || lowMsg.includes("reaction")) {
+    const stepSummary = steps
+      .map((s, i) => `Step ${i + 1}: ${s.reactionType} (${s.startMolecule.name} → ${s.productMolecule.name})`)
+      .join("\n");
+    return `Here's a summary of the ${steps.length} steps in **${pathway.name}**:\n\n${stepSummary}`;
+  }
+
+  if (lowMsg.includes("yield") || lowMsg.includes("efficient") || lowMsg.includes("optim")) {
+    const best = [...steps]
+      .filter((s) => s.enzymes.length > 0)
+      .sort((a, b) => (b.enzymes[0]?.score ?? 0) - (a.enzymes[0]?.score ?? 0))[0];
+    return `The highest-yield step in **${pathway.name}** is the **${best?.reactionType ?? "—"}** reaction (${best?.startMolecule.name} → ${best?.productMolecule.name}) with a projected yield of **${best?.enzymes[0]?.projectedYield ?? "—"}**. Using model **${modelName}**, I recommend prioritizing this step for initial optimization.`;
+  }
+
+  return `Based on the **${pathway.name}** pathway data, the ${steps.length} steps span from **${steps[0]?.startMolecule.name}** to **${steps[steps.length - 1]?.productMolecule.name}**. Using **${modelName}**, I can analyze any step in detail — enzyme kinetics, reaction conditions, or alternative routes. What would you like to explore?`;
+}
+
+interface ChatPanelProps {
+  pathway: Pathway;
+}
+
+export const ChatPanel = ({ pathway }: ChatPanelProps) => {
+  const [messages, setMessages] = useState<Message[]>(() => [buildWelcomeMessage(pathway)]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [selectedModel, setSelectedModel] = useState("enzym-4");
@@ -37,44 +77,44 @@ export const ChatPanel = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // Reset chat when pathway changes
+  useEffect(() => {
+    setMessages([buildWelcomeMessage(pathway)]);
+  }, [pathway.id]);
+
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
 
-  const simulateResponse = () => {
+  const simulateResponse = (userMessage: string) => {
     setIsTyping(true);
     setTimeout(() => {
+      const modelName = models.find((m) => m.id === selectedModel)?.name ?? selectedModel;
       setMessages((prev) => [
         ...prev,
         {
           id: Date.now().toString(),
           role: "ai",
-          content: `Based on the current pathway analysis, the enzyme selection here is optimized for substrate specificity and kinetic parameters. The selected model (${models.find((m) => m.id === selectedModel)?.name}) suggests this is the most efficient route. Would you like me to compare alternative enzymes or adjust reaction conditions?`,
+          content: buildSimulatedResponse(pathway, userMessage, modelName),
           timestamp: new Date(),
         },
       ]);
       setIsTyping(false);
-    }, 1200);
+    }, 1100);
   };
 
   const handleSend = () => {
     if (!input.trim()) return;
+    const text = input.trim();
     setMessages((prev) => [
       ...prev,
-      {
-        id: Date.now().toString(),
-        role: "user",
-        content: input.trim(),
-        timestamp: new Date(),
-      },
+      { id: Date.now().toString(), role: "user", content: text, timestamp: new Date() },
     ]);
-    simulateResponse();
+    simulateResponse(text);
     setInput("");
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-    }
+    if (textareaRef.current) textareaRef.current.style.height = "auto";
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -103,7 +143,7 @@ export const ChatPanel = () => {
               <SelectValue />
               <ChevronDown className="w-3 h-3 text-muted-foreground" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent style={{ background: 'var(--bg-elevated)', borderColor: 'var(--border-emphasis)' }}>
               {models.map((m) => (
                 <SelectItem key={m.id} value={m.id}>
                   <div className="flex flex-col">
@@ -146,17 +186,13 @@ export const ChatPanel = () => {
             value={input}
             onChange={handleTextareaInput}
             onKeyDown={handleKeyDown}
-            placeholder="Ask about enzymes, reactions, or optimization..."
+            placeholder={`Ask about ${pathway.name}...`}
             className="border-0 bg-transparent shadow-none resize-none min-h-[44px] max-h-[160px] focus-visible:ring-0 focus-visible:ring-offset-0 text-sm px-4 pt-3 pb-1"
             rows={1}
           />
           <div className="flex items-center justify-between px-3 pb-2">
             <div className="flex items-center gap-1">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 text-muted-foreground hover:text-foreground"
-              >
+              <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground">
                 <Paperclip className="w-4 h-4" />
               </Button>
               <Button
@@ -165,21 +201,14 @@ export const ChatPanel = () => {
                 onClick={() => setWebSearch(!webSearch)}
                 className={cn(
                   "h-7 text-xs gap-1.5",
-                  webSearch
-                    ? "text-primary bg-primary/10"
-                    : "text-muted-foreground hover:text-foreground"
+                  webSearch ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground"
                 )}
               >
                 <Globe className="w-3.5 h-3.5" />
                 Search
               </Button>
             </div>
-            <Button
-              size="icon"
-              className="h-7 w-7 rounded-lg"
-              disabled={!input.trim()}
-              onClick={handleSend}
-            >
+            <Button size="icon" className="h-7 w-7 rounded-lg" disabled={!input.trim()} onClick={handleSend}>
               <Send className="w-3.5 h-3.5" />
             </Button>
           </div>

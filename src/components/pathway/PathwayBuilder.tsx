@@ -1,19 +1,14 @@
 import { useState } from "react";
-import type { Pathway } from "@/types/pathway";
-import type { Molecule } from "@/types/pathway";
+import type { Pathway, Molecule } from "@/types/pathway";
 import type { Enzyme } from "@/types/enzyme";
 import { PathwayStep } from "./PathwayStep";
 import { EnzymeModal } from "@/components/enzyme/EnzymeModal";
 import { MoleculeViewer } from "@/components/molecule/MoleculeViewer";
-import { FlaskConical, Layers, Dna } from "lucide-react";
+import { FlaskConical, Layers, Dna, ArrowDown } from "lucide-react";
 
 interface PathwayBuilderProps {
   pathway: Pathway;
 }
-
-// Gutter width matches PathwayStep gutter (w-6 = 24px).
-// Absolute line center: 11px from left (half of 24px minus 1px for 2px line).
-const LINE_X = "left-[11px]";
 
 const statusColors: Record<string, string> = {
   complete: "bg-success-100 text-success-700 border border-success-500",
@@ -21,27 +16,34 @@ const statusColors: Record<string, string> = {
   draft: "bg-muted text-muted-foreground border border-border",
 };
 
-// Molecule node — dot on the timeline + name + structure visualization
-const MoleculeNode = ({ molecule }: { molecule: Molecule }) => (
-  <div className="relative flex items-start gap-5 pt-8 pb-4">
-    {/* Dot sits on the absolute line — pt-1 aligns dot center with first text line */}
-    <div className="w-6 shrink-0 flex justify-center pt-1">
-      <div
-        className="relative z-10 w-4 h-4 rounded-full bg-primary border-2 border-primary-600 shrink-0"
-        style={{ boxShadow: '0 0 0 4px hsl(var(--background))' }}
-      />
+// Arrow connector between molecule card and reaction section
+const StepArrow = () => (
+  <div className="flex justify-center py-2">
+    <div className="flex flex-col items-center">
+      <div className="w-0.5 h-8 bg-primary/40" />
+      <ArrowDown className="w-7 h-7 text-primary/70 -mt-1" />
     </div>
-    {/* Content */}
-    <div className="pb-1">
-      <p className="text-2xl font-bold font-mono text-foreground tracking-tight leading-snug">
-        {molecule.name}
-      </p>
-      {molecule.formula && (
-        <p className="text-base font-semibold font-mono text-muted-foreground mt-1">{molecule.formula}</p>
-      )}
-      <div className="mt-3">
-        <MoleculeViewer smiles={molecule.smiles} width={260} height={170} />
+  </div>
+);
+
+// Bordered molecule card
+const MoleculeCard = ({ molecule }: { molecule: Molecule }) => (
+  <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+    <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center gap-2">
+        <div className="w-2.5 h-2.5 rounded-full bg-primary shrink-0" />
+        <p className="text-xl font-bold font-mono text-foreground leading-tight">
+          {molecule.name}
+        </p>
       </div>
+      {molecule.formula && (
+        <p className="text-sm font-semibold font-mono text-muted-foreground shrink-0 ml-3">
+          {molecule.formula}
+        </p>
+      )}
+    </div>
+    <div className="flex justify-center">
+      <MoleculeViewer smiles={molecule.smiles} width={300} height={190} />
     </div>
   </div>
 );
@@ -51,7 +53,6 @@ export const PathwayBuilder = ({ pathway }: PathwayBuilderProps) => {
   const totalEnzymes = pathway.steps.reduce((n, s) => n + s.enzymes.length, 0);
 
   return (
-    // h-full + overflow-y-auto gives the panel its own scrollable area
     <div className="h-full overflow-y-auto p-6">
 
       {/* ── Header card ── */}
@@ -86,30 +87,17 @@ export const PathwayBuilder = ({ pathway }: PathwayBuilderProps) => {
         </div>
       </div>
 
-      {/* ── Timeline ── */}
-      <div className="relative">
-        {/*
-          Single continuous vertical line.
-          top-6 = 24px = py-4 (16px) + half of h-4 dot (8px) → starts at center of first dot.
-          bottom-6 = same calculation from bottom → ends at center of last dot.
-        */}
-        {/* Full-height dotted line — z-0 so dots (z-10) appear on top of it */}
-        <div
-          className={`absolute ${LINE_X} top-0 bottom-0 w-0.5 z-0`}
-          style={{
-            backgroundImage: 'repeating-linear-gradient(to bottom, hsl(var(--primary) / 0.55) 0px, hsl(var(--primary) / 0.55) 6px, transparent 6px, transparent 14px)',
-          }}
-        />
-
-        <div>
-          {pathway.steps.map((step, idx) => (
-            <div key={step.id}>
-              {idx === 0 && <MoleculeNode molecule={step.startMolecule} />}
-              <PathwayStep step={step} onEnzymeClick={setSelectedEnzyme} />
-              <MoleculeNode molecule={step.productMolecule} />
-            </div>
-          ))}
-        </div>
+      {/* ── Pathway flow ── */}
+      <div className="space-y-0">
+        {pathway.steps.map((step, idx) => (
+          <div key={step.id}>
+            {idx === 0 && <MoleculeCard molecule={step.startMolecule} />}
+            <StepArrow />
+            <PathwayStep step={step} onEnzymeClick={setSelectedEnzyme} />
+            <StepArrow />
+            <MoleculeCard molecule={step.productMolecule} />
+          </div>
+        ))}
       </div>
 
       <EnzymeModal

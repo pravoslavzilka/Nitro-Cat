@@ -451,5 +451,131 @@
         ]
       }
     ]
+  },
+  {
+    "id": "4",
+    "name": "Scopolamine Demo Pathway",
+    "description": "Demo conversion pathway from D and E to scopolamine via two unresolved intermediates. Unresolved or inferred entities are explicitly flagged in the molecule names.",
+    "createdAt": "2026-03-25T12:00:00Z",
+    "updatedAt": "2026-03-25T12:00:00Z",
+    "status": "draft",
+    "steps": [
+      {
+        "id": "scp-step-1",
+        "startMolecule": {
+          "name": "[PARTIAL] Tropic acid acetate",
+          "smiles": "CC(=O)OCC(C(=O)O)c1ccccc1",
+          "formula": "C11H12O4"
+        },
+        "productMolecule": {
+          "name": "[UNRESOLVED] Intermediate C",
+          "smiles": "CN1[C@@H]2C=C[C@H]1C[C@@H](OC(=O)C(CO)c1ccccc1)C2",
+          "formula": "C17H21NO3"
+        },
+        "reactionType": "[UNRESOLVED] Convergent ester coupling",
+        "hasBruteForce": false,
+        "enzymes": []
+      },
+      {
+        "id": "scp-step-2",
+        "startMolecule": {
+          "name": "6,7-Dehydrotropine",
+          "smiles": "CN1[C@@H]2C=C[C@H]1C[C@@H](O)C2",
+          "formula": "C8H13NO"
+        },
+        "productMolecule": {
+          "name": "[UNRESOLVED] Intermediate C",
+          "smiles": "CN1[C@@H]2C=C[C@H]1C[C@@H](OC(=O)C(CO)c1ccccc1)C2",
+          "formula": "C17H21NO3"
+        },
+        "reactionType": "[UNRESOLVED] Convergent ester coupling",
+        "hasBruteForce": false,
+        "enzymes": []
+      },
+      {
+        "id": "scp-step-3",
+        "startMolecule": {
+          "name": "[UNRESOLVED] Intermediate C",
+          "smiles": "CN1[C@@H]2C=C[C@H]1C[C@@H](OC(=O)C(CO)c1ccccc1)C2",
+          "formula": "C17H21NO3"
+        },
+        "productMolecule": {
+          "name": "[UNRESOLVED] Intermediate B",
+          "smiles": "CN1[C@@H]2C[C@@H](OC(=O)C(CO)c3ccccc3)C[C@H]1[C@@H]1O[C@@H]12",
+          "formula": "C17H21NO4"
+        },
+        "reactionType": "[UNRESOLVED] Late-stage oxidation / rearrangement",
+        "hasBruteForce": true,
+        "enzymes": []
+      },
+      {
+        "id": "scp-step-4",
+        "startMolecule": {
+          "name": "[UNRESOLVED] Intermediate B",
+          "smiles": "CN1[C@@H]2C[C@@H](OC(=O)C(CO)c3ccccc3)C[C@H]1[C@@H]1O[C@@H]12",
+          "formula": "C17H21NO4"
+        },
+        "productMolecule": {
+          "name": "Scopolamine",
+          "smiles": "CN1[C@@H]2C[C@@H](OC(=O)[C@H](CO)c3ccccc3)C[C@H]1[C@@H]1O[C@@H]12",
+          "formula": "C17H21NO4"
+        },
+        "reactionType": "Hydroxylation / epoxidation",
+        "hasBruteForce": false,
+        "enzymes": [
+          {
+            "id": "enz-4a",
+            "name": "Hyoscyamine 6-beta-hydroxylase",
+            "ecNumber": "EC 1.14.11.11",
+            "score": 0.95,
+            "organism": "Atropa belladonna",
+            "description": "Catalyzes the late-stage hydroxylation and epoxide-forming conversion associated with scopolamine biosynthesis. Included here as a demo candidate for the B to A step.",
+            "optimalPh": "7.0–7.5",
+            "optimalTemp": "30°C",
+            "kcat": "41 s⁻¹",
+            "km": "0.15 mM",
+            "projectedYield": "88%",
+            "vendor": "Sigma-Aldrich",
+            "vendorLogo": "",
+            "price": "$295.00 / 1mg",
+            "catalogNumber": "Q9XJ43"
+          },
+          {
+            "id": "enz-4b",
+            "name": "Hyoscyamine 6-dioxygenase",
+            "ecNumber": "EC 1.14.11.11",
+            "score": 0.92,
+            "organism": "Hyoscyamus niger",
+            "description": "2-oxoglutarate-dependent dioxygenase associated with the terminal oxidative step toward scopolamine. Included here as a demo candidate for the B to A step.",
+            "optimalPh": "6.8–7.4",
+            "optimalTemp": "28°C",
+            "kcat": "36 s⁻¹",
+            "km": "0.19 mM",
+            "projectedYield": "84%",
+            "vendor": "Enzyme Works",
+            "vendorLogo": "",
+            "price": "$320.00 / 1mg",
+            "catalogNumber": "P24397"
+          },
+          {
+            "id": "enz-4c",
+            "name": "Hyoscyamine 6-beta-hydroxylase [putative]",
+            "ecNumber": "EC 1.14.11.11",
+            "score": 0.89,
+            "organism": "Anisodus acutangulus",
+            "description": "Putative hyoscyamine 6-beta-hydroxylase homolog included as a demo enzyme candidate for the B to A step in the mock pathway.",
+            "optimalPh": "7.1–7.6",
+            "optimalTemp": "30°C",
+            "kcat": "33 s⁻¹",
+            "km": "0.22 mM",
+            "projectedYield": "80%",
+            "vendor": "Prozomix",
+            "vendorLogo": "",
+            "price": "$410.00 / 1mg",
+            "catalogNumber": "A2IBI0"
+          }
+        ]
+      }
+    ]
   }
 ]
