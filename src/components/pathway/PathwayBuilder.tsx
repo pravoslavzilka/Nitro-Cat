@@ -18,10 +18,10 @@ const statusColors: Record<string, string> = {
 
 // Arrow connector between molecule card and reaction section
 const StepArrow = () => (
-  <div className="flex justify-center py-1">
+  <div className="flex justify-center py-2">
     <div className="flex flex-col items-center">
-      <div className="w-px h-5 bg-primary/35" />
-      <ArrowDown className="w-4 h-4 text-primary/60 -mt-0.5" />
+      <div className="w-0.5 h-8 bg-primary/40" />
+      <ArrowDown className="w-7 h-7 text-primary/70 -mt-1" />
     </div>
   </div>
 );
