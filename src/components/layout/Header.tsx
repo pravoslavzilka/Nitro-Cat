@@ -18,7 +18,7 @@ function getTitle(pathname: string): string {
   if (match) return 'Pathway Results';
   const matchDetail = pathname.match(/^\/pathways\/([^/]+)$/);
   if (matchDetail) return 'Pathway Detail';
-  return 'EnzymAI';
+  return 'NitroCat';
 }
 
 function getInitials(name: string): string {

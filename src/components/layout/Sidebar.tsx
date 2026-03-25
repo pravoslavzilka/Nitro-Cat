@@ -51,8 +51,8 @@ export const Sidebar = () => {
       <div className="flex items-center justify-between p-3 border-b border-sidebar-border">
         {!collapsed && (
           <div className="flex items-center gap-2">
-            <FlaskConical className="w-5 h-5 text-sidebar-primary" />
-            <span className="text-sm font-semibold text-foreground">EnzymAI</span>
+            <img src="/images/logo3.png" className="h-10" />
+            <span className="text-sm font-semibold text-foreground">NitroCat</span>
           </div>
         )}
         <Button
