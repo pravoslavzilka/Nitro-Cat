@@ -128,7 +128,13 @@ export const ProfilePage = () => {
               <AlertDialogTrigger asChild>
                 <Button variant="destructive" size="sm">Delete Account</Button>
               </AlertDialogTrigger>
-              <AlertDialogContent>
+              <AlertDialogContent
+                style={{
+                  background: 'var(--bg-elevated)',
+                  borderColor: 'var(--border-emphasis)',
+                  boxShadow: 'var(--shadow-xl)',
+                }}
+              >
                 <AlertDialogHeader>
                   <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                   <AlertDialogDescription>

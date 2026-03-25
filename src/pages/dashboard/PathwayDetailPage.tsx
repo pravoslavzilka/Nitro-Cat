@@ -14,11 +14,11 @@ export const PathwayDetailPage = () => {
 
   return (
     <ResizablePanelGroup direction="horizontal" className="h-full">
-      <ResizablePanel defaultSize={55} minSize={30}>
+      <ResizablePanel defaultSize={55} minSize={30} className="overflow-hidden">
         <PathwayBuilder pathway={pathway} />
       </ResizablePanel>
       <ResizableHandle withHandle />
-      <ResizablePanel defaultSize={45} minSize={30}>
+      <ResizablePanel defaultSize={45} minSize={30} className="overflow-hidden">
         <ChatPanel />
       </ResizablePanel>
     </ResizablePanelGroup>
