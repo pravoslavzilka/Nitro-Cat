@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ExternalLink, ShoppingCart, Thermometer, Droplets, Activity, Target } from "lucide-react";
+import { ConfidenceScore } from "./ConfidenceScore";
+import { formatConfidenceLabel } from "@/lib/utils/formatting";
 
 interface EnzymeModalProps {
   enzyme: Enzyme | null;
@@ -16,100 +18,145 @@ interface EnzymeModalProps {
   onClose: () => void;
 }
 
+const confidenceConfig = {
+  high: {
+    accentBorder: 'var(--success-500)',
+    accent: 'var(--success-600)',
+    barColor: 'var(--success-500)',
+    iconColor: 'var(--success-600)',
+  },
+  medium: {
+    accentBorder: 'var(--warning-500)',
+    accent: 'var(--warning-600)',
+    barColor: 'var(--warning-500)',
+    iconColor: 'var(--warning-600)',
+  },
+  low: {
+    accentBorder: 'var(--danger-500)',
+    accent: 'var(--danger-600)',
+    barColor: 'var(--danger-500)',
+    iconColor: 'var(--danger-600)',
+  },
+} as const;
+
 export const EnzymeModal = ({ enzyme, open, onClose }: EnzymeModalProps) => {
   if (!enzyme) return null;
 
   const scorePercent = Math.round(enzyme.score * 100);
+  const confidence = formatConfidenceLabel(enzyme.score);
+  const cfg = confidenceConfig[confidence];
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent
-        className="max-w-lg"
+        className="max-w-lg p-0 overflow-hidden gap-0"
         style={{
           background: 'var(--bg-elevated)',
-          borderColor: 'var(--border-emphasis)',
-          boxShadow: 'var(--shadow-xl)',
+          boxShadow: '0 10px 15px -3px rgba(0,0,0,0.15), 0 4px 6px -4px rgba(0,0,0,0.1)',
+          borderLeftColor: cfg.accentBorder,
+          borderLeftWidth: '3px',
         }}
       >
-        <DialogHeader>
-          <DialogTitle className="text-foreground text-glow text-xl">
-            {enzyme.name}
-          </DialogTitle>
-          <div className="flex items-center gap-2 pt-1">
-            <Badge variant="outline" className="font-mono text-xs border-primary/40 text-primary">
-              {enzyme.ecNumber}
-            </Badge>
-            <Badge variant="secondary" className="text-xs">
-              {enzyme.organism}
-            </Badge>
-          </div>
-        </DialogHeader>
-
-        <p className="text-sm text-muted-foreground leading-relaxed">{enzyme.description}</p>
-
-        <Separator className="bg-border" />
-
-        {/* Performance metrics */}
-        <div>
-          <h4 className="text-sm font-semibold text-foreground mb-3">Projected Performance</h4>
-          <div className="grid grid-cols-2 gap-3">
-            <MetricCard icon={<Droplets className="w-4 h-4" />} label="Optimal pH" value={enzyme.optimalPh} />
-            <MetricCard icon={<Thermometer className="w-4 h-4" />} label="Optimal Temp" value={enzyme.optimalTemp} />
-            <MetricCard icon={<Activity className="w-4 h-4" />} label="k_cat" value={enzyme.kcat} />
-            <MetricCard icon={<Target className="w-4 h-4" />} label="K_m" value={enzyme.km} />
-          </div>
+        {/* ── Header ── */}
+        <div className="px-6 pt-6 pb-4 border-b">
+          <DialogHeader className="space-y-0">
+            <DialogTitle className="text-xl font-bold text-foreground">
+              {enzyme.name}
+            </DialogTitle>
+            <div className="flex items-center gap-2 pt-2 flex-wrap">
+              <span
+                className="inline-flex items-center text-xs font-mono font-semibold px-2 py-0.5 rounded border"
+                style={{
+                  color: cfg.accent,
+                  borderColor: cfg.accentBorder + '60',
+                  background: cfg.accentBorder + '15',
+                }}
+              >
+                {enzyme.ecNumber}
+              </span>
+              <Badge variant="secondary" className="text-xs font-mono">{enzyme.organism}</Badge>
+              <ConfidenceScore score={enzyme.score} />
+            </div>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground leading-relaxed mt-3">
+            {enzyme.description}
+          </p>
         </div>
 
-        {/* Yield bar */}
-        <div className="bg-secondary rounded-lg p-3">
-          <div className="flex justify-between text-sm mb-2">
-            <span className="text-muted-foreground">Match Score</span>
-            <span className="font-mono font-bold text-primary text-glow">{scorePercent}%</span>
-          </div>
-          <div className="w-full bg-muted rounded-full h-2">
-            <div
-              className="h-2 rounded-full bg-primary transition-all"
-              style={{ width: `${scorePercent}%`, boxShadow: '0 0 8px hsl(var(--success) / 0.5)' }}
-            />
-          </div>
-          <div className="flex justify-between text-xs text-muted-foreground mt-1">
-            <span>Projected yield: {enzyme.projectedYield}</span>
-          </div>
-        </div>
+        {/* ── Body ── */}
+        <div className="px-6 py-5 space-y-5">
 
-        <Separator className="bg-border" />
-
-        {/* Vendor + Buy */}
-        <div className="flex items-center justify-between bg-secondary rounded-lg p-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground">
-              {enzyme.vendor.substring(0, 2).toUpperCase()}
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-foreground">{enzyme.vendor}</p>
-              <p className="text-xs text-muted-foreground font-mono">Cat# {enzyme.catalogNumber}</p>
+          {/* Kinetic metrics grid */}
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2.5">
+              Kinetic Parameters
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { icon: <Droplets className="w-4 h-4" />, label: "Optimal pH", value: enzyme.optimalPh },
+                { icon: <Thermometer className="w-4 h-4" />, label: "Optimal Temp", value: enzyme.optimalTemp },
+                { icon: <Activity className="w-4 h-4" />, label: "k_cat", value: enzyme.kcat },
+                { icon: <Target className="w-4 h-4" />, label: "K_m", value: enzyme.km },
+              ].map(({ icon, label, value }) => (
+                <div
+                  key={label}
+                  className="flex items-center gap-2.5 rounded-lg p-2.5 bg-muted/50"
+                >
+                  <span style={{ color: cfg.iconColor }}>{icon}</span>
+                  <div>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</p>
+                    <p className="text-sm font-mono font-medium text-foreground">{value}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-          <div className="text-right">
-            <p className="text-sm font-bold text-primary">{enzyme.price}</p>
-            <Button size="sm" className="mt-1 glow-green-sm">
-              <ShoppingCart className="w-3 h-3 mr-1" />
-              Buy
-              <ExternalLink className="w-3 h-3 ml-1" />
-            </Button>
+
+          {/* Match score bar */}
+          <div className="rounded-lg border p-3 space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-muted-foreground font-medium">Match Score</span>
+              <span className="text-sm font-mono font-bold" style={{ color: cfg.accent }}>
+                {scorePercent}%
+              </span>
+            </div>
+            <div className="w-full bg-muted rounded-full h-2">
+              <div
+                className="h-2 rounded-full transition-all"
+                style={{ width: `${scorePercent}%`, background: cfg.barColor }}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">Projected yield: {enzyme.projectedYield}</p>
+          </div>
+
+          <Separator />
+
+          {/* Vendor row */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold border bg-muted text-muted-foreground">
+                {enzyme.vendor.substring(0, 2).toUpperCase()}
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground">{enzyme.vendor}</p>
+                <p className="text-xs text-muted-foreground font-mono">Cat# {enzyme.catalogNumber}</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-sm font-bold" style={{ color: cfg.accent }}>{enzyme.price}</p>
+              <Button
+                size="sm"
+                className="mt-1 text-white"
+                style={{ background: cfg.barColor }}
+              >
+                <ShoppingCart className="w-3 h-3 mr-1" />
+                Buy
+                <ExternalLink className="w-3 h-3 ml-1" />
+              </Button>
+            </div>
           </div>
         </div>
       </DialogContent>
     </Dialog>
   );
 };
-
-const MetricCard = ({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) => (
-  <div className="bg-secondary rounded-md p-2.5 flex items-center gap-2">
-    <span className="text-primary/70">{icon}</span>
-    <div>
-      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</p>
-      <p className="text-sm font-mono text-foreground">{value}</p>
-    </div>
-  </div>
-);

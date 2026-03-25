@@ -108,7 +108,7 @@ export const SettingsPage = () => {
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent style={{ background: 'var(--bg-elevated)', borderColor: 'var(--border-emphasis)' }}>
                 {AI_MODELS.map((m) => (
                   <SelectItem key={m.id} value={m.id}>
                     <div className="flex flex-col">

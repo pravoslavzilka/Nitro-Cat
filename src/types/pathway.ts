@@ -1,9 +1,15 @@
 import type { Enzyme } from './enzyme';
 
+export interface Molecule {
+  name: string;
+  smiles: string;
+  formula?: string;
+}
+
 export interface PathwayStep {
   id: string;
-  fromSubstrate: string;
-  toSubstrate: string;
+  startMolecule: Molecule;
+  productMolecule: Molecule;
   reactionType: string;
   enzymes: Enzyme[];
   hasBruteForce: boolean;

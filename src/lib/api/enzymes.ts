@@ -5,7 +5,7 @@ import { samplePathway } from '@/data/pathwayData';
 // Collect all enzymes from sample data for stub responses
 const allSampleEnzymes: Enzyme[] = samplePathway.steps.flatMap((s) => s.enzymes);
 
-export async function searchEnzymes(step: Pick<PathwayStep, 'reactionType' | 'fromSubstrate' | 'toSubstrate'>): Promise<Enzyme[]> {
+export async function searchEnzymes(step: Pick<PathwayStep, 'reactionType'>): Promise<Enzyme[]> {
   // Stub: return sample enzymes filtered loosely by reaction type
   const lower = step.reactionType.toLowerCase();
   const relevant = allSampleEnzymes.filter((e) =>
