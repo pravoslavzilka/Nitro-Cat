@@ -8,7 +8,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { ExternalLink, ShoppingCart, Thermometer, Droplets, Activity, Target, TrendingUp } from "lucide-react";
+import { ExternalLink, ShoppingCart, Thermometer, Droplets, Activity, Target, TrendingUp, FlaskConical } from "lucide-react";
 import { ConfidenceScore } from "./ConfidenceScore";
 
 interface EnzymeModalProps {
@@ -84,25 +84,44 @@ export const EnzymeModal = ({ enzyme, open, onClose }: EnzymeModalProps) => {
           <Separator />
 
           {/* Vendor row */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold border bg-muted text-muted-foreground">
-                {enzyme.vendor.substring(0, 2).toUpperCase()}
+          {enzyme.vendor ? (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold border bg-muted text-muted-foreground">
+                  {enzyme.vendor.substring(0, 2).toUpperCase()}
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">{enzyme.vendor}</p>
+                  <p className="text-xs text-muted-foreground font-mono">Cat# {enzyme.catalogNumber}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-semibold text-foreground">{enzyme.vendor}</p>
-                <p className="text-xs text-muted-foreground font-mono">Cat# {enzyme.catalogNumber}</p>
+              <div className="text-right">
+                <p className="text-sm font-bold text-foreground">{enzyme.price}</p>
+                <Button size="sm" className="mt-1 gap-1.5">
+                  <ShoppingCart className="w-3 h-3" />
+                  Buy
+                  <ExternalLink className="w-3 h-3" />
+                </Button>
               </div>
             </div>
-            <div className="text-right">
-              <p className="text-sm font-bold text-foreground">{enzyme.price}</p>
-              <Button size="sm" className="mt-1 gap-1.5">
-                <ShoppingCart className="w-3 h-3" />
-                Buy
-                <ExternalLink className="w-3 h-3" />
+          ) : (
+            <div className="flex items-center justify-between gap-3 rounded-lg border border-dashed border-primary/40 bg-primary/5 px-4 py-3">
+              <div className="flex items-center gap-3">
+                <FlaskConical className="w-5 h-5 text-primary shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-foreground">No vendor detected</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Try and test this enzyme with{" "}
+                    <span className="font-semibold text-primary">Nitroduck</span>
+                  </p>
+                </div>
+              </div>
+              <Button size="sm" className="shrink-0 gap-1.5">
+                <FlaskConical className="w-3 h-3" />
+                Order test
               </Button>
             </div>
-          </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

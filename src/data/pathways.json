@@ -51,10 +51,10 @@
             "kcat": "38 s⁻¹",
             "km": "0.18 mM",
             "projectedYield": "85%",
-            "vendor": "Enzyme Works",
+            "vendor": "",
             "vendorLogo": "",
-            "price": "$320.00 / 1mg",
-            "catalogNumber": "EW-2541"
+            "price": "",
+            "catalogNumber": ""
           },
           {
             "id": "enz-1c",
@@ -102,10 +102,10 @@
             "kcat": "12 s⁻¹",
             "km": "0.04 mM",
             "projectedYield": "88%",
-            "vendor": "Sigma-Aldrich",
+            "vendor": "",
             "vendorLogo": "",
-            "price": "$195.00 / 1mg",
-            "catalogNumber": "SAE0055"
+            "price": "",
+            "catalogNumber": ""
           }
         ]
       },
@@ -298,10 +298,10 @@
             "kcat": "22 s⁻¹",
             "km": "0.11 mM",
             "projectedYield": "76%",
-            "vendor": "Prozomix",
+            "vendor": "",
             "vendorLogo": "",
-            "price": "$480.00 / 1mg",
-            "catalogNumber": "PRO-9101"
+            "price": "",
+            "catalogNumber": ""
           }
         ]
       },
@@ -443,10 +443,10 @@
             "kcat": "19 s⁻¹",
             "km": "0.22 mM",
             "projectedYield": "68%",
-            "vendor": "Creative Enzymes",
+            "vendor": "",
             "vendorLogo": "",
-            "price": "$350.00 / 1mg",
-            "catalogNumber": "CE-5502"
+            "price": "",
+            "catalogNumber": ""
           }
         ]
       }
@@ -454,8 +454,8 @@
   },
   {
     "id": "4",
-    "name": "Scopolamine Demo Pathway",
-    "description": "Demo conversion pathway from D and E to scopolamine via two unresolved intermediates. Unresolved or inferred entities are explicitly flagged in the molecule names.",
+    "name": "Scopolamine Pathway",
+    "description": "Conversion pathway from tropic acid acetate and 6,7-dehydrotropine to scopolamine via key late-stage tropane intermediates.",
     "createdAt": "2026-03-25T12:00:00Z",
     "updatedAt": "2026-03-25T12:00:00Z",
     "status": "draft",
@@ -463,17 +463,17 @@
       {
         "id": "scp-step-1",
         "startMolecule": {
-          "name": "[PARTIAL] Tropic acid acetate",
+          "name": "Tropic acid acetate",
           "smiles": "CC(=O)OCC(C(=O)O)c1ccccc1",
           "formula": "C11H12O4"
         },
         "productMolecule": {
-          "name": "[UNRESOLVED] Intermediate C",
+          "name": "(1R,3s,5S)-8-methyl-8-azabicyclo[3.2.1]oct-6-en-3-yl 3-hydroxy-2-phenylpropanoate",
           "smiles": "CN1[C@@H]2C=C[C@H]1C[C@@H](OC(=O)C(CO)c1ccccc1)C2",
           "formula": "C17H21NO3"
         },
-        "reactionType": "[UNRESOLVED] Convergent ester coupling",
-        "hasBruteForce": false,
+        "reactionType": "Convergent ester coupling",
+        "hasBruteForce": true,
         "enzymes": []
       },
       {
@@ -484,34 +484,34 @@
           "formula": "C8H13NO"
         },
         "productMolecule": {
-          "name": "[UNRESOLVED] Intermediate C",
+          "name": "(1R,3s,5S)-8-methyl-8-azabicyclo[3.2.1]oct-6-en-3-yl 3-hydroxy-2-phenylpropanoate",
           "smiles": "CN1[C@@H]2C=C[C@H]1C[C@@H](OC(=O)C(CO)c1ccccc1)C2",
           "formula": "C17H21NO3"
         },
-        "reactionType": "[UNRESOLVED] Convergent ester coupling",
-        "hasBruteForce": false,
+        "reactionType": "Convergent ester coupling",
+        "hasBruteForce": true,
         "enzymes": []
       },
       {
         "id": "scp-step-3",
         "startMolecule": {
-          "name": "[UNRESOLVED] Intermediate C",
+          "name": "(1R,3s,5S)-8-methyl-8-azabicyclo[3.2.1]oct-6-en-3-yl 3-hydroxy-2-phenylpropanoate",
           "smiles": "CN1[C@@H]2C=C[C@H]1C[C@@H](OC(=O)C(CO)c1ccccc1)C2",
           "formula": "C17H21NO3"
         },
         "productMolecule": {
-          "name": "[UNRESOLVED] Intermediate B",
+          "name": "(-)-Scopolamine",
           "smiles": "CN1[C@@H]2C[C@@H](OC(=O)C(CO)c3ccccc3)C[C@H]1[C@@H]1O[C@@H]12",
           "formula": "C17H21NO4"
         },
-        "reactionType": "[UNRESOLVED] Late-stage oxidation / rearrangement",
+        "reactionType": "Late-stage oxidation / rearrangement",
         "hasBruteForce": true,
         "enzymes": []
       },
       {
         "id": "scp-step-4",
         "startMolecule": {
-          "name": "[UNRESOLVED] Intermediate B",
+          "name": "(-)-Scopolamine",
           "smiles": "CN1[C@@H]2C[C@@H](OC(=O)C(CO)c3ccccc3)C[C@H]1[C@@H]1O[C@@H]12",
           "formula": "C17H21NO4"
         },
