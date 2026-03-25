@@ -25,7 +25,7 @@ const statusColors: Record<string, string> = {
 const MoleculeNode = ({ molecule }: { molecule: Molecule }) => (
   <div className="relative flex items-start gap-5 py-4">
     {/* Dot sits on the absolute line */}
-    <div className="w-6 shrink-0 flex justify-center pt-2">
+    <div className="w-6 shrink-0 flex justify-center pt-3">
       <div
         className="relative z-10 w-4 h-4 rounded-full bg-primary border-2 border-primary-600 shrink-0"
         style={{ boxShadow: '0 0 0 3px hsl(var(--background))' }}
@@ -33,11 +33,11 @@ const MoleculeNode = ({ molecule }: { molecule: Molecule }) => (
     </div>
     {/* Content */}
     <div className="pb-1">
-      <p className="text-xl font-bold font-mono text-foreground tracking-tight leading-snug">
+      <p className="text-2xl font-bold font-mono text-foreground tracking-tight leading-snug">
         {molecule.name}
       </p>
       {molecule.formula && (
-        <p className="text-xs font-mono text-muted-foreground mt-0.5">{molecule.formula}</p>
+        <p className="text-base font-semibold font-mono text-muted-foreground mt-1">{molecule.formula}</p>
       )}
       <div className="mt-3">
         <MoleculeViewer smiles={molecule.smiles} width={260} height={170} />
@@ -93,7 +93,12 @@ export const PathwayBuilder = ({ pathway }: PathwayBuilderProps) => {
           top-6 = 24px = py-4 (16px) + half of h-4 dot (8px) → starts at center of first dot.
           bottom-6 = same calculation from bottom → ends at center of last dot.
         */}
-        <div className={`absolute ${LINE_X} top-6 bottom-6 w-0.5 bg-primary/25`} />
+        <div
+          className={`absolute ${LINE_X} top-6 bottom-6 w-0.5`}
+          style={{
+            backgroundImage: 'repeating-linear-gradient(to bottom, hsl(var(--primary) / 0.5) 0px, hsl(var(--primary) / 0.5) 5px, transparent 5px, transparent 13px)',
+          }}
+        />
 
         <div>
           {pathway.steps.map((step, idx) => (

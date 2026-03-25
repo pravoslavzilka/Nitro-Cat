@@ -11,7 +11,7 @@
         "id": "step-1",
         "startMolecule": {
           "name": "D-Erythrose 4-Phosphate",
-          "smiles": "O=C[C@H](O)[C@@H](O)COP(=O)(O)O",
+          "smiles": "C1[C@H]([C@@H](C(=O)C=C1C(=O)O)O)O",
           "formula": "C₄H₉O₇P"
         },
         "productMolecule": {
@@ -129,7 +129,7 @@
         "id": "step-4",
         "startMolecule": {
           "name": "3-Dehydroshikimate",
-          "smiles": "OC(=O)C1=CC(=O)C[C@@H](O)[C@@H]1O",
+          "smiles": "C1[C@H]([C@@H](C(=O)C=C1C(=O)O)O)O",
           "formula": "C₇H₈O₅"
         },
         "productMolecule": {
