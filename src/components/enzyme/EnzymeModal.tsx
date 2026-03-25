@@ -23,7 +23,14 @@ export const EnzymeModal = ({ enzyme, open, onClose }: EnzymeModalProps) => {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="bg-card border-border max-w-lg">
+      <DialogContent
+        className="max-w-lg"
+        style={{
+          background: 'var(--bg-elevated)',
+          borderColor: 'var(--border-emphasis)',
+          boxShadow: 'var(--shadow-xl)',
+        }}
+      >
         <DialogHeader>
           <DialogTitle className="text-foreground text-glow text-xl">
             {enzyme.name}

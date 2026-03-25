@@ -6,12 +6,11 @@ import {
   ResizablePanel,
   ResizableHandle,
 } from "@/components/ui/resizable";
-import { samplePathway } from "@/data/pathwayData";
+import { getPathwayById, samplePathway } from "@/data/pathwayData";
 
 export const PathwayDetailPage = () => {
   const { id } = useParams<{ id: string }>();
-  // For now use samplePathway data regardless of id
-  const pathway = { ...samplePathway, id: id ?? '1' };
+  const pathway = (id ? getPathwayById(id) : undefined) ?? samplePathway;
 
   return (
     <ResizablePanelGroup direction="horizontal" className="h-full">

@@ -9,10 +9,10 @@ interface EnzymeCardProps {
   onClick: () => void;
 }
 
-const accentColors: Record<'high' | 'medium' | 'low', string> = {
-  high: "border-l-success",
-  medium: "border-l-warning",
-  low: "border-l-danger",
+const accentBorder: Record<'high' | 'medium' | 'low', string> = {
+  high: "border-l-success-500",
+  medium: "border-l-warning-500",
+  low: "border-l-danger-500",
 };
 
 export const EnzymeCard = ({ enzyme, onClick }: EnzymeCardProps) => {
@@ -22,18 +22,19 @@ export const EnzymeCard = ({ enzyme, onClick }: EnzymeCardProps) => {
     <button
       onClick={onClick}
       className={cn(
-        "w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-md",
+        // No w-full — card sizes to its content naturally
+        "inline-flex items-center gap-3 px-3 py-2.5 rounded-md text-left",
         "bg-secondary border border-border border-l-[3px]",
         "hover:bg-muted hover:glow-success transition-all group cursor-pointer",
-        accentColors[confidence]
+        accentBorder[confidence]
       )}
     >
       <FlaskConical className="w-3.5 h-3.5 text-primary/70 group-hover:text-primary shrink-0" />
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-secondary-foreground group-hover:text-foreground truncate">
+      <div className="min-w-0">
+        <p className="text-sm font-medium text-secondary-foreground group-hover:text-foreground whitespace-nowrap">
           {enzyme.name}
         </p>
-        <p className="text-xs text-muted-foreground font-mono truncate">
+        <p className="text-xs text-muted-foreground font-mono whitespace-nowrap">
           {enzyme.ecNumber} · {enzyme.organism}
         </p>
       </div>

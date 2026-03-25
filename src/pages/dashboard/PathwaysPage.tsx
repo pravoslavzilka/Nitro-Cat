@@ -3,31 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus, FlaskConical } from "lucide-react";
 import { formatDate } from "@/lib/utils/formatting";
-import { samplePathway } from "@/data/pathwayData";
+import { pathways as mockPathways } from "@/data/pathwayData";
 import type { Pathway } from "@/types/pathway";
-
-const mockPathways: Pathway[] = [
-  samplePathway,
-  {
-    ...samplePathway,
-    id: '2',
-    name: 'Tryptophan Biosynthesis',
-    description: 'Synthesis of tryptophan from chorismate via anthranilate',
-    status: 'analyzing',
-    createdAt: '2025-02-01T10:00:00Z',
-    updatedAt: '2025-02-10T14:00:00Z',
-  },
-  {
-    ...samplePathway,
-    id: '3',
-    name: 'Chorismate Mutase Pathway',
-    description: 'Conversion of chorismate to prephenate',
-    status: 'draft',
-    steps: samplePathway.steps.slice(0, 2),
-    createdAt: '2025-03-01T10:00:00Z',
-    updatedAt: '2025-03-05T09:00:00Z',
-  },
-];
 
 const statusVariant: Record<Pathway['status'], 'default' | 'secondary' | 'outline'> = {
   complete: 'default',
