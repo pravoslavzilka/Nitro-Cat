@@ -4,7 +4,7 @@ export function formatScore(score: number): string {
 
 export function formatConfidenceLabel(score: number): 'high' | 'medium' | 'low' {
   if (score >= 0.9) return 'high';
-  if (score >= 0.6) return 'medium';
+  if (score >= 0.75) return 'medium';
   return 'low';
 }
 

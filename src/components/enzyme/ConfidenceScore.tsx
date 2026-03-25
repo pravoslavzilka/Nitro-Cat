@@ -6,9 +6,9 @@ interface ConfidenceScoreProps {
 }
 
 const labelStyles: Record<'high' | 'medium' | 'low', string> = {
-  high: "bg-success/15 text-success border-success/30",
-  medium: "bg-warning/15 text-warning border-warning/30",
-  low: "bg-danger/15 text-danger border-danger/30",
+  high: "bg-success-100 text-success-700 border border-success-500",
+  medium: "bg-warning-100 text-warning-700 border border-warning-500",
+  low: "bg-danger-100 text-danger-700 border border-danger-500",
 };
 
 export const ConfidenceScore = ({ score }: ConfidenceScoreProps) => {
@@ -16,7 +16,7 @@ export const ConfidenceScore = ({ score }: ConfidenceScoreProps) => {
   return (
     <span
       className={cn(
-        "inline-flex items-center px-1.5 py-0.5 rounded border text-xs font-mono font-semibold",
+        "inline-flex items-center px-1.5 py-0.5 rounded text-xs font-mono font-semibold",
         labelStyles[label]
       )}
     >
