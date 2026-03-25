@@ -1,8 +1,10 @@
 import { useState } from "react";
 import type { Pathway } from "@/types/pathway";
+import type { Molecule } from "@/types/pathway";
 import type { Enzyme } from "@/types/enzyme";
 import { PathwayStep } from "./PathwayStep";
 import { EnzymeModal } from "@/components/enzyme/EnzymeModal";
+import { MoleculeViewer } from "@/components/molecule/MoleculeViewer";
 import { FlaskConical, Layers, Dna } from "lucide-react";
 
 interface PathwayBuilderProps {
@@ -11,7 +13,6 @@ interface PathwayBuilderProps {
 
 // Gutter width matches PathwayStep gutter (w-6 = 24px).
 // Absolute line center: 11px from left (half of 24px minus 1px for 2px line).
-// Dot is w-4 h-4, centered in gutter → center at 12px. 1px offset is negligible.
 const LINE_X = "left-[11px]";
 
 const statusColors: Record<string, string> = {
@@ -20,18 +21,28 @@ const statusColors: Record<string, string> = {
   draft: "bg-muted text-muted-foreground border border-border",
 };
 
-// Molecule node — plain dot + text, no card background
-const SubstrateNode = ({ name }: { name: string }) => (
-  <div className="relative flex items-center gap-5 py-4">
-    {/* Dot sits on the absolute line — z-10 + bg so it "breaks" the line */}
-    <div className="w-6 shrink-0 flex justify-center">
-      <div className="relative z-10 w-4 h-4 rounded-full bg-primary border-2 border-primary-600"
-           style={{ boxShadow: '0 0 0 3px hsl(var(--background))' }} />
+// Molecule node — dot on the timeline + name + structure visualization
+const MoleculeNode = ({ molecule }: { molecule: Molecule }) => (
+  <div className="relative flex items-start gap-5 py-4">
+    {/* Dot sits on the absolute line */}
+    <div className="w-6 shrink-0 flex justify-center pt-2">
+      <div
+        className="relative z-10 w-4 h-4 rounded-full bg-primary border-2 border-primary-600 shrink-0"
+        style={{ boxShadow: '0 0 0 3px hsl(var(--background))' }}
+      />
     </div>
-    {/* Plain text — no pill/card */}
-    <span className="text-2xl font-bold font-mono text-foreground tracking-tight leading-snug">
-      {name}
-    </span>
+    {/* Content */}
+    <div className="pb-1">
+      <p className="text-xl font-bold font-mono text-foreground tracking-tight leading-snug">
+        {molecule.name}
+      </p>
+      {molecule.formula && (
+        <p className="text-xs font-mono text-muted-foreground mt-0.5">{molecule.formula}</p>
+      )}
+      <div className="mt-3">
+        <MoleculeViewer smiles={molecule.smiles} width={260} height={170} />
+      </div>
+    </div>
   </div>
 );
 
@@ -87,9 +98,9 @@ export const PathwayBuilder = ({ pathway }: PathwayBuilderProps) => {
         <div>
           {pathway.steps.map((step, idx) => (
             <div key={step.id}>
-              {idx === 0 && <SubstrateNode name={step.fromSubstrate} />}
+              {idx === 0 && <MoleculeNode molecule={step.startMolecule} />}
               <PathwayStep step={step} onEnzymeClick={setSelectedEnzyme} />
-              <SubstrateNode name={step.toSubstrate} />
+              <MoleculeNode molecule={step.productMolecule} />
             </div>
           ))}
         </div>

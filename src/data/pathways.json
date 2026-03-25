@@ -9,8 +9,16 @@
     "steps": [
       {
         "id": "step-1",
-        "fromSubstrate": "D-Erythrose 4-Phosphate",
-        "toSubstrate": "3-Deoxy-D-arabino-heptulosonate 7-phosphate (DAHP)",
+        "startMolecule": {
+          "name": "D-Erythrose 4-Phosphate",
+          "smiles": "O=C[C@H](O)[C@@H](O)COP(=O)(O)O",
+          "formula": "C₄H₉O₇P"
+        },
+        "productMolecule": {
+          "name": "DAHP",
+          "smiles": "OC(=O)C(=O)C[C@H](O)[C@@H](O)[C@H](O)COP(=O)(O)O",
+          "formula": "C₇H₁₅O₁₀P"
+        },
         "reactionType": "Aldol condensation",
         "hasBruteForce": false,
         "enzymes": [
@@ -69,8 +77,16 @@
       },
       {
         "id": "step-2",
-        "fromSubstrate": "DAHP",
-        "toSubstrate": "3-Dehydroquinate (DHQ)",
+        "startMolecule": {
+          "name": "DAHP",
+          "smiles": "OC(=O)C(=O)C[C@H](O)[C@@H](O)[C@H](O)COP(=O)(O)O",
+          "formula": "C₇H₁₅O₁₀P"
+        },
+        "productMolecule": {
+          "name": "3-Dehydroquinate (DHQ)",
+          "smiles": "OC(=O)[C@@]1(O)C[C@H](O)[C@@H](O)C(=O)[C@@H]1O",
+          "formula": "C₇H₁₀O₆"
+        },
         "reactionType": "Cyclization",
         "hasBruteForce": false,
         "enzymes": [
@@ -95,16 +111,32 @@
       },
       {
         "id": "step-3",
-        "fromSubstrate": "DHQ",
-        "toSubstrate": "3-Dehydroshikimate",
+        "startMolecule": {
+          "name": "3-Dehydroquinate (DHQ)",
+          "smiles": "OC(=O)[C@@]1(O)C[C@H](O)[C@@H](O)C(=O)[C@@H]1O",
+          "formula": "C₇H₁₀O₆"
+        },
+        "productMolecule": {
+          "name": "3-Dehydroshikimate",
+          "smiles": "OC(=O)C1=CC(=O)C[C@@H](O)[C@@H]1O",
+          "formula": "C₇H₈O₅"
+        },
         "reactionType": "Dehydration",
         "hasBruteForce": true,
         "enzymes": []
       },
       {
         "id": "step-4",
-        "fromSubstrate": "3-Dehydroshikimate",
-        "toSubstrate": "Shikimic Acid",
+        "startMolecule": {
+          "name": "3-Dehydroshikimate",
+          "smiles": "OC(=O)C1=CC(=O)C[C@@H](O)[C@@H]1O",
+          "formula": "C₇H₈O₅"
+        },
+        "productMolecule": {
+          "name": "Shikimic Acid",
+          "smiles": "OC(=O)[C@@H]1C=C[C@H](O)[C@H](O)[C@@H]1O",
+          "formula": "C₇H₁₀O₅"
+        },
         "reactionType": "NADPH-dependent reduction",
         "hasBruteForce": false,
         "enzymes": [
@@ -156,8 +188,16 @@
     "steps": [
       {
         "id": "trp-step-1",
-        "fromSubstrate": "Chorismate",
-        "toSubstrate": "Anthranilate",
+        "startMolecule": {
+          "name": "Chorismate",
+          "smiles": "OC(=O)C=C[C@@H]1OC(CC1=O)C=CC(O)=O",
+          "formula": "C₁₀H₁₀O₆"
+        },
+        "productMolecule": {
+          "name": "Anthranilate",
+          "smiles": "Nc1ccccc1C(O)=O",
+          "formula": "C₇H₇NO₂"
+        },
         "reactionType": "Amination / pyruvate elimination",
         "hasBruteForce": false,
         "enzymes": [
@@ -182,8 +222,16 @@
       },
       {
         "id": "trp-step-2",
-        "fromSubstrate": "Anthranilate",
-        "toSubstrate": "N-(5-phospho-ribosyl)-anthranilate",
+        "startMolecule": {
+          "name": "Anthranilate",
+          "smiles": "Nc1ccccc1C(O)=O",
+          "formula": "C₇H₇NO₂"
+        },
+        "productMolecule": {
+          "name": "N-(5-Phosphoribosyl)-anthranilate",
+          "smiles": "Nc1ccccc1C(=O)OC1OC(COP(=O)(O)O)C(O)C1O",
+          "formula": "C₁₂H₁₆NO₁₀P"
+        },
         "reactionType": "Phosphoribosyl transfer",
         "hasBruteForce": false,
         "enzymes": [
@@ -208,8 +256,16 @@
       },
       {
         "id": "trp-step-3",
-        "fromSubstrate": "N-(5-phospho-ribosyl)-anthranilate",
-        "toSubstrate": "Indole-3-glycerol phosphate",
+        "startMolecule": {
+          "name": "N-(5-Phosphoribosyl)-anthranilate",
+          "smiles": "Nc1ccccc1C(=O)OC1OC(COP(=O)(O)O)C(O)C1O",
+          "formula": "C₁₂H₁₆NO₁₀P"
+        },
+        "productMolecule": {
+          "name": "Indole-3-glycerol phosphate",
+          "smiles": "OCC(O)Cc1c[nH]c2ccccc12",
+          "formula": "C₁₁H₁₃NO₄"
+        },
         "reactionType": "Isomerization / ring closure",
         "hasBruteForce": false,
         "enzymes": [
@@ -251,8 +307,16 @@
       },
       {
         "id": "trp-step-4",
-        "fromSubstrate": "Indole-3-glycerol phosphate",
-        "toSubstrate": "L-Tryptophan",
+        "startMolecule": {
+          "name": "Indole-3-glycerol phosphate",
+          "smiles": "OCC(O)Cc1c[nH]c2ccccc12",
+          "formula": "C₁₁H₁₃NO₄"
+        },
+        "productMolecule": {
+          "name": "L-Tryptophan",
+          "smiles": "N[C@@H](Cc1c[nH]c2ccccc12)C(O)=O",
+          "formula": "C₁₁H₁₂N₂O₂"
+        },
         "reactionType": "β-substitution (serine + indole)",
         "hasBruteForce": false,
         "enzymes": [
@@ -277,8 +341,16 @@
       },
       {
         "id": "trp-step-5",
-        "fromSubstrate": "L-Tryptophan",
-        "toSubstrate": "5-Hydroxy-L-tryptophan",
+        "startMolecule": {
+          "name": "L-Tryptophan",
+          "smiles": "N[C@@H](Cc1c[nH]c2ccccc12)C(O)=O",
+          "formula": "C₁₁H₁₂N₂O₂"
+        },
+        "productMolecule": {
+          "name": "5-Hydroxy-L-tryptophan",
+          "smiles": "N[C@@H](Cc1c[nH]c2cc(O)ccc12)C(O)=O",
+          "formula": "C₁₁H₁₂N₂O₃"
+        },
         "reactionType": "Hydroxylation",
         "hasBruteForce": true,
         "enzymes": []
@@ -295,8 +367,16 @@
     "steps": [
       {
         "id": "cho-step-1",
-        "fromSubstrate": "Chorismate",
-        "toSubstrate": "Prephenate",
+        "startMolecule": {
+          "name": "Chorismate",
+          "smiles": "OC(=O)C=C[C@@H]1OC(CC1=O)C=CC(O)=O",
+          "formula": "C₁₀H₁₀O₆"
+        },
+        "productMolecule": {
+          "name": "Prephenate",
+          "smiles": "OC(=O)C(=O)C[C@]1(O)CC=CC(=O)C1",
+          "formula": "C₁₀H₁₀O₆"
+        },
         "reactionType": "Claisen rearrangement",
         "hasBruteForce": false,
         "enzymes": [
@@ -321,8 +401,16 @@
       },
       {
         "id": "cho-step-2",
-        "fromSubstrate": "Prephenate",
-        "toSubstrate": "Phenylpyruvate",
+        "startMolecule": {
+          "name": "Prephenate",
+          "smiles": "OC(=O)C(=O)C[C@]1(O)CC=CC(=O)C1",
+          "formula": "C₁₀H₁₀O₆"
+        },
+        "productMolecule": {
+          "name": "Phenylpyruvate",
+          "smiles": "OC(=O)CC(=O)c1ccccc1",
+          "formula": "C₉H₈O₃"
+        },
         "reactionType": "Decarboxylation / dehydration",
         "hasBruteForce": false,
         "enzymes": [
