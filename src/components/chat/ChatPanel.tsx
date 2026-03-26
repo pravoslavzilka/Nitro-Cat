@@ -14,9 +14,9 @@ import { cn } from "@/lib/utils";
 import { ChatMessage, type Message } from "./ChatMessage";
 
 const models = [
-  { id: "enzym-4", name: "EnzymAI-4", desc: "Most capable" },
-  { id: "enzym-4-mini", name: "EnzymAI-4 Mini", desc: "Fast & efficient" },
-  { id: "enzym-3.5", name: "EnzymAI-3.5", desc: "Balanced" },
+  { id: "nitroai-4", name: "NitroAI-4", desc: "Most capable" },
+  { id: "nitroai-4-mini", name: "NitroAI-4 Mini", desc: "Fast & efficient" },
+  { id: "nitroai-3.5", name: "NitroAI-3.5", desc: "Balanced" },
 ];
 
 function buildWelcomeMessage(pathway: Pathway): Message {
@@ -66,13 +66,14 @@ function buildSimulatedResponse(pathway: Pathway, userMessage: string, modelName
 
 interface ChatPanelProps {
   pathway: Pathway;
+  className?: string;
 }
 
-export const ChatPanel = ({ pathway }: ChatPanelProps) => {
+export const ChatPanel = ({ pathway, className }: ChatPanelProps) => {
   const [messages, setMessages] = useState<Message[]>(() => [buildWelcomeMessage(pathway)]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [selectedModel, setSelectedModel] = useState("enzym-4");
+  const [selectedModel, setSelectedModel] = useState("nitroai-4");
   const [webSearch, setWebSearch] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -133,7 +134,7 @@ export const ChatPanel = ({ pathway }: ChatPanelProps) => {
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto flex flex-col h-full">
+    <div className={cn("w-full max-w-2xl mx-auto flex flex-col", className)}>
       {/* Header bar */}
       <div className="flex items-center justify-between px-4 py-2 border-b border-border">
         <div className="flex items-center gap-2">
@@ -214,7 +215,7 @@ export const ChatPanel = ({ pathway }: ChatPanelProps) => {
           </div>
         </div>
         <p className="text-[10px] text-muted-foreground text-center mt-2">
-          EnzymAI may produce inaccurate information. Verify critical enzyme data independently.
+          NitroAI may produce inaccurate information. Verify critical enzyme data independently.
         </p>
       </div>
     </div>

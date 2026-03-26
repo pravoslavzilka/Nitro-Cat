@@ -12,7 +12,6 @@ export interface PathwayStep {
   productMolecule: Molecule;
   reactionType: string;
   enzymes: Enzyme[];
-  hasBruteForce: boolean;
 }
 
 export interface Pathway {

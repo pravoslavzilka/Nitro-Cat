@@ -13,7 +13,8 @@ import NotFound from "@/pages/NotFound";
 import LoginPage from "@/pages/auth/LoginPage";
 import CallbackPage from "@/pages/auth/CallbackPage";
 import PathwaysPage from "@/pages/dashboard/PathwaysPage";
-import NewPathwayPage from "@/pages/dashboard/NewPathwayPage";
+import NewReactionPage from "@/pages/NewReactionPage";
+import ImportPathwayPage from "@/pages/dashboard/ImportPathwayPage";
 import PathwayDetailPage from "@/pages/dashboard/PathwayDetailPage";
 import PathwayResultsPage from "@/pages/dashboard/PathwayResultsPage";
 import HistoryPage from "@/pages/dashboard/HistoryPage";
@@ -38,7 +39,8 @@ const App = () => (
               {/* Dashboard routes wrapped in DashboardLayout */}
               <Route element={<DashboardLayout />}>
                 <Route path="/pathways" element={<PathwaysPage />} />
-                <Route path="/pathways/new" element={<NewPathwayPage />} />
+                <Route path="/pathways/new" element={<NewReactionPage />} />
+                <Route path="/pathways/import" element={<ImportPathwayPage />} />
                 <Route path="/pathways/:id" element={<PathwayDetailPage />} />
                 <Route path="/pathways/:id/results" element={<PathwayResultsPage />} />
                 <Route path="/history" element={<HistoryPage />} />

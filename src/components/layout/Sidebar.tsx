@@ -7,40 +7,17 @@ import {
   User,
   ChevronLeft,
   ChevronRight,
-  MessageSquare,
   History,
+  GitBranch,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
-import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
-
-interface ChatSession {
-  id: string;
-  title: string;
-  date: string;
-}
-
-const pastSessions: ChatSession[] = [
-  { id: "1", title: "Shikimic Acid Biosynthesis", date: "Today" },
-  { id: "2", title: "Tryptophan Pathway", date: "Yesterday" },
-  { id: "3", title: "Chorismate Synthesis", date: "3 days ago" },
-  { id: "4", title: "Phenylalanine Route", date: "Last week" },
-];
 
 export const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { resolvedTheme } = useTheme();
-  const logo = resolvedTheme === "dark" ? "/images/logo3.png" : "/images/logo4.png";
-
-  const grouped = {
-    Today: pastSessions.filter((s) => s.date === "Today"),
-    Yesterday: pastSessions.filter((s) => s.date === "Yesterday"),
-    Older: pastSessions.filter((s) => s.date !== "Today" && s.date !== "Yesterday"),
-  };
-
   const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(path + '/');
 
   return (
@@ -53,10 +30,13 @@ export const Sidebar = () => {
       {/* Header */}
       <div className="flex items-center justify-between p-3 border-b border-sidebar-border">
         {!collapsed && (
-          <div className="flex items-center gap-2">
-            <img src={logo} className="h-10" />
+          <button
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          >
+            <img src="/images/nitroduck-logo.png" className="h-10" alt="Nitroduck" />
             <span className="text-sm font-semibold text-foreground">NitroCat</span>
-          </div>
+          </button>
         )}
         <Button
           variant="ghost"
@@ -69,7 +49,7 @@ export const Sidebar = () => {
       </div>
 
       {/* New Reaction Button */}
-      <div className="p-2">
+      <div className="p-2 pb-1">
         <Button
           onClick={() => navigate('/pathways/new')}
           variant="outline"
@@ -81,6 +61,22 @@ export const Sidebar = () => {
         >
           <Plus className="w-4 h-4" />
           {!collapsed && <span className="ml-2">New Reaction</span>}
+        </Button>
+      </div>
+
+      {/* New Pathway Button */}
+      <div className="px-2 pb-2">
+        <Button
+          onClick={() => navigate('/pathways/import')}
+          variant="outline"
+          className={cn(
+            "w-full border-dashed border-sidebar-border text-sidebar-foreground hover:text-foreground hover:border-primary",
+            collapsed ? "px-0 justify-center" : "justify-start"
+          )}
+          size="sm"
+        >
+          <GitBranch className="w-4 h-4" />
+          {!collapsed && <span className="ml-2">New Pathway</span>}
         </Button>
       </div>
 
@@ -114,52 +110,8 @@ export const Sidebar = () => {
         </div>
       )}
 
-      {/* Session History */}
-      <div className="flex-1 overflow-y-auto px-2 py-1">
-        {!collapsed ? (
-          Object.entries(grouped).map(
-            ([label, sessions]) =>
-              sessions.length > 0 && (
-                <div key={label} className="mb-3">
-                  <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground px-2 mb-1">
-                    {label}
-                  </p>
-                  {sessions.map((session) => (
-                    <button
-                      key={session.id}
-                      onClick={() => navigate(`/pathways/${session.id}`)}
-                      className={cn(
-                        "w-full text-left px-2 py-1.5 rounded-md text-sm truncate transition-colors",
-                        location.pathname === `/pathways/${session.id}`
-                          ? "bg-accent text-accent-foreground font-medium"
-                          : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-foreground"
-                      )}
-                    >
-                      {session.title}
-                    </button>
-                  ))}
-                </div>
-              )
-          )
-        ) : (
-          <div className="flex flex-col items-center gap-1 mt-1">
-            {pastSessions.slice(0, 4).map((session) => (
-              <Button
-                key={session.id}
-                variant="ghost"
-                size="icon"
-                className={cn(
-                  "h-8 w-8",
-                  location.pathname === `/pathways/${session.id}` && "bg-accent text-accent-foreground"
-                )}
-                onClick={() => navigate(`/pathways/${session.id}`)}
-              >
-                <MessageSquare className="w-3.5 h-3.5" />
-              </Button>
-            ))}
-          </div>
-        )}
-      </div>
+      {/* Session history — empty for now */}
+      <div className="flex-1 overflow-y-auto" />
 
       {/* Bottom section */}
       <div className="border-t border-sidebar-border p-2 space-y-1">

@@ -1,135 +1,90 @@
 import { useState } from "react";
 import type { PathwayStep as PathwayStepType } from "@/types/pathway";
-import type { Enzyme } from "@/types/enzyme";
-import { EnzymeCard } from "@/components/enzyme/EnzymeCard";
+import { ConfidenceScore } from "@/components/enzyme/ConfidenceScore";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { Beaker, Zap, Search, Mail, FlaskConical, Database, Cpu } from "lucide-react";
+import { ChevronDown, ShoppingCart, FlaskConical, Droplets, Thermometer, Activity, Target } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface PathwayStepProps {
   step: PathwayStepType;
-  onEnzymeClick: (enzyme: Enzyme) => void;
 }
 
-const BruteForceModal = ({ open, onClose, reactionType }: { open: boolean; onClose: () => void; reactionType: string }) => (
-  <Dialog open={open} onOpenChange={onClose}>
-    <DialogContent
-      className="max-w-md"
-      style={{
-        background: 'var(--bg-elevated)',
-        boxShadow: '0 10px 15px -3px rgba(0,0,0,0.15)',
-      }}
-    >
-      <DialogHeader>
-        <div className="flex items-center gap-3 mb-1">
-          <div className="w-9 h-9 rounded-lg bg-warning/15 border border-warning/30 flex items-center justify-center shrink-0">
-            <Zap className="w-4 h-4" style={{ color: 'var(--warning-600)' }} />
-          </div>
-          <DialogTitle className="text-lg font-bold">Brute Force Enzyme Search</DialogTitle>
-        </div>
-        <DialogDescription className="text-sm text-muted-foreground leading-relaxed">
-          No known enzyme candidates were found for the <span className="font-semibold text-foreground">{reactionType}</span> reaction using standard database queries.
-        </DialogDescription>
-      </DialogHeader>
+export const PathwayStep = ({ step }: PathwayStepProps) => {
+  const [expanded, setExpanded] = useState(false);
 
-      <div className="space-y-3 py-2">
-        <p className="text-sm text-muted-foreground">
-          A brute force search will scan all known enzyme families and apply ML-based activity prediction to identify potential candidates. This includes:
-        </p>
-
-        <div className="space-y-2">
-          {[
-            { icon: <Database className="w-3.5 h-3.5" />, text: "Full scan of UniProt, BRENDA, and MetaCyc databases" },
-            { icon: <Cpu className="w-3.5 h-3.5" />, text: "ML-based substrate specificity prediction across 40,000+ enzyme sequences" },
-            { icon: <FlaskConical className="w-3.5 h-3.5" />, text: "In silico docking and activity scoring for top candidates" },
-            { icon: <Search className="w-3.5 h-3.5" />, text: "Literature mining for novel or unreported enzyme activities" },
-          ].map(({ icon, text }) => (
-            <div key={text} className="flex items-start gap-2.5 text-sm text-muted-foreground">
-              <span className="mt-0.5 shrink-0" style={{ color: 'var(--warning-600)' }}>{icon}</span>
-              <span>{text}</span>
-            </div>
-          ))}
-        </div>
-
-        <div className="rounded-lg bg-muted/50 border p-3 text-xs text-muted-foreground">
-          <strong className="text-foreground">Estimated time:</strong> 2–5 business days. Results will be delivered to your email with ranked candidates and confidence scores.
-        </div>
-      </div>
-
-      <div className="flex gap-2 pt-1">
-        <Button variant="outline" className="flex-1" onClick={onClose}>
-          Cancel
-        </Button>
-        <Button
-          className="flex-1 gap-2"
-          style={{ background: 'var(--warning-500)', color: '#fff' }}
-          onClick={onClose}
-        >
-          <Mail className="w-3.5 h-3.5" />
-          Contact Research Team
-        </Button>
-      </div>
-    </DialogContent>
-  </Dialog>
-);
-
-export const PathwayStep = ({ step, onEnzymeClick }: PathwayStepProps) => {
-  const [bruteForceOpen, setBruteForceOpen] = useState(false);
+  const isBiocatalysis = step.reactionType === "Suggested biocatalysis";
+  const enzyme = step.enzymes[0] ?? null;
 
   return (
-    <div className="px-2 py-1">
-      {/* Reaction type — bigger, centered */}
-      <p className="text-lg font-semibold text-foreground text-center mb-2.5">
-        {step.reactionType}
-      </p>
+    <div className="px-2 py-1 flex flex-col items-center gap-2">
 
-      {step.enzymes.length > 0 ? (
-        <div className="pl-20%">
-
-          <div className="flex flex-col ml-[20%] items-start gap-1.5 pl-4">
-            <span className="italic items-start mb-5">Possible enzymes:</span>
-            {step.enzymes.map((enzyme) => (
-              <EnzymeCard
-                key={enzyme.id}
-                enzyme={enzyme}
-                onClick={() => onEnzymeClick(enzyme)}
-              />
-            ))}
-          </div>
-        </div>    
-        
+      {/* ── Reaction type pill ── */}
+      {isBiocatalysis ? (
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="text-xs font-mono bg-primary/10 text-primary border border-primary/30 px-3 py-1.5 rounded-full hover:bg-primary/20 transition-colors cursor-pointer flex items-center gap-1.5"
+        >
+          {step.reactionType}
+          <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", expanded && "rotate-180")} />
+        </button>
       ) : (
-        <div className="flex flex-col items-center gap-2">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Beaker className="w-3.5 h-3.5" />
-            <span className="italic">No enzymes found</span>
-          </div>
-          {step.hasBruteForce && (
-            <Button
-              size="sm"
-              variant="outline"
-              className="border-warning/50 bg-warning/10 hover:bg-warning/20 hover:border-warning font-mono text-xs"
-              style={{ color: 'var(--warning-700)' }}
-              onClick={() => setBruteForceOpen(true)}
-            >
-              <Zap className="w-3 h-3 mr-1" />
-              Brute force search
-            </Button>
-          )}
-        </div>
+        <span className="text-xs font-mono bg-muted text-muted-foreground border border-border px-3 py-1 rounded-full">
+          {step.reactionType}
+        </span>
       )}
 
-      <BruteForceModal
-        open={bruteForceOpen}
-        onClose={() => setBruteForceOpen(false)}
-        reactionType={step.reactionType}
-      />
+      {/* ── Inline enzyme panel ── */}
+      {isBiocatalysis && expanded && enzyme && (
+        <div className="mt-3 rounded-xl border border-primary/20 bg-card shadow-sm p-5 transition-all duration-200 w-full max-w-lg">
+
+          {/* Header row */}
+          <div className="flex items-start justify-between gap-3">
+            <span className="text-sm font-semibold text-foreground">{enzyme.name}</span>
+            <ConfidenceScoreWithLabel score={enzyme.score} />
+          </div>
+
+          {/* Kinetics grid */}
+          <div className="grid grid-cols-2 gap-2 mt-3">
+            {[
+              { icon: <Droplets className="w-3.5 h-3.5" />, label: "Optimal pH",   value: enzyme.optimalPh },
+              { icon: <Thermometer className="w-3.5 h-3.5" />, label: "Optimal Temp", value: enzyme.optimalTemp },
+              { icon: <Activity className="w-3.5 h-3.5" />,    label: "k_cat",       value: enzyme.kcat },
+              { icon: <Target className="w-3.5 h-3.5" />,      label: "K_m",         value: enzyme.km },
+            ].map(({ icon, label, value }) => (
+              <div key={label} className="flex items-center gap-2 rounded-lg p-2.5 bg-muted/50">
+                <span className="text-muted-foreground shrink-0">{icon}</span>
+                <div>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</p>
+                  <p className="text-sm font-mono font-medium text-foreground">{value}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Action row */}
+          <div className="mt-4 flex items-center justify-between gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5"
+              onClick={() => window.open('#', '_blank')}
+            >
+              <ShoppingCart className="w-3.5 h-3.5" />
+              Buy · {enzyme.price}
+            </Button>
+            <Button
+              size="sm"
+              className="gap-1.5 font-semibold shadow-sm glow-green-sm"
+              style={{ background: '#1a7a4a', color: '#fff' }}
+            >
+              <FlaskConical className="w-3.5 h-3.5" />
+              Test with Nitroduck
+            </Button>
+          </div>
+
+        </div>
+      )}
     </div>
   );
 };

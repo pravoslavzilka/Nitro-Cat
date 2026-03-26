@@ -1,5 +1,6 @@
 import type { Pathway } from '@/types/pathway';
 import { samplePathway } from '@/data/pathwayData';
+import { examplePathways } from '@/data/examplePathways';
 
 // Stub: in production these would call apiGet/apiPost/apiPut/apiDelete
 // For now return sample data so the UI works without a backend
@@ -29,6 +30,8 @@ export async function getPathways(): Promise<Pathway[]> {
 }
 
 export async function getPathway(id: string): Promise<Pathway> {
+  const example = examplePathways.find((p) => p.id === id);
+  if (example) return Promise.resolve(example);
   const pathways = await getPathways();
   const found = pathways.find((p) => p.id === id);
   if (!found) throw new Error(`Pathway ${id} not found`);

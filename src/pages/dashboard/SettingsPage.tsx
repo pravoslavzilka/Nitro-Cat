@@ -15,9 +15,9 @@ import { Sun, Moon, Monitor } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const AI_MODELS = [
-  { id: 'enzym-4', label: 'EnzymAI-4', desc: 'Most capable' },
-  { id: 'enzym-4-mini', label: 'EnzymAI-4 Mini', desc: 'Fast & efficient' },
-  { id: 'enzym-3.5', label: 'EnzymAI-3.5', desc: 'Balanced' },
+  { id: 'nitroai-4', label: 'NitroAI-4', desc: 'Most capable' },
+  { id: 'nitroai-4-mini', label: 'NitroAI-4 Mini', desc: 'Fast & efficient' },
+  { id: 'nitroai-3.5', label: 'NitroAI-3.5', desc: 'Balanced' },
 ];
 
 const DENSITY_OPTIONS = [
@@ -33,7 +33,7 @@ const THEME_OPTIONS: Array<{ id: 'light' | 'dark' | 'system'; label: string; ico
 
 export const SettingsPage = () => {
   const { theme, setTheme } = useTheme();
-  const [defaultModel, setDefaultModel] = useState(() => localStorage.getItem('default_model') ?? 'enzym-4');
+  const [defaultModel, setDefaultModel] = useState(() => localStorage.getItem('default_model') ?? 'nitroai-4');
   const [density, setDensity] = useState<'compact' | 'comfortable'>(() => {
     return (localStorage.getItem('display_density') as 'compact' | 'comfortable') ?? 'comfortable';
   });
@@ -66,7 +66,7 @@ export const SettingsPage = () => {
       <div className="max-w-lg mx-auto space-y-8">
         <div>
           <h1 className="text-xl font-bold text-foreground">Settings</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Configure your EnzymAI experience</p>
+          <p className="text-sm text-muted-foreground mt-0.5">Configure your NitroAI experience</p>
         </div>
 
         {/* Appearance */}

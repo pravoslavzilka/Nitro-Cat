@@ -14,7 +14,14 @@
       "Bash(pip --version)",
       "Bash(pip3 --version)",
       "Bash(python -c \"from PIL import Image; print\\(''Pillow ok''\\)\")",
-      "Bash(python -c \":*)"
+      "Bash(python -c \":*)",
+      "Bash(mkdir -p \"C:/Users/okey/OneDrive/Dokumenty/Claude/Projects/NitroCAT/public/images\")",
+      "Bash(curl -s \"https://nitroduck.tech/images/nitroduck_5.png\" -o \"C:/Users/okey/OneDrive/Dokumenty/Claude/Projects/NitroCAT/public/images/nitroduck-logo.png\")",
+      "Bash(python3:*)",
+      "Bash(python:*)",
+      "Bash(npm install:*)",
+      "Bash(node -e \":*)",
+      "Bash(npx tsc:*)"
     ]
   }
 }
