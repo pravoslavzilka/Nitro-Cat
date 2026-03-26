@@ -7,17 +7,17 @@ const features = [
   {
     icon: <Zap className="w-6 h-6 text-primary" />,
     title: "AI-Powered Enzyme Discovery",
-    description: "Leverage advanced AI models to identify optimal enzymes for each step in your biosynthetic pathway.",
+    description: "Leverage advanced AI models to identify optimal enzymes for problematic steps in your synthetic pathway.",
   },
   {
     icon: <Shield className="w-6 h-6 text-primary" />,
-    title: "Validated Pathways",
-    description: "Access curated, experimentally validated metabolic pathways with confidence scores for every recommendation.",
+    title: "Novel Reactions",
+    description: "Access curated, experimentally validated reactions along with novel ones from our proprietary dataset.",
   },
   {
     icon: <BarChart3 className="w-6 h-6 text-primary" />,
-    title: "Kinetic Analysis",
-    description: "Compare kcat, Km, and projected yields to make data-driven decisions on enzyme selection.",
+    title: "Get new enzymes the fastest way possible",
+    description: "Test the novel enzymes with our ultra high-throughput screening platform in less than two weeks.",
   },
 ];
 
@@ -44,10 +44,10 @@ export const LandingPage = () => {
         
         <img src={logo}  className="h-[300px]"  />
         <h1 className="text-4xl sm:text-5xl font-bold text-foreground text-glow max-w-2xl">
-          Discover optimal enzyme pathways with AI
+          Discover enzymes for your impossible reactions
         </h1>
         <p className="text-lg text-muted-foreground max-w-xl">
-          NitroCat combines cutting-edge machine learning with biochemistry databases to accelerate your metabolic engineering research.
+          NitroCat combines machine learning with genome mining to enable completely untapped chemical space.
         </p>
         <div className="flex gap-3 flex-wrap justify-center">
           <Button size="lg" onClick={() => navigate('/login')} className="glow-green">
