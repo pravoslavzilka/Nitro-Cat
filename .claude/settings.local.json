@@ -3,7 +3,18 @@
     "allow": [
       "Bash(conda env:*)",
       "Bash(conda run:*)",
-      "WebFetch(domain:data.pyg.org)"
+      "WebFetch(domain:data.pyg.org)",
+      "WebFetch(domain:nitroduck.tech)",
+      "Bash(curl -s https://nitroduck.tech/)",
+      "Bash(curl -s https://nitroduck.tech/images/)",
+      "Bash(curl -s https://nitroduck.tech/assets/index-DzDT4lzD.js)",
+      "Bash(curl -L \"https://nitroduck.tech/images/nitroduck_5.png\" -o \"C:/Users/okey/OneDrive/Dokumenty/Claude/Projects/NitroCAT/public/images/nitroduck-logo.png\")",
+      "Bash(python3 -c \":*)",
+      "Bash(pip install:*)",
+      "Bash(pip --version)",
+      "Bash(pip3 --version)",
+      "Bash(python -c \"from PIL import Image; print\\(''Pillow ok''\\)\")",
+      "Bash(python -c \":*)"
     ]
   }
 }
