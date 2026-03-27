@@ -10,7 +10,12 @@ import { Button } from "@/components/ui/button";
 import { Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ChatPanel } from "./ChatPanel";
-import { samplePathway } from "@/data/pathwayData";
+import type { Pathway } from "@/types/pathway";
+
+const STUB_PATHWAY: Pathway = {
+  id: 'nitrocat', name: 'NitroCat Assistant', description: '', steps: [],
+  createdAt: '', updatedAt: '', status: 'complete',
+};
 
 const models = [
   { id: "nitroai-4",      name: "NitroAI-4",      desc: "Most capable" },
@@ -76,7 +81,7 @@ export const NitroAIChat = () => {
 
         {/* Panel body */}
         <div className="flex-1 overflow-hidden">
-          <ChatPanel pathway={samplePathway} className="h-full" />
+          <ChatPanel pathway={STUB_PATHWAY} className="h-full" />
         </div>
       </div>
 

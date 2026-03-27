@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTheme } from 'next-themes';
 import { Handle, Position } from '@xyflow/react';
 import type { NodeProps } from '@xyflow/react';
 import { MoleculeViewer } from '@/components/molecule/MoleculeViewer';
@@ -7,6 +8,8 @@ import type { MoleculeNodeData } from '@/types/pathway';
 
 export const MoleculeNode = ({ data }: NodeProps) => {
   const [copied, setCopied] = useState(false);
+  const { resolvedTheme } = useTheme();
+  const structureBg = resolvedTheme === 'dark' ? '#1e2d26' : '#ffffff';
   const molecule = data as unknown as MoleculeNodeData;
 
   const handleCopy = () => {
@@ -27,7 +30,7 @@ export const MoleculeNode = ({ data }: NodeProps) => {
         style={{ opacity: 0, pointerEvents: 'none' }}
       />
       <div className="bg-card shadow-sm rounded-xl p-3 flex flex-col items-center">
-        <div className="rounded-lg bg-white p-2 shadow-inner">
+        <div className="rounded-lg p-2 shadow-inner" style={{ background: structureBg }}>
           <MoleculeViewer smiles={molecule.smiles} width={280} height={200} renderWidth={400} renderHeight={300} />
         </div>
         <p className="text-xs font-mono text-muted-foreground text-center mt-1">{molecule.name}</p>

@@ -21,7 +21,13 @@
       "Bash(python:*)",
       "Bash(npm install:*)",
       "Bash(node -e \":*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(node -e \"const p = require\\(''./node_modules/ketcher-react/package.json''\\); console.log\\(p.version, p.main, p.module, p.exports ? ''has exports'' : ''no exports''\\)\")",
+      "Bash(node -e \"const p = require\\(''''./node_modules/ketcher-react/package.json''''\\); console.log\\(JSON.stringify\\(p.exports, null, 2\\)\\)\")",
+      "Bash(node -e \"const p = require\\(''''./node_modules/ketcher-standalone/package.json''''\\); console.log\\(p.version\\); console.log\\(JSON.stringify\\(p.exports, null, 2\\)\\)\")",
+      "Bash(node -e \"const p = require\\(''./node_modules/ketcher-react/dist/index.js''\\); console.log\\(Object.keys\\(p\\).slice\\(0, 20\\)\\)\")",
+      "Bash(find C:/Users/okey/OneDrive/Dokumenty/Claude/Projects/NitroCAT/node_modules/ketcher-standalone/dist -name *.d.ts)",
+      "Bash(node -e \"const p=require\\(''./package.json''\\); console.log\\(Object.keys\\(p.dependencies\\).filter\\(k=>k.includes\\(''less''\\)||k.includes\\(''sass''\\)||k.includes\\(''style''\\)\\)\\)\")"
     ]
   }
 }

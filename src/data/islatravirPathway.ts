@@ -3,7 +3,7 @@ import type { PathwayGraph } from '@/types/pathway';
 export const islatravirPathway: PathwayGraph = {
   id: 'example-islatravir',
   name: 'Islatravir Biosynthesis',
-  description: '3-enzyme cascade synthesis of the HIV antiviral islatravir (Huffman et al. 2019, Science)',
+  description: '3-enzyme biocatalytic cascade · Huffman et al. Science 2019',
   status: 'complete',
   nodes: [
     // Molecule nodes

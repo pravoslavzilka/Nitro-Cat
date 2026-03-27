@@ -1,29 +1,22 @@
 import { useNavigate } from "react-router-dom";
-import { Badge } from "@/components/ui/badge";
-import { formatDate } from "@/lib/utils/formatting";
+import { allExamplePathways } from "@/data/allExamplePathways";
+import { MoleculeViewer } from "@/components/molecule/MoleculeViewer";
+import type { PathwayGraph, MoleculeNodeData } from "@/types/pathway";
 
-interface HistoryEntry {
-  id: string;
-  pathwayName: string;
-  date: string;
-  stepCount: number;
-  enzymeCount: number;
-  status: 'complete' | 'analyzing' | 'draft';
+function getPreviewMolecule(graph: PathwayGraph): MoleculeNodeData | null {
+  const sourceSet = new Set(graph.edges.map(e => e.source));
+  const molNodes = graph.nodes.filter(n => n.type === 'molecule');
+  const leaves = molNodes.filter(n => !sourceSet.has(n.id));
+  const candidates = leaves.length > 0 ? leaves : molNodes;
+  return candidates.reduce<MoleculeNodeData | null>((best, n) => {
+    const d = n.data as MoleculeNodeData;
+    return !best || d.smiles.length > best.smiles.length ? d : best;
+  }, null);
 }
 
-const mockHistory: HistoryEntry[] = [
-  { id: '1', pathwayName: 'Shikimic Acid Biosynthesis', date: '2025-01-20T14:30:00Z', stepCount: 4, enzymeCount: 6, status: 'complete' },
-  { id: '2', pathwayName: 'Tryptophan Biosynthesis', date: '2025-02-10T14:00:00Z', stepCount: 5, enzymeCount: 8, status: 'analyzing' },
-  { id: '3', pathwayName: 'Chorismate Mutase Pathway', date: '2025-03-05T09:00:00Z', stepCount: 2, enzymeCount: 2, status: 'draft' },
-  { id: '1', pathwayName: 'Phenylalanine Route', date: '2025-01-05T11:00:00Z', stepCount: 6, enzymeCount: 10, status: 'complete' },
-  { id: '1', pathwayName: 'Tyrosine Pathway', date: '2024-12-15T09:30:00Z', stepCount: 5, enzymeCount: 7, status: 'complete' },
-];
-
-const statusVariant: Record<HistoryEntry['status'], 'default' | 'secondary' | 'outline'> = {
-  complete: 'default',
-  analyzing: 'secondary',
-  draft: 'outline',
-};
+function getStepCount(graph: PathwayGraph): number {
+  return graph.nodes.filter(n => n.type === 'reaction').length;
+}
 
 export const HistoryPage = () => {
   const navigate = useNavigate();
@@ -31,43 +24,37 @@ export const HistoryPage = () => {
   return (
     <div className="p-6 h-full overflow-y-auto">
       <div className="mb-6">
-        <h1 className="text-xl font-bold text-foreground">Analysis History</h1>
-        <p className="text-sm text-muted-foreground mt-0.5">Past pathway analyses</p>
+        <h1 className="text-xl font-bold text-foreground">Recent Pathways</h1>
+        <p className="text-sm text-muted-foreground mt-0.5">Your recently explored pathway analyses</p>
       </div>
 
-      <div className="border border-border rounded-lg overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-secondary border-b border-border">
-            <tr>
-              <th className="text-left px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Pathway</th>
-              <th className="text-left px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Date</th>
-              <th className="text-left px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Steps</th>
-              <th className="text-left px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Enzymes</th>
-              <th className="text-left px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {mockHistory.map((entry, i) => (
-              <tr
-                key={`${entry.id}-${i}`}
-                onClick={() => navigate('/pathways/1')}
-                className="border-b border-border last:border-0 hover:bg-secondary/50 cursor-pointer transition-colors"
-              >
-                <td className="px-4 py-3 font-medium text-foreground hover:text-primary transition-colors">
-                  {entry.pathwayName}
-                </td>
-                <td className="px-4 py-3 text-muted-foreground">{formatDate(entry.date)}</td>
-                <td className="px-4 py-3 text-muted-foreground">{entry.stepCount}</td>
-                <td className="px-4 py-3 text-muted-foreground">{entry.enzymeCount}</td>
-                <td className="px-4 py-3">
-                  <Badge variant={statusVariant[entry.status]} className="text-[10px] capitalize">
-                    {entry.status}
-                  </Badge>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {allExamplePathways.map((pathway) => {
+          const mol = getPreviewMolecule(pathway);
+          const steps = getStepCount(pathway);
+          return (
+            <button
+              key={pathway.id}
+              onClick={() => navigate(`/pathways/${pathway.id}`)}
+              className="bg-secondary border border-border rounded-xl p-5 hover:border-primary hover:bg-primary/5 cursor-pointer transition-all flex flex-col items-center text-left"
+            >
+              {mol && (
+                <div className="rounded-lg p-2" style={{ background: 'var(--bg-elevated)' }}>
+                  <MoleculeViewer smiles={mol.smiles} width={160} height={120} />
+                </div>
+              )}
+              <p className="text-sm font-semibold text-foreground text-center mt-3 leading-snug w-full">{pathway.name}</p>
+              {pathway.description && (
+                <p className="text-xs text-muted-foreground text-center mt-1 leading-relaxed line-clamp-2 w-full">
+                  {pathway.description}
+                </p>
+              )}
+              <p className="text-[10px] font-mono font-semibold uppercase tracking-widest text-muted-foreground mt-2">
+                {steps} steps
+              </p>
+            </button>
+          );
+        })}
       </div>
     </div>
   );
