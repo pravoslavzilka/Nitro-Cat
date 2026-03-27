@@ -23,3 +23,31 @@ export interface Pathway {
   updatedAt: string;
   status: 'draft' | 'analyzing' | 'complete';
 }
+
+// ── Graph-based pathway representation ───────────────────────────────────────
+
+export interface MoleculeNodeData {
+  name: string;
+  smiles: string;
+  formula?: string;
+}
+
+export interface ReactionNodeData {
+  label: 'Chemical synthesis' | 'Suggested biocatalysis';
+  enzyme?: Enzyme;
+}
+
+export interface PathwayNode {
+  id: string;
+  type: 'molecule' | 'reaction';
+  data: MoleculeNodeData | ReactionNodeData;
+}
+
+export interface PathwayGraph {
+  id: string;
+  name: string;
+  description?: string;
+  status: 'draft' | 'analyzing' | 'complete';
+  nodes: PathwayNode[];
+  edges: { id: string; source: string; target: string }[];
+}

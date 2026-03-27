@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTheme } from 'next-themes';
 import SmilesDrawer from 'smiles-drawer';
 
 interface MoleculeViewerProps {
   smiles: string;
   width?: number;
   height?: number;
+  renderWidth?: number;
+  renderHeight?: number;
   name?: string;
 }
 
@@ -44,20 +47,23 @@ const NITRO_THEMES = {
   },
 };
 
-export const MoleculeViewer = ({ smiles, width = 240, height = 160 }: MoleculeViewerProps) => {
+export const MoleculeViewer = ({ smiles, width = 240, height = 160, renderWidth, renderHeight }: MoleculeViewerProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { resolvedTheme } = useTheme();
+
+  const rw = renderWidth ?? width;
+  const rh = renderHeight ?? height;
 
   useEffect(() => {
     if (!canvasRef.current || !smiles) return;
 
-    const isDark = document.documentElement.classList.contains('dark');
-    const themeName = isDark ? 'nitro-dark' : 'nitro-light';
+    const themeName = resolvedTheme === 'dark' ? 'nitro-dark' : 'nitro-light';
 
     const drawer = new SmilesDrawer.Drawer({
-      width,
-      height,
+      width: rw,
+      height: rh,
       bondThickness: 1.0,
       shortBondWidth: 0.85,
       themes: NITRO_THEMES,
@@ -77,7 +83,7 @@ export const MoleculeViewer = ({ smiles, width = 240, height = 160 }: MoleculeVi
         setLoading(false);
       }
     );
-  }, [smiles, width, height]);
+  }, [smiles, rw, rh, resolvedTheme]);
 
   if (error) {
     return (
@@ -102,10 +108,10 @@ export const MoleculeViewer = ({ smiles, width = 240, height = 160 }: MoleculeVi
       )}
       <canvas
         ref={canvasRef}
-        width={width}
-        height={height}
+        width={rw}
+        height={rh}
         className="block"
-        style={{ opacity: loading ? 0 : 1, transition: 'opacity 0.2s' }}
+        style={{ width, height, opacity: loading ? 0 : 1, transition: 'opacity 0.2s' }}
       />
     </div>
   );
