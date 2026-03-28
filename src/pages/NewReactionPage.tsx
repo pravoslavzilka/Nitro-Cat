@@ -11,7 +11,7 @@ import { MoleculeViewer } from "@/components/molecule/MoleculeViewer";
 import {
   ArrowLeft, Upload, Download, CheckCircle2, FlaskConical, FileText,
   Dna, Check, X, TrendingUp, ShoppingCart, Droplets, Thermometer, Activity, Target,
-  PencilLine, ScrollText, Beaker, Clock, AlertTriangle, BookOpen,
+  PencilLine, ScrollText, Beaker, Clock, AlertTriangle, BookOpen, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatScore, formatConfidenceLabel } from "@/lib/utils/formatting";
@@ -228,15 +228,15 @@ const SmilesColumn = ({
 
 // ── Find Enzymes button ───────────────────────────────────────────────────────
 
-const FindEnzymesButton = ({ active, onClick }: { active: boolean; onClick: () => void }) => (
+const FindEnzymesButton = ({ active, loading, onClick }: { active: boolean; loading?: boolean; onClick: () => void }) => (
   <div className="flex justify-center">
     <button
       type="button"
       onClick={onClick}
-      disabled={!active}
+      disabled={!active || loading}
       className={cn(
         'inline-flex items-center gap-2 px-8 py-3 rounded-xl text-base font-semibold transition-all',
-        active ? 'cursor-pointer font-bold' : 'cursor-not-allowed opacity-50'
+        (active && !loading) ? 'cursor-pointer font-bold' : 'cursor-not-allowed opacity-50'
       )}
       style={
         active
@@ -244,8 +244,8 @@ const FindEnzymesButton = ({ active, onClick }: { active: boolean; onClick: () =
           : { border: '2px solid var(--border-default)', background: 'var(--bg-secondary)', color: 'var(--text-muted)' }
       }
     >
-      <Dna className="w-5 h-5" />
-      Find Enzymes
+      {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Dna className="w-5 h-5" />}
+      {loading ? 'Searching…' : 'Find Enzymes'}
     </button>
   </div>
 );
@@ -576,6 +576,9 @@ export const NewReactionPage = () => {
   const [subLoadTrigger, setSubLoadTrigger] = useState<{ smiles: string; key: number } | undefined>(undefined);
   const [prodLoadTrigger, setProdLoadTrigger] = useState<{ smiles: string; key: number } | undefined>(undefined);
   const firstMount = useRef(true);
+  const [resultEnzyme, setResultEnzyme] = useState<Enzyme>(DEFAULT_ENZYME);
+  const [apiLoading, setApiLoading] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   /** Load a substrate + product pair into the two draw editors */
   const loadDrawPair = (subSmiles: string, subMolfile: string, prodSmiles: string, prodMolfile: string) => {
@@ -620,15 +623,73 @@ export const NewReactionPage = () => {
   const goTo = (next: View) => setView(next);
   const selectMode = (m: Mode) => { setMode(m); goTo('input'); };
 
-  const resultEnzyme = getEnzymeForSubstrate(substrateSmiles);
+  const handleFindEnzymes = async () => {
+    if (!isActive || apiLoading) return;
+    setApiError(null);
 
-  const handleFindEnzymes = () => {
-    if (!isActive) return;
+    let enzyme = DEFAULT_ENZYME;
+
+    if (substrateSmiles.trim() && productSmiles.trim()) {
+      setApiLoading(true);
+      try {
+        const response = await fetch('https://nitrocat-backend-production.up.railway.app/screen', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            substrate_smiles: substrateSmiles.trim(),
+            product_smiles: productSmiles.trim(),
+            top_k: 5,
+            enrich: true,
+          }),
+        });
+
+        const data = await response.json().catch(() => null);
+
+        if (!response.ok || data?.status === 'error' || data?.status === 'ERROR') {
+          const msg = (typeof data?.result === 'string' && data.result) ? data.result : (data?.error ?? `Server error (${response.status})`);
+          setApiError(msg);
+          setApiLoading(false);
+          return;
+        }
+
+        const first = data?.result?.[0];
+        if (first) {
+          const fmt = (v: unknown) => (v != null && v !== '' ? String(v) : 'Unavailable');
+          const fmtTemp = (v: unknown) => (v != null && v !== '' ? `${v}°C` : 'Unavailable');
+          enzyme = {
+            id: first.uniprot_id ?? first.uniprot ?? 'unknown',
+            name: first.protein_name ?? 'Unavailable',
+            ecNumber: first.ec_number ?? 'Unavailable',
+            score: typeof first.score === 'number' ? first.score : 0,
+            organism: first.organism ?? 'Unavailable',
+            description: first.function ?? 'Unavailable',
+            optimalPh: fmt(first.ph_optimum ?? first.optimal_ph),
+            optimalTemp: fmtTemp(first.temp_optimum ?? first.optimal_temp),
+            kcat: fmt(first.kcat),
+            km: fmt(first.km),
+            projectedYield: 'Unavailable',
+            vendor: '',
+            vendorLogo: '',
+            price: 'Unavailable',
+            catalogNumber: 'Unavailable',
+          };
+        }
+      } catch {
+        setApiError('Backend is unreachable. The server may be down — please try again later.');
+        setApiLoading(false);
+        return;
+      }
+      setApiLoading(false);
+    } else {
+      enzyme = getEnzymeForSubstrate(substrateSmiles);
+    }
+
+    setResultEnzyme(enzyme);
     addHistoryEntry({
       id: `reaction-${Date.now()}`,
       type: 'reaction',
       name: `${MW_TABLE[substrateSmiles.trim()]?.name ?? substrateSmiles.slice(0, 16)} → ${MW_TABLE[productSmiles.trim()]?.name ?? productSmiles.slice(0, 16)}`,
-      subtitle: resultEnzyme.name,
+      subtitle: enzyme.name,
     });
     goTo('result');
   };
@@ -739,7 +800,13 @@ export const NewReactionPage = () => {
                 ))}
               </div>
             </div>
-            <FindEnzymesButton active={canSubmit} onClick={handleFindEnzymes} />
+            {apiError && (
+              <div className="flex items-start gap-2 rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                <span>{apiError}</span>
+              </div>
+            )}
+            <FindEnzymesButton active={canSubmit} loading={apiLoading} onClick={handleFindEnzymes} />
           </>
         )}
 
@@ -773,7 +840,7 @@ export const NewReactionPage = () => {
                 </>
               )}
             </div>
-            <FindEnzymesButton active={rxnFile !== null} onClick={handleFindEnzymes} />
+            <FindEnzymesButton active={rxnFile !== null} loading={apiLoading} onClick={handleFindEnzymes} />
           </>
         )}
 
@@ -835,7 +902,13 @@ export const NewReactionPage = () => {
               </div>
             </RenderGuard>
 
-            <FindEnzymesButton active={canSubmit} onClick={handleFindEnzymes} />
+            {apiError && (
+              <div className="flex items-start gap-2 rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                <span>{apiError}</span>
+              </div>
+            )}
+            <FindEnzymesButton active={canSubmit} loading={apiLoading} onClick={handleFindEnzymes} />
           </>
         )}
       </div>
