@@ -1,0 +1,39 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(conda env:*)",
+      "Bash(conda run:*)",
+      "WebFetch(domain:data.pyg.org)",
+      "WebFetch(domain:nitroduck.tech)",
+      "Bash(curl -s https://nitroduck.tech/)",
+      "Bash(curl -s https://nitroduck.tech/images/)",
+      "Bash(curl -s https://nitroduck.tech/assets/index-DzDT4lzD.js)",
+      "Bash(curl -L \"https://nitroduck.tech/images/nitroduck_5.png\" -o \"C:/Users/okey/OneDrive/Dokumenty/Claude/Projects/NitroCAT/public/images/nitroduck-logo.png\")",
+      "Bash(python3 -c \":*)",
+      "Bash(pip install:*)",
+      "Bash(pip --version)",
+      "Bash(pip3 --version)",
+      "Bash(python -c \"from PIL import Image; print\\(''Pillow ok''\\)\")",
+      "Bash(python -c \":*)",
+      "Bash(mkdir -p \"C:/Users/okey/OneDrive/Dokumenty/Claude/Projects/NitroCAT/public/images\")",
+      "Bash(curl -s \"https://nitroduck.tech/images/nitroduck_5.png\" -o \"C:/Users/okey/OneDrive/Dokumenty/Claude/Projects/NitroCAT/public/images/nitroduck-logo.png\")",
+      "Bash(python3:*)",
+      "Bash(python:*)",
+      "Bash(npm install:*)",
+      "Bash(node -e \":*)",
+      "Bash(npx tsc:*)",
+      "Bash(node -e \"const p = require\\(''./node_modules/ketcher-react/package.json''\\); console.log\\(p.version, p.main, p.module, p.exports ? ''has exports'' : ''no exports''\\)\")",
+      "Bash(node -e \"const p = require\\(''''./node_modules/ketcher-react/package.json''''\\); console.log\\(JSON.stringify\\(p.exports, null, 2\\)\\)\")",
+      "Bash(node -e \"const p = require\\(''''./node_modules/ketcher-standalone/package.json''''\\); console.log\\(p.version\\); console.log\\(JSON.stringify\\(p.exports, null, 2\\)\\)\")",
+      "Bash(node -e \"const p = require\\(''./node_modules/ketcher-react/dist/index.js''\\); console.log\\(Object.keys\\(p\\).slice\\(0, 20\\)\\)\")",
+      "Bash(find C:/Users/okey/OneDrive/Dokumenty/Claude/Projects/NitroCAT/node_modules/ketcher-standalone/dist -name *.d.ts)",
+      "Bash(node -e \"const p=require\\(''./package.json''\\); console.log\\(Object.keys\\(p.dependencies\\).filter\\(k=>k.includes\\(''less''\\)||k.includes\\(''sass''\\)||k.includes\\(''style''\\)\\)\\)\")",
+      "Bash(grep -o exports.[A-Za-z]* C:/Users/okey/OneDrive/Dokumenty/Claude/Projects/NitroCAT/node_modules/ketcher-standalone/dist/main.js)",
+      "Bash(npm run:*)",
+      "Bash(\"C:/Users/okey/OneDrive/Dokumenty/Claude/Projects/NitroCAT/src/styles/globals.css\")",
+      "Bash(cp \"C:\\\\Users\\\\okey\\\\OneDrive\\\\Dokumenty\\\\Claude\\\\Projects\\\\NitroCAT\\\\node_modules\\\\ketcher-standalone\\\\dist\\\\binaryWasm\\\\indigo-ketcher-1.40.0.wasm\" \"C:\\\\Users\\\\okey\\\\OneDrive\\\\Dokumenty\\\\Claude\\\\Projects\\\\NitroCAT\\\\public\\\\indigo-ketcher-1.40.0.wasm\")",
+      "Bash(cp \"C:\\\\Users\\\\okey\\\\OneDrive\\\\Dokumenty\\\\Claude\\\\Projects\\\\NitroCAT\\\\node_modules\\\\ketcher-standalone\\\\dist\\\\binaryWasm\\\\indigoWorker-5d0a61ab.js\" \"C:\\\\Users\\\\okey\\\\OneDrive\\\\Dokumenty\\\\Claude\\\\Projects\\\\NitroCAT\\\\public\\\\indigoWorker-5d0a61ab.js\")",
+      "Bash(node scripts/copy-ketcher-assets.js)"
+    ]
+  }
+}

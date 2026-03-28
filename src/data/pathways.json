@@ -19,8 +19,22 @@
           "smiles": "OC(=O)C(=O)C[C@H](O)[C@@H](O)[C@H](O)COP(=O)(O)O",
           "formula": "C₇H₁₅O₁₀P"
         },
-        "reactionType": "Aldol condensation",
-        "hasBruteForce": false,
+        "reactionType": "Chemical synthesis",
+        "enzymes": []
+      },
+      {
+        "id": "step-2",
+        "startMolecule": {
+          "name": "DAHP",
+          "smiles": "OC(=O)C(=O)C[C@H](O)[C@@H](O)[C@H](O)COP(=O)(O)O",
+          "formula": "C₇H₁₅O₁₀P"
+        },
+        "productMolecule": {
+          "name": "3-Dehydroquinate (DHQ)",
+          "smiles": "OC(=O)[C@@]1(O)C[C@H](O)[C@@H](O)C(=O)[C@@H]1O",
+          "formula": "C₇H₁₀O₆"
+        },
+        "reactionType": "Suggested biocatalysis",
         "enzymes": [
           {
             "id": "enz-1a",
@@ -38,74 +52,6 @@
             "vendorLogo": "",
             "price": "$285.00 / 1mg",
             "catalogNumber": "SAE0148"
-          },
-          {
-            "id": "enz-1b",
-            "name": "DAHP Synthase (AroF)",
-            "ecNumber": "EC 2.5.1.54",
-            "score": 0.87,
-            "organism": "E. coli BL21",
-            "description": "Tyrosine-sensitive variant. Lower feedback resistance but high catalytic efficiency under controlled conditions.",
-            "optimalPh": "7.0–7.5",
-            "optimalTemp": "30°C",
-            "kcat": "38 s⁻¹",
-            "km": "0.18 mM",
-            "projectedYield": "85%",
-            "vendor": "",
-            "vendorLogo": "",
-            "price": "",
-            "catalogNumber": ""
-          },
-          {
-            "id": "enz-1c",
-            "name": "DAHP Synthase (AroH)",
-            "ecNumber": "EC 2.5.1.54",
-            "score": 0.76,
-            "organism": "B. subtilis",
-            "description": "Tryptophan-sensitive isoenzyme. Moderate activity, useful for alternative host organisms.",
-            "optimalPh": "7.0",
-            "optimalTemp": "37°C",
-            "kcat": "28 s⁻¹",
-            "km": "0.25 mM",
-            "projectedYield": "72%",
-            "vendor": "Prozomix",
-            "vendorLogo": "",
-            "price": "$410.00 / 1mg",
-            "catalogNumber": "PRO-8812"
-          }
-        ]
-      },
-      {
-        "id": "step-2",
-        "startMolecule": {
-          "name": "DAHP",
-          "smiles": "OC(=O)C(=O)C[C@H](O)[C@@H](O)[C@H](O)COP(=O)(O)O",
-          "formula": "C₇H₁₅O₁₀P"
-        },
-        "productMolecule": {
-          "name": "3-Dehydroquinate (DHQ)",
-          "smiles": "OC(=O)[C@@]1(O)C[C@H](O)[C@@H](O)C(=O)[C@@H]1O",
-          "formula": "C₇H₁₀O₆"
-        },
-        "reactionType": "Cyclization",
-        "hasBruteForce": false,
-        "enzymes": [
-          {
-            "id": "enz-2a",
-            "name": "DHQ Synthase (AroB)",
-            "ecNumber": "EC 4.2.3.4",
-            "score": 0.91,
-            "organism": "E. coli K-12",
-            "description": "NAD⁺ and Co²⁺ dependent enzyme catalyzing the complex cyclization of DAHP to 3-dehydroquinate.",
-            "optimalPh": "7.0",
-            "optimalTemp": "37°C",
-            "kcat": "12 s⁻¹",
-            "km": "0.04 mM",
-            "projectedYield": "88%",
-            "vendor": "",
-            "vendorLogo": "",
-            "price": "",
-            "catalogNumber": ""
           }
         ]
       },
@@ -121,8 +67,7 @@
           "smiles": "OC(=O)C1=CC(=O)C[C@@H](O)[C@@H]1O",
           "formula": "C₇H₈O₅"
         },
-        "reactionType": "Dehydration",
-        "hasBruteForce": true,
+        "reactionType": "Chemical synthesis",
         "enzymes": []
       },
       {
@@ -137,44 +82,8 @@
           "smiles": "OC(=O)[C@@H]1C=C[C@H](O)[C@H](O)[C@@H]1O",
           "formula": "C₇H₁₀O₅"
         },
-        "reactionType": "NADPH-dependent reduction",
-        "hasBruteForce": false,
-        "enzymes": [
-          {
-            "id": "enz-4a",
-            "name": "Shikimate Dehydrogenase (AroE)",
-            "ecNumber": "EC 1.1.1.25",
-            "score": 0.89,
-            "organism": "E. coli K-12",
-            "description": "NADPH-dependent reduction of 3-dehydroshikimate. Critical enzyme for shikimic acid production.",
-            "optimalPh": "7.2",
-            "optimalTemp": "30°C",
-            "kcat": "55 s⁻¹",
-            "km": "0.08 mM",
-            "projectedYield": "90%",
-            "vendor": "Sigma-Aldrich",
-            "vendorLogo": "",
-            "price": "$340.00 / 1mg",
-            "catalogNumber": "SAE0201"
-          },
-          {
-            "id": "enz-4b",
-            "name": "Shikimate DH (YdiB)",
-            "ecNumber": "EC 1.1.1.282",
-            "score": 0.72,
-            "organism": "E. coli",
-            "description": "Dual-specificity quinate/shikimate dehydrogenase. Can use both NAD⁺ and NADP⁺ as cofactors.",
-            "optimalPh": "7.5",
-            "optimalTemp": "37°C",
-            "kcat": "32 s⁻¹",
-            "km": "0.15 mM",
-            "projectedYield": "68%",
-            "vendor": "Creative Enzymes",
-            "vendorLogo": "",
-            "price": "$520.00 / 1mg",
-            "catalogNumber": "CE-9934"
-          }
-        ]
+        "reactionType": "Chemical synthesis",
+        "enzymes": []
       }
     ]
   },
@@ -198,8 +107,22 @@
           "smiles": "Nc1ccccc1C(O)=O",
           "formula": "C₇H₇NO₂"
         },
-        "reactionType": "Amination / pyruvate elimination",
-        "hasBruteForce": false,
+        "reactionType": "Chemical synthesis",
+        "enzymes": []
+      },
+      {
+        "id": "trp-step-2",
+        "startMolecule": {
+          "name": "Anthranilate",
+          "smiles": "Nc1ccccc1C(O)=O",
+          "formula": "C₇H₇NO₂"
+        },
+        "productMolecule": {
+          "name": "N-(5-Phosphoribosyl)-anthranilate",
+          "smiles": "Nc1ccccc1C(=O)OC1OC(COP(=O)(O)O)C(O)C1O",
+          "formula": "C₁₂H₁₆NO₁₀P"
+        },
+        "reactionType": "Suggested biocatalysis",
         "enzymes": [
           {
             "id": "trp-enz-1a",
@@ -221,40 +144,6 @@
         ]
       },
       {
-        "id": "trp-step-2",
-        "startMolecule": {
-          "name": "Anthranilate",
-          "smiles": "Nc1ccccc1C(O)=O",
-          "formula": "C₇H₇NO₂"
-        },
-        "productMolecule": {
-          "name": "N-(5-Phosphoribosyl)-anthranilate",
-          "smiles": "Nc1ccccc1C(=O)OC1OC(COP(=O)(O)O)C(O)C1O",
-          "formula": "C₁₂H₁₆NO₁₀P"
-        },
-        "reactionType": "Phosphoribosyl transfer",
-        "hasBruteForce": false,
-        "enzymes": [
-          {
-            "id": "trp-enz-2a",
-            "name": "Anthranilate Phosphoribosyltransferase (TrpD)",
-            "ecNumber": "EC 2.4.2.18",
-            "score": 0.88,
-            "organism": "E. coli K-12",
-            "description": "Transfers phosphoribosyl group from PRPP to anthranilate in the second step of tryptophan synthesis.",
-            "optimalPh": "7.0",
-            "optimalTemp": "37°C",
-            "kcat": "5 s⁻¹",
-            "km": "0.09 mM",
-            "projectedYield": "85%",
-            "vendor": "BioVendor",
-            "vendorLogo": "",
-            "price": "$380.00 / 1mg",
-            "catalogNumber": "BV-TrpD"
-          }
-        ]
-      },
-      {
         "id": "trp-step-3",
         "startMolecule": {
           "name": "N-(5-Phosphoribosyl)-anthranilate",
@@ -266,8 +155,37 @@
           "smiles": "OCC(O)Cc1c[nH]c2ccccc12",
           "formula": "C₁₁H₁₃NO₄"
         },
-        "reactionType": "Isomerization / ring closure",
-        "hasBruteForce": false,
+        "reactionType": "Chemical synthesis",
+        "enzymes": []
+      },
+      {
+        "id": "trp-step-4",
+        "startMolecule": {
+          "name": "Indole-3-glycerol phosphate",
+          "smiles": "OCC(O)Cc1c[nH]c2ccccc12",
+          "formula": "C₁₁H₁₃NO₄"
+        },
+        "productMolecule": {
+          "name": "L-Tryptophan",
+          "smiles": "N[C@@H](Cc1c[nH]c2ccccc12)C(O)=O",
+          "formula": "C₁₁H₁₂N₂O₂"
+        },
+        "reactionType": "Chemical synthesis",
+        "enzymes": []
+      },
+      {
+        "id": "trp-step-5",
+        "startMolecule": {
+          "name": "L-Tryptophan",
+          "smiles": "N[C@@H](Cc1c[nH]c2ccccc12)C(O)=O",
+          "formula": "C₁₁H₁₂N₂O₂"
+        },
+        "productMolecule": {
+          "name": "5-Hydroxy-L-tryptophan",
+          "smiles": "N[C@@H](Cc1c[nH]c2cc(O)ccc12)C(O)=O",
+          "formula": "C₁₁H₁₂N₂O₃"
+        },
+        "reactionType": "Suggested biocatalysis",
         "enzymes": [
           {
             "id": "trp-enz-3a",
@@ -285,75 +203,8 @@
             "vendorLogo": "",
             "price": "$310.00 / 1mg",
             "catalogNumber": "SAE0289"
-          },
-          {
-            "id": "trp-enz-3b",
-            "name": "InGPS (Thermostable variant)",
-            "ecNumber": "EC 4.1.1.48",
-            "score": 0.78,
-            "organism": "T. thermophilus",
-            "description": "Thermostable variant offering enhanced stability at elevated temperatures. Suitable for industrial fermentation.",
-            "optimalPh": "7.8",
-            "optimalTemp": "65°C",
-            "kcat": "22 s⁻¹",
-            "km": "0.11 mM",
-            "projectedYield": "76%",
-            "vendor": "",
-            "vendorLogo": "",
-            "price": "",
-            "catalogNumber": ""
           }
         ]
-      },
-      {
-        "id": "trp-step-4",
-        "startMolecule": {
-          "name": "Indole-3-glycerol phosphate",
-          "smiles": "OCC(O)Cc1c[nH]c2ccccc12",
-          "formula": "C₁₁H₁₃NO₄"
-        },
-        "productMolecule": {
-          "name": "L-Tryptophan",
-          "smiles": "N[C@@H](Cc1c[nH]c2ccccc12)C(O)=O",
-          "formula": "C₁₁H₁₂N₂O₂"
-        },
-        "reactionType": "β-substitution (serine + indole)",
-        "hasBruteForce": false,
-        "enzymes": [
-          {
-            "id": "trp-enz-4a",
-            "name": "Tryptophan Synthase (TrpAB)",
-            "ecNumber": "EC 4.2.1.20",
-            "score": 0.96,
-            "organism": "E. coli K-12",
-            "description": "Bifunctional αβ-complex. The α subunit cleaves indole-3-glycerol phosphate; the β subunit condenses indole with serine via PLP catalysis.",
-            "optimalPh": "7.8",
-            "optimalTemp": "37°C",
-            "kcat": "72 s⁻¹",
-            "km": "0.03 mM",
-            "projectedYield": "95%",
-            "vendor": "Sigma-Aldrich",
-            "vendorLogo": "",
-            "price": "$260.00 / 1mg",
-            "catalogNumber": "SAE0401"
-          }
-        ]
-      },
-      {
-        "id": "trp-step-5",
-        "startMolecule": {
-          "name": "L-Tryptophan",
-          "smiles": "N[C@@H](Cc1c[nH]c2ccccc12)C(O)=O",
-          "formula": "C₁₁H₁₂N₂O₂"
-        },
-        "productMolecule": {
-          "name": "5-Hydroxy-L-tryptophan",
-          "smiles": "N[C@@H](Cc1c[nH]c2cc(O)ccc12)C(O)=O",
-          "formula": "C₁₁H₁₂N₂O₃"
-        },
-        "reactionType": "Hydroxylation",
-        "hasBruteForce": true,
-        "enzymes": []
       }
     ]
   },
@@ -377,8 +228,22 @@
           "smiles": "OC(=O)C(=O)C[C@]1(O)CC=CC(=O)C1",
           "formula": "C₁₀H₁₀O₆"
         },
-        "reactionType": "Claisen rearrangement",
-        "hasBruteForce": false,
+        "reactionType": "Chemical synthesis",
+        "enzymes": []
+      },
+      {
+        "id": "cho-step-2",
+        "startMolecule": {
+          "name": "Prephenate",
+          "smiles": "OC(=O)C(=O)C[C@]1(O)CC=CC(=O)C1",
+          "formula": "C₁₀H₁₀O₆"
+        },
+        "productMolecule": {
+          "name": "Phenylpyruvate",
+          "smiles": "OC(=O)CC(=O)c1ccccc1",
+          "formula": "C₉H₈O₃"
+        },
+        "reactionType": "Suggested biocatalysis",
         "enzymes": [
           {
             "id": "cho-enz-1a",
@@ -396,57 +261,6 @@
             "vendorLogo": "",
             "price": "$220.00 / 1mg",
             "catalogNumber": "SAE0188"
-          }
-        ]
-      },
-      {
-        "id": "cho-step-2",
-        "startMolecule": {
-          "name": "Prephenate",
-          "smiles": "OC(=O)C(=O)C[C@]1(O)CC=CC(=O)C1",
-          "formula": "C₁₀H₁₀O₆"
-        },
-        "productMolecule": {
-          "name": "Phenylpyruvate",
-          "smiles": "OC(=O)CC(=O)c1ccccc1",
-          "formula": "C₉H₈O₃"
-        },
-        "reactionType": "Decarboxylation / dehydration",
-        "hasBruteForce": false,
-        "enzymes": [
-          {
-            "id": "cho-enz-2a",
-            "name": "Prephenate Dehydratase (PheA)",
-            "ecNumber": "EC 4.2.1.51",
-            "score": 0.83,
-            "organism": "E. coli K-12",
-            "description": "Converts prephenate to phenylpyruvate with decarboxylation and dehydration. Feedback-inhibited by phenylalanine.",
-            "optimalPh": "7.0",
-            "optimalTemp": "37°C",
-            "kcat": "24 s⁻¹",
-            "km": "0.18 mM",
-            "projectedYield": "80%",
-            "vendor": "Enzyme Works",
-            "vendorLogo": "",
-            "price": "$295.00 / 1mg",
-            "catalogNumber": "EW-3214"
-          },
-          {
-            "id": "cho-enz-2b",
-            "name": "Prephenate Dehydratase (feedback-resistant)",
-            "ecNumber": "EC 4.2.1.51",
-            "score": 0.71,
-            "organism": "C. glutamicum",
-            "description": "Feedback-resistant variant from Corynebacterium. Suitable for high-yield phenylalanine production.",
-            "optimalPh": "7.2",
-            "optimalTemp": "30°C",
-            "kcat": "19 s⁻¹",
-            "km": "0.22 mM",
-            "projectedYield": "68%",
-            "vendor": "",
-            "vendorLogo": "",
-            "price": "",
-            "catalogNumber": ""
           }
         ]
       }
@@ -472,8 +286,7 @@
           "smiles": "CN1[C@@H]2C=C[C@H]1C[C@@H](OC(=O)C(CO)c1ccccc1)C2",
           "formula": "C17H21NO3"
         },
-        "reactionType": "Convergent ester coupling",
-        "hasBruteForce": true,
+        "reactionType": "Chemical synthesis",
         "enzymes": []
       },
       {
@@ -488,8 +301,7 @@
           "smiles": "CN1[C@@H]2C=C[C@H]1C[C@@H](OC(=O)C(CO)c1ccccc1)C2",
           "formula": "C17H21NO3"
         },
-        "reactionType": "Convergent ester coupling",
-        "hasBruteForce": true,
+        "reactionType": "Chemical synthesis",
         "enzymes": []
       },
       {
@@ -504,9 +316,26 @@
           "smiles": "CN1[C@@H]2C[C@@H](OC(=O)C(CO)c3ccccc3)C[C@H]1[C@@H]1O[C@@H]12",
           "formula": "C17H21NO4"
         },
-        "reactionType": "Late-stage oxidation / rearrangement",
-        "hasBruteForce": true,
-        "enzymes": []
+        "reactionType": "Suggested biocatalysis",
+        "enzymes": [
+          {
+            "id": "scp-enz-3a",
+            "name": "Hyoscyamine 6β-Dioxygenase (H6H)",
+            "ecNumber": "EC 1.14.11.11",
+            "score": 0.89,
+            "organism": "Hyoscyamus niger",
+            "description": "2-Oxoglutarate-dependent dioxygenase catalyzing hydroxylation and epoxidation in the tropane alkaloid pathway.",
+            "optimalPh": "7.0–7.5",
+            "optimalTemp": "30°C",
+            "kcat": "22 s⁻¹",
+            "km": "0.11 mM",
+            "projectedYield": "81%",
+            "vendor": "Sigma-Aldrich",
+            "vendorLogo": "",
+            "price": "$380.00 / 1mg",
+            "catalogNumber": "H2400"
+          }
+        ]
       },
       {
         "id": "scp-step-4",
@@ -520,61 +349,8 @@
           "smiles": "CN1[C@@H]2C[C@@H](OC(=O)[C@H](CO)c3ccccc3)C[C@H]1[C@@H]1O[C@@H]12",
           "formula": "C17H21NO4"
         },
-        "reactionType": "Hydroxylation / epoxidation",
-        "hasBruteForce": false,
-        "enzymes": [
-          {
-            "id": "enz-4a",
-            "name": "Hyoscyamine 6-beta-hydroxylase",
-            "ecNumber": "EC 1.14.11.11",
-            "score": 0.95,
-            "organism": "Atropa belladonna",
-            "description": "Catalyzes the late-stage hydroxylation and epoxide-forming conversion associated with scopolamine biosynthesis. Included here as a demo candidate for the B to A step.",
-            "optimalPh": "7.0–7.5",
-            "optimalTemp": "30°C",
-            "kcat": "41 s⁻¹",
-            "km": "0.15 mM",
-            "projectedYield": "88%",
-            "vendor": "Sigma-Aldrich",
-            "vendorLogo": "",
-            "price": "$295.00 / 1mg",
-            "catalogNumber": "Q9XJ43"
-          },
-          {
-            "id": "enz-4b",
-            "name": "Hyoscyamine 6-dioxygenase",
-            "ecNumber": "EC 1.14.11.11",
-            "score": 0.92,
-            "organism": "Hyoscyamus niger",
-            "description": "2-oxoglutarate-dependent dioxygenase associated with the terminal oxidative step toward scopolamine. Included here as a demo candidate for the B to A step.",
-            "optimalPh": "6.8–7.4",
-            "optimalTemp": "28°C",
-            "kcat": "36 s⁻¹",
-            "km": "0.19 mM",
-            "projectedYield": "84%",
-            "vendor": "Enzyme Works",
-            "vendorLogo": "",
-            "price": "$320.00 / 1mg",
-            "catalogNumber": "P24397"
-          },
-          {
-            "id": "enz-4c",
-            "name": "Hyoscyamine 6-beta-hydroxylase [putative]",
-            "ecNumber": "EC 1.14.11.11",
-            "score": 0.89,
-            "organism": "Anisodus acutangulus",
-            "description": "Putative hyoscyamine 6-beta-hydroxylase homolog included as a demo enzyme candidate for the B to A step in the mock pathway.",
-            "optimalPh": "7.1–7.6",
-            "optimalTemp": "30°C",
-            "kcat": "33 s⁻¹",
-            "km": "0.22 mM",
-            "projectedYield": "80%",
-            "vendor": "Prozomix",
-            "vendorLogo": "",
-            "price": "$410.00 / 1mg",
-            "catalogNumber": "A2IBI0"
-          }
-        ]
+        "reactionType": "Chemical synthesis",
+        "enzymes": []
       }
     ]
   }

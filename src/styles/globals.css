@@ -150,6 +150,74 @@
   }
 }
 
+/* ── React Flow Controls theming ───────────────────────────────────────────── */
+
+/* Light mode — soften the default white panel */
+.react-flow__controls {
+  background: #ffffff;
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  padding: 0;
+}
+
+.react-flow__controls-button {
+  background: #ffffff;
+  border-bottom: 1px solid var(--border-default);
+  color: var(--text-secondary);
+  width: 28px;
+  height: 28px;
+  padding: 6px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.react-flow__controls-button:last-child {
+  border-bottom: none;
+}
+
+.react-flow__controls-button:hover {
+  background: var(--bg-tertiary);
+  color: var(--primary-600);
+}
+
+.react-flow__controls-button svg {
+  max-width: 14px;
+  max-height: 14px;
+  fill: currentColor;
+}
+
+/* Dark mode overrides */
+.dark .react-flow__controls {
+  background: #141C18;
+  border-color: #2D3932;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.dark .react-flow__controls-button {
+  background: #141C18;
+  border-bottom-color: #2D3932;
+  color: #8B9E94;
+}
+
+.dark .react-flow__controls-button:hover {
+  background: #1A2420;
+  color: #10B981;
+}
+
+/* Active / pressed state (lock button when interaction is disabled) */
+.dark .react-flow__controls-button.active,
+.dark .react-flow__controls-button[aria-pressed="true"] {
+  background: #0F4429;
+  color: #34D399;
+}
+
+.react-flow__controls-button.active,
+.react-flow__controls-button[aria-pressed="true"] {
+  background: #D1FAE5;
+  color: #059669;
+}
+
 @layer utilities {
   /* Green glow utilities */
   .glow-green {
@@ -169,3 +237,4 @@
     box-shadow: 0 0 12px rgba(63, 185, 80, 0.3);
   }
 }
+

@@ -1,38 +1,14 @@
-import type { Pathway } from '@/types/pathway';
-import { samplePathway } from '@/data/pathwayData';
-
-// Stub: in production these would call apiGet/apiPost/apiPut/apiDelete
-// For now return sample data so the UI works without a backend
+import type { Pathway, PathwayGraph } from '@/types/pathway';
+import { allExamplePathways } from '@/data/allExamplePathways';
 
 export async function getPathways(): Promise<Pathway[]> {
-  return Promise.resolve([
-    samplePathway,
-    {
-      ...samplePathway,
-      id: '2',
-      name: 'Tryptophan Biosynthesis',
-      description: 'Synthesis of tryptophan from chorismate via anthranilate',
-      status: 'analyzing' as const,
-      createdAt: '2025-02-01T10:00:00Z',
-      updatedAt: '2025-02-10T14:00:00Z',
-    },
-    {
-      ...samplePathway,
-      id: '3',
-      name: 'Chorismate Mutase Pathway',
-      description: 'Conversion of chorismate to prephenate',
-      status: 'draft' as const,
-      createdAt: '2025-03-01T10:00:00Z',
-      updatedAt: '2025-03-05T09:00:00Z',
-    },
-  ]);
+  return Promise.resolve([]);
 }
 
-export async function getPathway(id: string): Promise<Pathway> {
-  const pathways = await getPathways();
-  const found = pathways.find((p) => p.id === id);
-  if (!found) throw new Error(`Pathway ${id} not found`);
-  return found;
+export async function getPathway(id: string): Promise<PathwayGraph> {
+  const example = allExamplePathways.find((p) => p.id === id);
+  if (example) return Promise.resolve(example);
+  throw new Error(`Pathway ${id} not found`);
 }
 
 export async function createPathway(data: Partial<Pathway>): Promise<Pathway> {
@@ -48,9 +24,8 @@ export async function createPathway(data: Partial<Pathway>): Promise<Pathway> {
   return Promise.resolve(newPathway);
 }
 
-export async function updatePathway(id: string, data: Partial<Pathway>): Promise<Pathway> {
-  const existing = await getPathway(id);
-  return Promise.resolve({ ...existing, ...data, id, updatedAt: new Date().toISOString() });
+export async function updatePathway(id: string, _data: Partial<Pathway>): Promise<Pathway> {
+  throw new Error(`Pathway ${id} not found`);
 }
 
 export async function deletePathway(_id: string): Promise<void> {

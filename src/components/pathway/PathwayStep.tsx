@@ -1,135 +1,149 @@
 import { useState } from "react";
 import type { PathwayStep as PathwayStepType } from "@/types/pathway";
-import type { Enzyme } from "@/types/enzyme";
-import { EnzymeCard } from "@/components/enzyme/EnzymeCard";
+import { formatScore, formatConfidenceLabel } from "@/lib/utils/formatting";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
-import { Beaker, Zap, Search, Mail, FlaskConical, Database, Cpu } from "lucide-react";
+import { ChevronDown, ShoppingCart, FlaskConical, Droplets, Thermometer, Activity, Target, TrendingUp } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const labelStyles: Record<'high' | 'medium' | 'low', string> = {
+  high:   "bg-success-100 text-success-700 border border-success-500",
+  medium: "bg-warning-100 text-warning-700 border border-warning-500",
+  low:    "bg-danger-100 text-danger-700 border border-danger-500",
+};
+
+const ConfidenceScoreWithLabel = ({ score }: { score: number }) => {
+  const label = formatConfidenceLabel(score);
+  return (
+    <span className={cn(
+      "inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-sm font-mono font-semibold shrink-0",
+      labelStyles[label]
+    )}>
+      {formatScore(score)}
+      <span className="font-normal opacity-80">confidence</span>
+    </span>
+  );
+};
 
 interface PathwayStepProps {
   step: PathwayStepType;
-  onEnzymeClick: (enzyme: Enzyme) => void;
 }
 
-const BruteForceModal = ({ open, onClose, reactionType }: { open: boolean; onClose: () => void; reactionType: string }) => (
-  <Dialog open={open} onOpenChange={onClose}>
-    <DialogContent
-      className="max-w-md"
-      style={{
-        background: 'var(--bg-elevated)',
-        boxShadow: '0 10px 15px -3px rgba(0,0,0,0.15)',
-      }}
-    >
-      <DialogHeader>
-        <div className="flex items-center gap-3 mb-1">
-          <div className="w-9 h-9 rounded-lg bg-warning/15 border border-warning/30 flex items-center justify-center shrink-0">
-            <Zap className="w-4 h-4" style={{ color: 'var(--warning-600)' }} />
-          </div>
-          <DialogTitle className="text-lg font-bold">Brute Force Enzyme Search</DialogTitle>
-        </div>
-        <DialogDescription className="text-sm text-muted-foreground leading-relaxed">
-          No known enzyme candidates were found for the <span className="font-semibold text-foreground">{reactionType}</span> reaction using standard database queries.
-        </DialogDescription>
-      </DialogHeader>
+export const PathwayStep = ({ step }: PathwayStepProps) => {
+  const [open, setOpen] = useState(false);
 
-      <div className="space-y-3 py-2">
-        <p className="text-sm text-muted-foreground">
-          A brute force search will scan all known enzyme families and apply ML-based activity prediction to identify potential candidates. This includes:
-        </p>
-
-        <div className="space-y-2">
-          {[
-            { icon: <Database className="w-3.5 h-3.5" />, text: "Full scan of UniProt, BRENDA, and MetaCyc databases" },
-            { icon: <Cpu className="w-3.5 h-3.5" />, text: "ML-based substrate specificity prediction across 40,000+ enzyme sequences" },
-            { icon: <FlaskConical className="w-3.5 h-3.5" />, text: "In silico docking and activity scoring for top candidates" },
-            { icon: <Search className="w-3.5 h-3.5" />, text: "Literature mining for novel or unreported enzyme activities" },
-          ].map(({ icon, text }) => (
-            <div key={text} className="flex items-start gap-2.5 text-sm text-muted-foreground">
-              <span className="mt-0.5 shrink-0" style={{ color: 'var(--warning-600)' }}>{icon}</span>
-              <span>{text}</span>
-            </div>
-          ))}
-        </div>
-
-        <div className="rounded-lg bg-muted/50 border p-3 text-xs text-muted-foreground">
-          <strong className="text-foreground">Estimated time:</strong> 2–5 business days. Results will be delivered to your email with ranked candidates and confidence scores.
-        </div>
-      </div>
-
-      <div className="flex gap-2 pt-1">
-        <Button variant="outline" className="flex-1" onClick={onClose}>
-          Cancel
-        </Button>
-        <Button
-          className="flex-1 gap-2"
-          style={{ background: 'var(--warning-500)', color: '#fff' }}
-          onClick={onClose}
-        >
-          <Mail className="w-3.5 h-3.5" />
-          Contact Research Team
-        </Button>
-      </div>
-    </DialogContent>
-  </Dialog>
-);
-
-export const PathwayStep = ({ step, onEnzymeClick }: PathwayStepProps) => {
-  const [bruteForceOpen, setBruteForceOpen] = useState(false);
+  const isBiocatalysis = step.reactionType === "Suggested biocatalysis";
+  const enzyme = step.enzymes[0] ?? null;
 
   return (
-    <div className="px-2 py-1">
-      {/* Reaction type — bigger, centered */}
-      <p className="text-lg font-semibold text-foreground text-center mb-2.5">
-        {step.reactionType}
-      </p>
+    <div className="px-2 py-1 flex flex-col items-center gap-2">
 
-      {step.enzymes.length > 0 ? (
-        <div className="pl-20%">
-
-          <div className="flex flex-col ml-[20%] items-start gap-1.5 pl-4">
-            <span className="italic items-start mb-5">Possible enzymes:</span>
-            {step.enzymes.map((enzyme) => (
-              <EnzymeCard
-                key={enzyme.id}
-                enzyme={enzyme}
-                onClick={() => onEnzymeClick(enzyme)}
-              />
-            ))}
-          </div>
-        </div>    
-        
+      {/* ── Reaction type pill ── */}
+      {isBiocatalysis ? (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="text-sm font-semibold px-4 py-2 rounded-full flex items-center gap-2 shadow-sm transition-colors cursor-pointer select-none"
+          style={{ backgroundColor: '#10B981', color: '#ffffff', border: '1px solid #10B981' }}
+          onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#059669')}
+          onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#10B981')}
+        >
+          {step.reactionType}
+          <ChevronDown className="w-4 h-4" />
+        </button>
       ) : (
-        <div className="flex flex-col items-center gap-2">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Beaker className="w-3.5 h-3.5" />
-            <span className="italic">No enzymes found</span>
-          </div>
-          {step.hasBruteForce && (
-            <Button
-              size="sm"
-              variant="outline"
-              className="border-warning/50 bg-warning/10 hover:bg-warning/20 hover:border-warning font-mono text-xs"
-              style={{ color: 'var(--warning-700)' }}
-              onClick={() => setBruteForceOpen(true)}
-            >
-              <Zap className="w-3 h-3 mr-1" />
-              Brute force search
-            </Button>
-          )}
-        </div>
+        <span className="text-xs font-mono bg-muted text-muted-foreground border border-border px-3 py-1 rounded-full">
+          {step.reactionType}
+        </span>
       )}
 
-      <BruteForceModal
-        open={bruteForceOpen}
-        onClose={() => setBruteForceOpen(false)}
-        reactionType={step.reactionType}
-      />
+      {/* ── Enzyme modal ── */}
+      {isBiocatalysis && enzyme && (
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogContent
+            className="max-w-3xl w-full p-0 overflow-hidden gap-0"
+            style={{
+              background: 'var(--bg-elevated)',
+              boxShadow: '0 20px 40px -8px rgba(0,0,0,0.2), 0 8px 16px -4px rgba(0,0,0,0.12)',
+            }}
+          >
+            {/* ── Header ── */}
+            <div className="px-8 pt-8 pb-6 border-b border-border">
+              <DialogHeader className="space-y-0">
+                <div className="flex items-start justify-between gap-4">
+                  <DialogTitle className="text-2xl font-bold text-foreground leading-tight">
+                    {enzyme.name}
+                  </DialogTitle>
+                  <ConfidenceScoreWithLabel score={enzyme.score} />
+                </div>
+              </DialogHeader>
+            </div>
+
+            {/* ── Body ── */}
+            <div className="px-8 py-7 space-y-6">
+
+              {/* Kinetics grid — 4 cols on wide modal */}
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-3">
+                  Kinetic Parameters
+                </p>
+                <div className="grid grid-cols-4 gap-3">
+                  {[
+                    { icon: <Droplets className="w-5 h-5" />,    label: "Optimal pH",   value: enzyme.optimalPh },
+                    { icon: <Thermometer className="w-5 h-5" />, label: "Optimal Temp", value: enzyme.optimalTemp },
+                    { icon: <Activity className="w-5 h-5" />,    label: "k_cat",        value: enzyme.kcat },
+                    { icon: <Target className="w-5 h-5" />,      label: "K_m",          value: enzyme.km },
+                  ].map(({ icon, label, value }) => (
+                    <div key={label} className="flex flex-col gap-2 rounded-xl p-4 bg-muted/50 border border-border">
+                      <span className="text-muted-foreground">{icon}</span>
+                      <div>
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</p>
+                        <p className="text-lg font-mono font-semibold text-foreground mt-0.5">{value}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Projected Yield */}
+              <div className="flex items-center gap-3 rounded-xl bg-primary/10 border border-primary/20 p-4 mb-4">
+                <TrendingUp className="w-5 h-5 text-primary shrink-0" />
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Projected Yield</p>
+                  <p className="text-3xl font-bold font-mono text-foreground">{enzyme.projectedYield}</p>
+                </div>
+              </div>
+
+              {/* Action row */}
+              <div className="flex items-center justify-between gap-3 pt-2">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="gap-2"
+                  onClick={() => window.open('#', '_blank')}
+                >
+                  <ShoppingCart className="w-4 h-4" />
+                  Buy · {enzyme.price}
+                </Button>
+                <Button
+                  size="lg"
+                  className="gap-2 font-semibold shadow-sm glow-green-sm"
+                  style={{ background: '#1a7a4a', color: '#fff' }}
+                >
+                  <FlaskConical className="w-4 h-4" />
+                  Test with Nitroduck
+                </Button>
+              </div>
+
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };
