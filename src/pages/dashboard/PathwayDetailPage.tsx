@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { PathwayBuilder } from "@/components/pathway/PathwayBuilder";
 import { getPathway } from "@/lib/api/pathways";
+import { addHistoryEntry } from "@/lib/history";
 import type { PathwayGraph } from "@/types/pathway";
 
 const statusColors: Record<string, string> = {
@@ -18,6 +19,21 @@ export const PathwayDetailPage = () => {
     if (!id) return;
     getPathway(id).then(setPathway).catch(console.error);
   }, [id]);
+
+  useEffect(() => {
+    if (!pathway) return;
+    const citations: Record<string, string> = {
+      'example-islatravir':     'Huffman et al. Science 2019',
+      'example-cannabinoid':    'Luo & Reiter et al. Nature 2019',
+      'example-chemoenzymatic': 'Cortes-Clerget et al. Nat Commun 2019',
+    };
+    addHistoryEntry({
+      id: pathway.id,
+      type: 'pathway',
+      name: pathway.name,
+      subtitle: citations[pathway.id] ?? 'Custom pathway',
+    });
+  }, [pathway?.id]);
 
   if (!pathway) {
     return (

@@ -1,19 +1,27 @@
-import { Component, useEffect, useRef, useState } from "react";
+import { Component, lazy, Suspense, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
 import { MoleculeViewer } from "@/components/molecule/MoleculeViewer";
 import {
   ArrowLeft, Upload, Download, CheckCircle2, FlaskConical, FileText,
   Dna, Check, X, TrendingUp, ShoppingCart, Droplets, Thermometer, Activity, Target,
+  PencilLine, ScrollText, Beaker, Clock, AlertTriangle, BookOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatScore, formatConfidenceLabel } from "@/lib/utils/formatting";
 import SmilesDrawer from "smiles-drawer";
 import { allExamplePathways } from "@/data/allExamplePathways";
+import { addHistoryEntry } from "@/lib/history";
 import type { Enzyme } from "@/types/enzyme";
 import type { ReactionNodeData } from "@/types/pathway";
+
+const KetcherEditor = lazy(() => import('@/components/reaction/KetcherEditor'));
 
 // ── Error boundary ────────────────────────────────────────────────────────────
 
@@ -26,9 +34,12 @@ class RenderGuard extends Component<{ children: ReactNode; fallback: ReactNode }
 
 // ── Enzyme lookup ─────────────────────────────────────────────────────────────
 
-const HEXANOIC   = 'CCCCCC(=O)O';
-const OLIVETOLIC = 'OC(=O)c1cc(O)cc(O)c1CCCCC';
-const COMPOUND3  = 'C#C[C@]1(CO)[C@@H](O)C[C@@H](OP(=O)(O)O)O1';
+const HEXANOIC    = 'CCCCCC(=O)O';
+const OLIVETOLIC  = 'OC(=O)c1cc(O)cc(O)c1CCCCC';
+const COMPOUND3   = 'C#C[C@]1(CO)[C@@H](O)C[C@@H](OP(=O)(O)O)O1';
+const COMPOUND4   = 'C#C[C@]1(COP(=O)(O)O)[C@@H](O)C[C@@H](O)O1';
+const AMINO_KETONE   = 'CC(=O)CCc1cccc(N)c1';
+const CHIRAL_ALCOHOL = 'C[C@@H](O)CCc1cccc(N)c1';
 
 const DEFAULT_ENZYME: Enzyme = {
   id: 'th-rd38b',
@@ -49,8 +60,9 @@ const DEFAULT_ENZYME: Enzyme = {
 };
 
 function getEnzymeForSubstrate(smiles: string): Enzyme {
-  const cannabinoid = allExamplePathways.find(p => p.id === 'example-cannabinoid');
-  const islatravir  = allExamplePathways.find(p => p.id === 'example-islatravir');
+  const cannabinoid      = allExamplePathways.find(p => p.id === 'example-cannabinoid');
+  const islatravir       = allExamplePathways.find(p => p.id === 'example-islatravir');
+  const chemoEnzymatic   = allExamplePathways.find(p => p.id === 'example-chemoenzymatic');
 
   const pick = (pathway: typeof cannabinoid, nodeId: string): Enzyme | null => {
     const node = pathway?.nodes.find(n => n.id === nodeId);
@@ -58,24 +70,60 @@ function getEnzymeForSubstrate(smiles: string): Enzyme {
   };
 
   const s = smiles.trim();
-  if (s === HEXANOIC)   return pick(cannabinoid, 'r1') ?? DEFAULT_ENZYME;
-  if (s === OLIVETOLIC) return pick(cannabinoid, 'r2') ?? DEFAULT_ENZYME;
-  if (s === COMPOUND3)  return pick(islatravir,  'r2') ?? DEFAULT_ENZYME;
+  if (s === HEXANOIC)    return pick(cannabinoid,    'r1') ?? DEFAULT_ENZYME;
+  if (s === COMPOUND3)   return pick(islatravir,     'r2') ?? DEFAULT_ENZYME;
+  if (s === AMINO_KETONE) return pick(chemoEnzymatic, 'r3') ?? DEFAULT_ENZYME;
   return DEFAULT_ENZYME;
 }
 
-// ── Data ──────────────────────────────────────────────────────────────────────
+// ── Example data ──────────────────────────────────────────────────────────────
+
+// Pre-converted MOL V2000 strings for use in the Kekule structure editor
+// (Kekule can write SMILES but only reads MOL natively)
+const MOL: Record<string, string> = {
+  HEXANOIC: "\n     RDKit          2D\n\n  8  7  0  0  0  0  0  0  0  0999 V2000\n   -4.2551   -0.1865    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.8948    0.4455    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.6672   -0.4165    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.3069    0.2155    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.9207   -0.6465    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.2810   -0.0145    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.4138    1.4796    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5085   -0.8766    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  1  0\n  5  6  1  0\n  6  7  2  0\n  6  8  1  0\nM  END\n",
+  OLIVETOLIC: "\n     RDKit          2D\n\n 16 16  0  0  0  0  0  0  0  0999 V2000\n    0.0339   -3.1915    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.2853   -1.7127    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.6917   -1.1910    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.8697   -0.7555    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.2760   -1.2772    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.4310   -0.3201    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.8373   -0.8417    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.1795    1.1587    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.7732    1.6804    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5218    3.1591    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.6182    0.7232    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7881    1.2449    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.9431    0.2878    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.3495    0.8094    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    4.5044   -0.1477    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    5.9108    0.3739    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  2  0\n  2  4  1  0\n  4  5  2  0\n  5  6  1  0\n  6  7  1  0\n  6  8  2  0\n  8  9  1  0\n  9 10  1  0\n  9 11  2  0\n 11 12  1  0\n 12 13  1  0\n 13 14  1  0\n 14 15  1  0\n 15 16  1  0\n 11  4  1  0\nM  END\n",
+  COMPOUND3: "\n     RDKit          2D\n\n 15 15  0  0  0  0  0  0  0  0999 V2000\n    4.4193    1.0120    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.0691    0.3585    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.7190   -0.2950    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.5100   -1.5695    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.8018   -2.8918    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    1.2102    1.1160    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.0527    2.3571    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.2891    1.0682    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.7068   -0.3724    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.1179   -0.8812    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.2641    0.0864    0.0000 P   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2317   -1.0598    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.2965    1.2325    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.4103    1.0540    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5342   -1.2150    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  3  0\n  3  2  1  1\n  3  4  1  0\n  4  5  1  0\n  3  6  1  0\n  6  7  1  6\n  6  8  1  0\n  8  9  1  0\n  9 10  1  6\n 10 11  1  0\n 11 12  2  0\n 11 13  1  0\n 11 14  1  0\n  9 15  1  0\n 15  3  1  0\nM  END\n",
+  COMPOUND4: "\n     RDKit          2D\n\n 15 15  0  0  0  0  0  0  0  0999 V2000\n    1.3499   -3.3001    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1412   -1.8147    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.9324   -0.3293    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5230   -0.6921    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5650    0.3869    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.0204    0.0241    0.0000 P   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.3833    1.4795    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.6576   -1.4314    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.4759   -0.3387    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    2.4315   -0.2770    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.3550   -1.4590    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    2.8450    1.1649    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.6015    2.0037    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.5492    3.5028    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.4195    1.0803    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  3  0\n  3  2  1  1\n  3  4  1  0\n  4  5  1  0\n  5  6  1  0\n  6  7  2  0\n  6  8  1  0\n  6  9  1  0\n  3 10  1  0\n 10 11  1  6\n 10 12  1  0\n 12 13  1  0\n 13 14  1  6\n 13 15  1  0\n 15  3  1  0\nM  END\n",
+  AMINO_KETONE: "\n     RDKit          2D\n\n 12 12  0  0  0  0  0  0  0  0999 V2000\n   -4.6788    0.8925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5433   -0.0877    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.8243   -1.5611    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.1267    0.4057    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.9912   -0.5745    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.4253   -0.0811    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7064    1.3923    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.1230    1.8856    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.2585    0.9055    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.9774   -0.5679    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    4.1129   -1.5480    0.0000 N   0  0  0  0  0  0  0  0  0  0  0  0\n    1.5608   -1.0612    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  2  0\n  2  4  1  0\n  4  5  1  0\n  5  6  1  0\n  6  7  2  0\n  7  8  1  0\n  8  9  2  0\n  9 10  1  0\n 10 11  1  0\n 10 12  2  0\n 12  6  1  0\nM  END\n",
+  CHIRAL_ALCOHOL: "\n     RDKit          2D\n\n 12 12  0  0  0  0  0  0  0  0999 V2000\n   -4.6788    0.8925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5433   -0.0877    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.8243   -1.5611    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.1267    0.4057    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.9912   -0.5745    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.4253   -0.0811    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7064    1.3923    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.1230    1.8856    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.2585    0.9055    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.9774   -0.5679    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    4.1129   -1.5480    0.0000 N   0  0  0  0  0  0  0  0  0  0  0  0\n    1.5608   -1.0612    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  2  1  1  6\n  2  3  1  0\n  2  4  1  0\n  4  5  1  0\n  5  6  1  0\n  6  7  2  0\n  7  8  1  0\n  8  9  2  0\n  9 10  1  0\n 10 11  1  0\n 10 12  2  0\n 12  6  1  0\nM  END\n",
+  CBGA: "\n     RDKit          2D\n\n 23 23  0  0  0  0  0  0  0  0999 V2000\n   -8.1122   -1.1385    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -6.6644   -1.5306    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -6.2800   -2.9805    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.6009   -0.4727    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.1531   -0.8648    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.0896    0.1930    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.4739    1.6429    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.9218    2.0350    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.4105    2.7008    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.9626    2.3087    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.1009    3.3665    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5782    0.8588    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.8696    0.4667    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.2540   -0.9832    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.7018   -1.3753    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.0862   -2.8252    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.7653   -0.3175    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    5.2132   -0.7096    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    6.2766    0.3483    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    7.7245   -0.0438    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    8.7880    1.0140    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    8.1089   -1.4937    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.6417   -0.1991    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  2  0\n  2  4  1  0\n  4  5  1  0\n  5  6  1  0\n  6  7  2  0\n  7  8  1  0\n  7  9  1  0\n  9 10  2  0\n 10 11  1  0\n 10 12  1  0\n 12 13  1  0\n 13 14  1  0\n 14 15  2  3\n 15 16  1  0\n 15 17  1  0\n 17 18  1  0\n 18 19  1  0\n 19 20  2  0\n 20 21  1  0\n 20 22  1  0\n 12 23  2  0\n 23  6  1  0\nM  END\n",
+};
 
 const SUBSTRATE_EXAMPLES = [
-  { label: 'Hexanoic acid',  smiles: HEXANOIC   },
-  { label: 'Olivetolic acid', smiles: OLIVETOLIC },
-  { label: 'Compound 3',     smiles: COMPOUND3  },
+  { label: 'Hexanoic acid',   smiles: HEXANOIC,     mol: MOL.HEXANOIC    },
+  { label: 'Amino ketone',    smiles: AMINO_KETONE,  mol: MOL.AMINO_KETONE },
+  { label: 'Compound 3',      smiles: COMPOUND3,     mol: MOL.COMPOUND3   },
 ];
 
 const PRODUCT_EXAMPLES = [
-  { label: 'Olivetolic acid', smiles: OLIVETOLIC },
-  { label: 'CBGA',            smiles: 'OC(=O)CCc1c(O)cc(O)c(CC=C(C)CCC=C(C)C)c1' },
-  { label: 'Compound 4',      smiles: 'C#C[C@]1(COP(=O)(O)O)[C@@H](O)C[C@@H](O)O1' },
+  { label: 'Olivetolic acid', smiles: OLIVETOLIC,    mol: MOL.OLIVETOLIC  },
+  { label: 'CBGA',            smiles: 'OC(=O)CCc1c(O)cc(O)c(CC=C(C)CCC=C(C)C)c1', mol: MOL.CBGA },
+  { label: 'Compound 4',      smiles: COMPOUND4,     mol: MOL.COMPOUND4   },
+];
+
+const EXAMPLE_PAIRS = [
+  { label: 'Hexanoic acid → Olivetolic acid', shortLabel: 'Hexanoic → Olivetolic', substrate: HEXANOIC,     subMol: MOL.HEXANOIC,     product: OLIVETOLIC,     prodMol: MOL.OLIVETOLIC     },
+  { label: 'Compound 3 → Compound 4',         shortLabel: 'Compound 3 → 4',        substrate: COMPOUND3,    subMol: MOL.COMPOUND3,    product: COMPOUND4,      prodMol: MOL.COMPOUND4      },
+  { label: 'Amino ketone → Chiral alcohol',   shortLabel: 'Amino ketone → Chiral', substrate: AMINO_KETONE, subMol: MOL.AMINO_KETONE, product: CHIRAL_ALCOHOL, prodMol: MOL.CHIRAL_ALCOHOL },
+];
+
+const REACTION_EXAMPLES = [
+  {
+    label: 'Hexanoic acid → Olivetolic acid',
+    substrate: HEXANOIC,
+    product: OLIVETOLIC,
+  },
+  {
+    label: 'Compound 3 → Compound 4',
+    substrate: COMPOUND3,
+    product: COMPOUND4,
+  },
+  {
+    label: 'Amino ketone → Chiral alcohol',
+    substrate: AMINO_KETONE,
+    product: CHIRAL_ALCOHOL,
+  },
 ];
 
 // ── Validation ────────────────────────────────────────────────────────────────
@@ -132,22 +180,24 @@ const ValidityBadge = ({ valid }: { valid: boolean | null }) => {
   );
 };
 
+const KetcherFallback = () => (
+  <div className="rounded-xl border border-border bg-muted/30 flex items-center justify-center h-72 text-sm text-muted-foreground">
+    Loading editor…
+  </div>
+);
+
 const SmilesColumn = ({
   label,
   value,
   valid,
   onChange,
   placeholder,
-  examples,
-  onExampleSelect,
 }: {
   label: string;
   value: string;
   valid: boolean | null;
   onChange: (v: string) => void;
   placeholder: string;
-  examples: { label: string; smiles: string }[];
-  onExampleSelect: (smiles: string) => void;
 }) => (
   <div className="flex flex-col gap-3 flex-1 min-w-0">
     <div className="flex items-center justify-between mb-2">
@@ -164,14 +214,6 @@ const SmilesColumn = ({
         value.trim() && valid === false && 'border-destructive focus-visible:ring-destructive/30'
       )}
     />
-    <div className="flex flex-col gap-1.5">
-      <p className="text-[10px] uppercase tracking-widest text-muted-foreground">From example pathways:</p>
-      <div className="flex flex-wrap gap-1.5">
-        {examples.map((ex) => (
-          <ExampleChip key={ex.label} label={ex.label} onClick={() => onExampleSelect(ex.smiles)} />
-        ))}
-      </div>
-    </div>
     <div className="bg-muted/30 rounded-xl p-3 flex items-center justify-center min-h-[196px]">
       {value.trim().length >= 2 ? (
         <RenderGuard fallback={<p className="text-xs text-muted-foreground italic">Could not render structure</p>}>
@@ -208,6 +250,183 @@ const FindEnzymesButton = ({ active, onClick }: { active: boolean; onClick: () =
   </div>
 );
 
+// ── Protocol data ─────────────────────────────────────────────────────────────
+
+const MW_TABLE: Record<string, { mw: number; name: string }> = {
+  'CCCCCC(=O)O':                                        { mw: 116.16, name: 'Hexanoic acid' },
+  'OC(=O)c1cc(O)cc(O)c1CCCCC':                         { mw: 210.23, name: 'Olivetolic acid' },
+  'OC(=O)CCc1c(O)cc(O)c(CC=C(C)CCC=C(C)C)c1':         { mw: 360.45, name: 'CBGA' },
+  'C#C[C@]1(CO)[C@@H](O)C[C@@H](OP(=O)(O)O)O1':       { mw: 254.22, name: 'Compound 3' },
+  'C#C[C@]1(COP(=O)(O)O)[C@@H](O)C[C@@H](O)O1':       { mw: 254.22, name: 'Compound 4' },
+  'CC(=O)CCc1cccc(N)c1':                                { mw: 177.24, name: '4-(3-Aminophenyl)butan-2-one' },
+  'C[C@@H](O)CCc1cccc(N)c1':                            { mw: 179.26, name: '(R)-4-(3-Aminophenyl)butan-2-ol' },
+};
+
+function calcYieldGrams(substrateSMILES: string, productSMILES: string, yieldPct: number, startGrams = 1): string {
+  const sub  = MW_TABLE[substrateSMILES.trim()];
+  const prod = MW_TABLE[productSMILES.trim()];
+  if (!sub || !prod) return '~0.8 g (estimated)';
+  const mmol = (startGrams * 1000) / sub.mw;
+  const productGrams = (mmol * (yieldPct / 100) * prod.mw) / 1000;
+  return `${productGrams.toFixed(2)} g`;
+}
+
+// ── Protocol modal ────────────────────────────────────────────────────────────
+
+const SectionHeading = ({ children }: { children: ReactNode }) => (
+  <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2 mt-5 first:mt-0">{children}</p>
+);
+
+const ProtocolRow = ({ label, value }: { label: string; value: string }) => (
+  <div className="flex items-baseline justify-between py-1.5 border-b border-border/50 last:border-0">
+    <span className="text-sm text-muted-foreground">{label}</span>
+    <span className="text-sm font-mono font-medium text-foreground">{value}</span>
+  </div>
+);
+
+const ProtocolModal = ({
+  open, onClose, substrate, product, enzyme,
+}: {
+  open: boolean;
+  onClose: () => void;
+  substrate: string;
+  product: string;
+  enzyme: Enzyme;
+}) => {
+  const yieldPct = parseFloat(enzyme.projectedYield.replace('%', '')) || 85;
+  const subInfo  = MW_TABLE[substrate.trim()];
+  const prodInfo = MW_TABLE[product.trim()];
+  const yieldGrams = calcYieldGrams(substrate, product, yieldPct);
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto" style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-default)' }}>
+        <DialogHeader>
+          <div className="flex flex-wrap items-start gap-3">
+            <DialogTitle className="text-xl font-bold">Reaction Protocol</DialogTitle>
+            <Badge variant="secondary" className="font-mono text-xs shrink-0">{enzyme.name}</Badge>
+          </div>
+        </DialogHeader>
+
+        {/* Scale banner */}
+        <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 mt-1">
+          <div className="flex items-center gap-2 mb-2">
+            <Beaker className="w-4 h-4 shrink-0" style={{ color: 'var(--primary-500)' }} />
+            <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--primary-600)' }}>
+              Scale calculation · 1 g substrate
+            </span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+            {[
+              { label: 'Substrate',  value: subInfo  ? `${subInfo.mw} g/mol`  : 'Unknown' },
+              { label: 'Product',    value: prodInfo ? `${prodInfo.mw} g/mol`  : 'Unknown' },
+              { label: 'Yield',      value: enzyme.projectedYield },
+              { label: 'Product out', value: yieldGrams },
+            ].map(({ label, value }) => (
+              <div key={label} className="bg-background rounded-lg p-2 border border-primary/10">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</p>
+                <p className="text-sm font-mono font-semibold text-foreground mt-0.5">{value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Reagents */}
+        <SectionHeading>Reagents &amp; Materials</SectionHeading>
+        <div className="rounded-lg border border-border overflow-hidden">
+          {[
+            { label: subInfo?.name ?? 'Substrate',    value: '1.00 g (starting material)' },
+            { label: enzyme.name,                      value: '5 mg · enzyme loading 0.5 mol%' },
+            { label: 'NADPH (cofactor)',               value: '10 mM · sodium salt' },
+            { label: 'Glucose-6-phosphate (GDH cycle)', value: '20 mM' },
+            { label: 'Glucose dehydrogenase (GDH)',    value: '2 U/mL' },
+            { label: 'Potassium phosphate buffer',     value: `100 mM · pH ${enzyme.optimalPh}` },
+            { label: 'Total reaction volume',          value: '50 mL' },
+          ].map(({ label, value }) => (
+            <div key={label} className="flex items-baseline justify-between px-3 py-2 border-b border-border/50 last:border-0 even:bg-muted/50">
+              <span className="text-sm text-foreground">{label}</span>
+              <span className="text-xs font-mono text-muted-foreground ml-4 text-right">{value}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Procedure */}
+        <SectionHeading>Procedure</SectionHeading>
+        <ol className="space-y-2 text-sm text-foreground">
+          {[
+            `Prepare 100 mM potassium phosphate buffer, pH ${enzyme.optimalPh}. Degas with N₂ for 10 min.`,
+            `Dissolve substrate (1.00 g) in 2 mL DMSO, then dilute into 45 mL buffer. Final DMSO ≤ 4% v/v.`,
+            `Add NADPH (10 mM final), glucose-6-phosphate (20 mM), and GDH (2 U/mL). Mix gently.`,
+            `Add ${enzyme.name} (5 mg). Adjust pH to ${enzyme.optimalPh} if necessary.`,
+            `Incubate at ${enzyme.optimalTemp}, 200 rpm orbital shaking, for 4–6 h. Monitor conversion by TLC or HPLC every 90 min.`,
+            `Quench with equal volume EtOAc. Centrifuge 5 min at 3000 × g to break emulsion.`,
+            `Collect organic layer. Back-extract aqueous phase twice with EtOAc (2 × 20 mL). Combine organics.`,
+            `Wash combined organics with brine (20 mL), dry over MgSO₄, filter, and evaporate in vacuo.`,
+            `Purify by silica gel chromatography (hexane/EtOAc gradient). Expected yield: ${enzyme.projectedYield} → ${yieldGrams} product.`,
+          ].map((step, i) => (
+            <li key={i} className="flex gap-3">
+              <span className="shrink-0 w-5 h-5 rounded-full bg-primary/15 text-[11px] font-mono font-semibold flex items-center justify-center" style={{ color: 'var(--primary-600)' }}>
+                {i + 1}
+              </span>
+              <span className="leading-relaxed text-muted-foreground">{step}</span>
+            </li>
+          ))}
+        </ol>
+
+        {/* Reaction conditions */}
+        <SectionHeading>Reaction Conditions</SectionHeading>
+        <div className="rounded-lg border border-border overflow-hidden">
+          {[
+            { label: 'Temperature',      value: enzyme.optimalTemp },
+            { label: 'pH',               value: enzyme.optimalPh },
+            { label: 'Agitation',        value: '200 rpm orbital shaker' },
+            { label: 'Atmosphere',       value: 'N₂ (anaerobic preferred)' },
+            { label: 'Reaction time',    value: '4–6 h (HPLC-monitored)' },
+            { label: 'k_cat',            value: enzyme.kcat },
+            { label: 'K_m (substrate)',  value: enzyme.km },
+          ].map(({ label, value }) => (
+            <ProtocolRow key={label} label={label} value={value} />
+          ))}
+        </div>
+
+        {/* Analytical */}
+        <SectionHeading>Analytical Monitoring</SectionHeading>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+          {[
+            { icon: <Clock className="w-3.5 h-3.5" />, title: 'HPLC', body: 'C18 reverse-phase, 5 µm, 4.6 × 150 mm. Gradient: 10 → 90% MeCN / 0.1% TFA. Flow 1.0 mL/min. UV 254 nm.' },
+            { icon: <Activity className="w-3.5 h-3.5" />, title: 'TLC', body: 'Silica 60 F₂₅₄. EtOAc/hexane 3:7. Visualise UV 254 nm + KMnO₄ stain.' },
+            { icon: <BookOpen className="w-3.5 h-3.5" />, title: 'ee / Chiral HPLC', body: 'Chiralpak IA-3, 0.46 cm × 25 cm. Hexane/IPA 95:5, 0.8 mL/min.' },
+            { icon: <Target className="w-3.5 h-3.5" />, title: 'Conversion target', body: '≥ 95% by HPLC peak area before workup.' },
+          ].map(({ icon, title, body }) => (
+            <div key={title} className="rounded-lg bg-muted/60 border border-border p-3">
+              <div className="flex items-center gap-1.5 mb-1 text-foreground font-medium">
+                {icon}{title}
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">{body}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Safety */}
+        <SectionHeading>Safety &amp; Handling</SectionHeading>
+        <div className="rounded-xl border border-warning-500/40 bg-warning-50 dark:bg-warning-100/20 p-3 flex gap-3">
+          <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-warning-600" />
+          <ul className="text-xs text-muted-foreground space-y-1 leading-relaxed">
+            <li>Handle enzyme powder under N₂; avoid prolonged air exposure (activity loss).</li>
+            <li>DMSO penetrates skin — wear nitrile gloves and eye protection at all times.</li>
+            <li>Dispose of organic solvent waste per institutional solvent waste procedures.</li>
+            <li>This protocol is a mock template for demonstration; verify against your safety guidelines before use.</li>
+          </ul>
+        </div>
+
+        <p className="text-[10px] text-muted-foreground/60 text-center mt-2">
+          Generated by nitroAI · Mock protocol · {enzyme.ecNumber}
+        </p>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 // ── Result view ───────────────────────────────────────────────────────────────
 
 const truncateSMILES = (s: string, max = 18) =>
@@ -223,9 +442,10 @@ const ResultView = ({
   product: string;
   enzyme: Enzyme;
   onBack: () => void;
-}) => (
+}) => {
+  const [protocolOpen, setProtocolOpen] = useState(false);
+  return (
   <div className="max-w-3xl mx-auto space-y-8 p-6">
-    {/* Header */}
     <div className="mb-8">
       <div className="flex items-start gap-4 mb-2">
         <Button variant="ghost" size="sm" onClick={onBack} className="gap-1.5 -ml-2 shrink-0">
@@ -239,10 +459,8 @@ const ResultView = ({
       </p>
     </div>
 
-    {/* Two-column layout */}
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-      {/* Left: enzyme identity + kinetics */}
+      {/* Left: identity + kinetics */}
       <div className="space-y-5">
         <div>
           <h2 className="text-2xl font-bold text-foreground leading-tight">{enzyme.name}</h2>
@@ -258,9 +476,7 @@ const ResultView = ({
             <ConfidenceBadge score={enzyme.score} />
           </div>
         </div>
-
         <div className="border-t border-border" />
-
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-3">
             Kinetic Parameters
@@ -298,7 +514,6 @@ const ResultView = ({
             <p className="text-3xl font-bold font-mono text-foreground">{enzyme.projectedYield}</p>
           </div>
         </div>
-
         <div className="flex flex-col gap-3">
           <Button
             variant="outline"
@@ -319,31 +534,66 @@ const ResultView = ({
             <FlaskConical className="w-4 h-4" />
             Test with Nitroduck
           </button>
+          <Button
+            variant="outline"
+            className="w-full gap-2 mt-2"
+            onClick={() => setProtocolOpen(true)}
+          >
+            <ScrollText className="w-4 h-4" />
+            View Protocol
+          </Button>
         </div>
       </div>
-
     </div>
+    <ProtocolModal
+      open={protocolOpen}
+      onClose={() => setProtocolOpen(false)}
+      substrate={substrate}
+      product={product}
+      enzyme={enzyme}
+    />
   </div>
-);
+  );
+};
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 type View = 'select' | 'input' | 'result';
-type Mode = 'smiles' | 'rxn';
+type Mode = 'smiles' | 'rxn' | 'draw';
 
 export const NewReactionPage = () => {
   const navigate     = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [view, setView]   = useState<View>('select');
+  const [view, setView]     = useState<View>('select');
   const [visible, setVisible] = useState(true);
-  const [mode, setMode]   = useState<Mode>('smiles');
+  const [mode, setMode]     = useState<Mode>('smiles');
   const [substrateSmiles, setSubstrate] = useState('');
   const [productSmiles, setProduct]     = useState('');
   const [substrateValid, setSubstrateValid] = useState<boolean | null>(null);
   const [productValid, setProductValid]     = useState<boolean | null>(null);
   const [rxnFile, setRxnFile] = useState<File | null>(null);
+  const [subLoadTrigger, setSubLoadTrigger] = useState<{ smiles: string; key: number } | undefined>(undefined);
+  const [prodLoadTrigger, setProdLoadTrigger] = useState<{ smiles: string; key: number } | undefined>(undefined);
   const firstMount = useRef(true);
+
+  /** Load a substrate + product pair into the two draw editors */
+  const loadDrawPair = (subSmiles: string, subMolfile: string, prodSmiles: string, prodMolfile: string) => {
+    setSubLoadTrigger(t => ({ molfile: subMolfile,  key: (t?.key ?? 0) + 1 }));
+    setProdLoadTrigger(t => ({ molfile: prodMolfile, key: (t?.key ?? 0) + 1 }));
+    setSubstrate(subSmiles);
+    setProduct(prodSmiles);
+  };
+  /** Load a single molecule into the substrate editor */
+  const loadSubstrateMol = (smiles: string, molfile: string) => {
+    setSubLoadTrigger(t => ({ molfile, key: (t?.key ?? 0) + 1 }));
+    setSubstrate(smiles);
+  };
+  /** Load a single molecule into the product editor */
+  const loadProductMol = (smiles: string, molfile: string) => {
+    setProdLoadTrigger(t => ({ molfile, key: (t?.key ?? 0) + 1 }));
+    setProduct(smiles);
+  };
 
   // Fade transition on view change
   useEffect(() => {
@@ -361,196 +611,251 @@ export const NewReactionPage = () => {
     validateInput(productSmiles, (v) => setProductValid(productSmiles.trim() ? v : null));
   }, [productSmiles]);
 
-  const smilesReady = substrateValid === true && productValid === true;
-  const isActive    = mode === 'smiles' ? smilesReady : rxnFile !== null;
+  const canSubmit = substrateSmiles.trim().length >= 2 && productSmiles.trim().length >= 2;
+  const isActive =
+    mode === 'smiles' ? canSubmit :
+    mode === 'rxn'    ? rxnFile !== null :
+    /* draw */          canSubmit;
 
   const goTo = (next: View) => setView(next);
   const selectMode = (m: Mode) => { setMode(m); goTo('input'); };
 
+  const resultEnzyme = getEnzymeForSubstrate(substrateSmiles);
+
   const handleFindEnzymes = () => {
     if (!isActive) return;
+    addHistoryEntry({
+      id: `reaction-${Date.now()}`,
+      type: 'reaction',
+      name: `${MW_TABLE[substrateSmiles.trim()]?.name ?? substrateSmiles.slice(0, 16)} → ${MW_TABLE[productSmiles.trim()]?.name ?? productSmiles.slice(0, 16)}`,
+      subtitle: resultEnzyme.name,
+    });
     goTo('result');
   };
-
-  const resultEnzyme = getEnzymeForSubstrate(substrateSmiles);
 
   // ── Select view ─────────────────────────────────────────────────────────────
 
   const SelectContent = (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col min-h-screen bg-background">
       <div className="p-4">
         <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="gap-1.5">
           <ArrowLeft className="w-4 h-4" />
           Back
         </Button>
       </div>
-      <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-        <h1 className="text-3xl font-bold text-foreground">Import Reaction</h1>
-        <p className="text-sm text-muted-foreground mt-2 mb-10">
-          Choose how you'd like to define your reaction
-        </p>
-        <div className="flex gap-4">
-          <button
-            type="button"
-            onClick={() => selectMode('smiles')}
-            className="w-72 h-36 rounded-xl border-2 border-border hover:border-primary hover:bg-primary/5 transition-all flex flex-col items-center justify-center gap-2 cursor-pointer"
-          >
-            <FlaskConical className="w-7 h-7 text-primary" />
-            <span className="text-lg font-semibold">Substrate &amp; Product</span>
-            <span className="text-xs italic text-muted-foreground mt-1">SMILES</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => selectMode('rxn')}
-            className="w-72 h-36 rounded-xl border-2 border-border hover:border-primary hover:bg-primary/5 transition-all flex flex-col items-center justify-center gap-2 cursor-pointer"
-          >
-            <FileText className="w-7 h-7 text-primary" />
-            <span className="text-lg font-semibold">RXN File</span>
-            <span className="text-xs italic text-muted-foreground mt-1">.rxn · MDL format</span>
-          </button>
+      <div className="flex-1 flex flex-col items-center justify-center px-8 pb-16 gap-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-foreground">Import Reaction</h1>
+          <p className="text-sm text-muted-foreground mt-1">Choose how you'd like to input your reaction</p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-2xl">
+          {([
+            { id: 'smiles' as Mode, icon: <FileText className="w-6 h-6 text-primary" />, label: 'SMILES' },
+            { id: 'rxn'   as Mode, icon: <Upload    className="w-6 h-6 text-primary" />, label: 'RXN File' },
+            { id: 'draw'  as Mode, icon: <PencilLine className="w-6 h-6 text-primary" />, label: 'Draw Structure' },
+          ] as const).map(({ id, icon, label }) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => selectMode(id)}
+              className="flex flex-col items-center gap-3 p-6 rounded-xl border border-border bg-card hover:bg-accent transition-all group"
+              style={{ cursor: 'pointer' }}
+            >
+              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                {icon}
+              </div>
+              <p className="font-semibold text-foreground">{label}</p>
+            </button>
+          ))}
         </div>
       </div>
     </div>
   );
 
-  // ── Input view ──────────────────────────────────────────────────────────────
+  // ── Input view ───────────────────────────────────────────────────────────────
+
+  const modeTabs: { id: Mode; label: string }[] = [
+    { id: 'smiles', label: 'SMILES' },
+    { id: 'rxn',   label: 'RXN File' },
+    { id: 'draw',  label: 'Draw Structure' },
+  ];
 
   const InputContent = (
-    <div className="flex-1 overflow-y-auto p-6">
-      <div className="max-w-3xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
-          <Button variant="ghost" size="sm" onClick={() => goTo('select')} className="gap-1.5 -ml-2">
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </Button>
-          <div className="flex gap-1 p-1 bg-muted rounded-lg">
+    <div className="flex flex-col min-h-screen bg-background">
+      <div className="p-4 flex items-center gap-4">
+        <Button variant="ghost" size="sm" onClick={() => goTo('select')} className="gap-1.5 shrink-0">
+          <ArrowLeft className="w-4 h-4" />
+          Back
+        </Button>
+        {/* Mode tab switcher */}
+        <div className="flex gap-1 bg-muted rounded-lg p-1">
+          {modeTabs.map(({ id, label }) => (
             <button
+              key={id}
               type="button"
-              onClick={() => setMode('smiles')}
-              className={cn(
-                'flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md font-medium transition-all',
-                mode === 'smiles' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'
-              )}
+              onClick={() => setMode(id)}
+              className="px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
+              style={
+                mode === id
+                  ? { background: 'var(--bg-primary)', color: 'var(--text-primary)', boxShadow: '0 1px 3px rgba(0,0,0,0.15)' }
+                  : { color: 'var(--text-muted)' }
+              }
             >
-              <FlaskConical className="w-3.5 h-3.5" />
-              Text Input
+              {label}
             </button>
-            <button
-              type="button"
-              onClick={() => setMode('rxn')}
-              className={cn(
-                'flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md font-medium transition-all',
-                mode === 'rxn' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              <FileText className="w-3.5 h-3.5" />
-              RXN File
-            </button>
-          </div>
+          ))}
         </div>
+      </div>
 
+      <div className="flex-1 overflow-y-auto px-6 pb-12 max-w-3xl mx-auto w-full space-y-6">
         {mode === 'smiles' && (
-          <div className="flex flex-col gap-8">
-            <div className="flex flex-col md:flex-row items-stretch md:items-start gap-4">
+          <>
+            <h1 className="text-xl font-bold text-foreground">Enter SMILES</h1>
+            <div className="flex flex-col sm:flex-row gap-6">
               <SmilesColumn
                 label="Substrate"
                 value={substrateSmiles}
                 valid={substrateValid}
                 onChange={setSubstrate}
                 placeholder="e.g. CCCCCC(=O)O"
-                examples={SUBSTRATE_EXAMPLES}
-                onExampleSelect={(smiles) => { setSubstrate(smiles); setProduct(''); }}
               />
-              <div className="flex md:flex-col items-center justify-center shrink-0 md:pt-8">
-                <span className="hidden md:block text-2xl text-primary/40">→</span>
-                <span className="md:hidden text-2xl text-primary/40">↓</span>
-              </div>
               <SmilesColumn
                 label="Product"
                 value={productSmiles}
                 valid={productValid}
                 onChange={setProduct}
                 placeholder="e.g. OC(=O)c1cc(O)cc(O)c1CCCCC"
-                examples={PRODUCT_EXAMPLES}
-                onExampleSelect={(smiles) => { setProduct(smiles); setSubstrate(''); }}
               />
             </div>
-            <FindEnzymesButton active={isActive} onClick={handleFindEnzymes} />
-          </div>
+            <div>
+              <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">Example reactions</p>
+              <div className="flex flex-wrap gap-2">
+                {REACTION_EXAMPLES.map((ex) => (
+                  <ExampleChip
+                    key={ex.label}
+                    label={ex.label}
+                    onClick={() => { setSubstrate(ex.substrate); setProduct(ex.product); }}
+                  />
+                ))}
+              </div>
+            </div>
+            <FindEnzymesButton active={canSubmit} onClick={handleFindEnzymes} />
+          </>
         )}
 
         {mode === 'rxn' && (
-          <div className="space-y-5">
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              className={cn(
-                'border-2 border-dashed rounded-xl p-16 flex flex-col items-center gap-3 transition-all cursor-pointer max-w-lg mx-auto',
-                rxnFile ? 'border-primary/40 bg-primary/5' : 'border-border hover:border-primary hover:bg-primary/5'
-              )}
-            >
-              {rxnFile ? (
-                <>
-                  <CheckCircle2 className="w-10 h-10" style={{ color: 'var(--success-500)' }} />
-                  <p className="text-base font-medium text-foreground">{rxnFile.name}</p>
-                  <p className="text-sm text-muted-foreground">Reaction loaded (mock)</p>
-                </>
-              ) : (
-                <>
-                  <Upload className="w-10 h-10 text-muted-foreground" />
-                  <p className="text-base font-medium text-foreground">Drop your .rxn file here</p>
-                  <p className="text-sm text-muted-foreground">Supports MDL .rxn format</p>
-                </>
-              )}
-            </div>
+          <>
+            <h1 className="text-xl font-bold text-foreground">Upload RXN File</h1>
             <input
               ref={fileInputRef}
               type="file"
-              accept=".rxn"
+              accept=".rxn,.rdf,.mol"
               className="hidden"
               onChange={(e) => setRxnFile(e.target.files?.[0] ?? null)}
             />
-            <div className="flex flex-wrap gap-3 justify-center">
-              <Button variant="outline" size="sm" className="gap-2 text-xs" asChild>
-                <a href="#" onClick={(e) => e.preventDefault()}>
-                  <Download className="w-3.5 h-3.5" />
-                  Example: Amide Bond Formation
-                </a>
-              </Button>
-              <Button variant="outline" size="sm" className="gap-2 text-xs" asChild>
-                <a href="#" onClick={(e) => e.preventDefault()}>
-                  <Download className="w-3.5 h-3.5" />
-                  Example: Reductive Amination
-                </a>
-              </Button>
+            <div
+              role="button"
+              tabIndex={0}
+              className="rounded-xl border-2 border-dashed border-border hover:border-[var(--border-interactive)] transition-colors cursor-pointer p-12 flex flex-col items-center gap-4 text-center"
+              onClick={() => fileInputRef.current?.click()}
+              onKeyDown={(e) => e.key === 'Enter' && fileInputRef.current?.click()}
+            >
+              <Upload className="w-10 h-10 text-muted-foreground" />
+              {rxnFile ? (
+                <>
+                  <p className="font-semibold text-foreground">{rxnFile.name}</p>
+                  <p className="text-xs text-muted-foreground">{(rxnFile.size / 1024).toFixed(1)} KB · click to replace</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm text-muted-foreground">Click to upload or drag &amp; drop</p>
+                  <p className="text-xs text-muted-foreground font-mono">.rxn · .rdf · .mol</p>
+                </>
+              )}
             </div>
-            <FindEnzymesButton active={isActive} onClick={handleFindEnzymes} />
-          </div>
+            <FindEnzymesButton active={rxnFile !== null} onClick={handleFindEnzymes} />
+          </>
+        )}
+
+        {mode === 'draw' && (
+          <>
+            <h1 className="text-xl font-bold text-foreground">Draw Reaction</h1>
+
+            {/* ── Two editors side by side ──────────────────────────────── */}
+            <RenderGuard
+              fallback={
+                <div className="rounded-xl border border-border bg-muted/30 flex flex-col items-center justify-center h-72 gap-3 text-sm text-muted-foreground">
+                  <Beaker className="w-8 h-8 opacity-40" />
+                  <p>Structure editor failed to load.</p>
+                  <Button variant="ghost" size="sm" className="mt-2" onClick={() => selectMode('smiles')}>
+                    Switch to SMILES input
+                  </Button>
+                </div>
+              }
+            >
+              <div className="flex flex-col gap-2">
+
+                {/* ── Shared example pills (one row, no duplication) ─── */}
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground font-medium shrink-0">Examples:</span>
+                  {EXAMPLE_PAIRS.map((ex) => (
+                    <button
+                      key={ex.label}
+                      type="button"
+                      onClick={() => loadDrawPair(ex.substrate, ex.subMol, ex.product, ex.prodMol)}
+                      className="text-xs px-2.5 py-0.5 rounded-full border border-border bg-secondary hover:bg-tertiary hover:border-primary/50 text-foreground transition-colors cursor-pointer whitespace-nowrap"
+                    >
+                      {ex.shortLabel}
+                    </button>
+                  ))}
+                </div>
+
+                {/* ── Labels + editors in a 2-col grid ────────────────── */}
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Substrate</span>
+                  <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Product</span>
+
+                  <Suspense fallback={<KetcherFallback />}>
+                    <KetcherEditor
+                      onSmiles={(s) => setSubstrate(s)}
+                      height={320}
+                      loadTrigger={subLoadTrigger}
+                    />
+                  </Suspense>
+
+                  <Suspense fallback={<KetcherFallback />}>
+                    <KetcherEditor
+                      onSmiles={(s) => setProduct(s)}
+                      height={320}
+                      loadTrigger={prodLoadTrigger}
+                    />
+                  </Suspense>
+                </div>
+
+              </div>
+            </RenderGuard>
+
+            <FindEnzymesButton active={canSubmit} onClick={handleFindEnzymes} />
+          </>
         )}
       </div>
     </div>
   );
 
-  // ── Render ──────────────────────────────────────────────────────────────────
+  // ── Render ───────────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex flex-col h-full">
-      <div
-        className={cn(
-          'flex-1 overflow-y-auto transition-opacity duration-300',
-          visible ? 'opacity-100' : 'opacity-0'
-        )}
-      >
-        {view === 'select' && SelectContent}
-        {view === 'input'  && InputContent}
-        {view === 'result' && (
-          <ResultView
-            substrate={substrateSmiles}
-            product={productSmiles}
-            enzyme={resultEnzyme}
-            onBack={() => goTo('input')}
-          />
-        )}
-      </div>
+    <div className={cn('transition-opacity duration-150', visible ? 'opacity-100' : 'opacity-0')}>
+      {view === 'select' && SelectContent}
+      {view === 'input'  && InputContent}
+      {view === 'result' && (
+        <ResultView
+          substrate={substrateSmiles}
+          product={productSmiles}
+          enzyme={resultEnzyme}
+          onBack={() => goTo('input')}
+        />
+      )}
     </div>
   );
 };
