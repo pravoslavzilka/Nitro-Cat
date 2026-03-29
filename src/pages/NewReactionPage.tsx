@@ -14,7 +14,7 @@ import {
   PencilLine, ScrollText, Beaker, Clock, AlertTriangle, BookOpen, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { formatScore, formatConfidenceLabel } from "@/lib/utils/formatting";
+import { formatScore, formatConfidenceLabel, transformClipzymeScore } from "@/lib/utils/formatting";
 import SmilesDrawer from "smiles-drawer";
 import { allExamplePathways } from "@/data/allExamplePathways";
 import { addHistoryEntry } from "@/lib/history";
@@ -660,7 +660,7 @@ export const NewReactionPage = () => {
             id: first.uniprot_id ?? first.uniprot ?? 'unknown',
             name: first.protein_name ?? 'Unavailable',
             ecNumber: first.ec_number ?? 'Unavailable',
-            score: typeof first.score === 'number' ? first.score : 0,
+            score: transformClipzymeScore(typeof first.score === 'number' ? first.score : 0),
             organism: first.organism ?? 'Unavailable',
             description: first.function ?? 'Unavailable',
             optimalPh: fmt(first.ph_optimum ?? first.optimal_ph),
@@ -685,13 +685,29 @@ export const NewReactionPage = () => {
     }
 
     setResultEnzyme(enzyme);
+    const substrateName = MW_TABLE[substrateSmiles.trim()]?.name ?? substrateSmiles.slice(0, 24);
+    const productName   = MW_TABLE[productSmiles.trim()]?.name  ?? productSmiles.slice(0, 24);
     addHistoryEntry({
       id: `reaction-${Date.now()}`,
       type: 'reaction',
-      name: `${MW_TABLE[substrateSmiles.trim()]?.name ?? substrateSmiles.slice(0, 16)} → ${MW_TABLE[productSmiles.trim()]?.name ?? productSmiles.slice(0, 16)}`,
+      name: `${substrateName} → ${productName}`,
       subtitle: enzyme.name,
     });
-    goTo('result');
+    navigate('/pathways/import/biocatalyst/result', {
+      state: {
+        reaction: {
+          label: 'Biocatalyst found',
+          confidence: 'high',
+          enzyme,
+          substrateSmiles: substrateSmiles.trim(),
+          productSmiles: productSmiles.trim(),
+          substrateName,
+          productName,
+          pathwayId: 'import',
+          reactionId: 'result',
+        } satisfies import('@/types/pathway').ReactionNodeData,
+      },
+    });
   };
 
   // ── Select view ─────────────────────────────────────────────────────────────

@@ -562,8 +562,28 @@ export default function BiocatalystFoundPage() {
             </div>
             <p className="text-base text-muted-foreground mt-2">
               <span className="font-semibold text-foreground">{enzyme.name}</span>
-              {' '}is predicted to catalyse this reaction with{' '}
-              <span className="font-semibold" style={{ color: '#10B981' }}>high confidence</span>.
+              {' '}is predicted to catalyse this reaction with a match score of{' '}
+              <span
+                className="font-semibold"
+                style={{
+                  color: enzyme.score >= 0.9 ? '#10B981'
+                       : enzyme.score >= 0.75 ? '#F59E0B'
+                       : '#F97316',
+                }}
+              >
+                {formatScore(enzyme.score)}
+              </span>
+              {' '}
+              <span
+                className="text-sm font-medium"
+                style={{
+                  color: enzyme.score >= 0.9 ? '#10B981'
+                       : enzyme.score >= 0.75 ? '#F59E0B'
+                       : '#F97316',
+                }}
+              >
+                ({formatConfidenceLabel(enzyme.score)} confidence)
+              </span>.
             </p>
             <button
               type="button"
@@ -602,7 +622,7 @@ export default function BiocatalystFoundPage() {
           className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to pathway
+          {reaction.pathwayId === 'import' ? 'Back to input' : 'Back to pathway'}
         </button>
 
         {/* Reaction structural view */}
