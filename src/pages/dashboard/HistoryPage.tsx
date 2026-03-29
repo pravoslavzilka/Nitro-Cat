@@ -29,6 +29,10 @@ export const HistoryPage = () => {
   const handleClick = (entry: HistoryEntry) => {
     if (entry.type === 'pathway') {
       navigate(`/pathways/${entry.id}`);
+    } else if (entry.reactionState) {
+      navigate('/pathways/import/biocatalyst/result', {
+        state: { reaction: entry.reactionState },
+      });
     } else {
       navigate('/pathways/new');
     }
@@ -39,7 +43,7 @@ export const HistoryPage = () => {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-foreground">History</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Pathways and reactions you've explored</p>
+          <p className="text-sm text-muted-foreground mt-0.5">Reactions you've run this session</p>
         </div>
         {entries.length > 0 && (
           <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={handleClear}>
@@ -52,7 +56,7 @@ export const HistoryPage = () => {
         <div className="flex flex-col items-center justify-center h-64 gap-3 text-center">
           <History className="w-10 h-10 text-muted-foreground/40" />
           <p className="text-base font-semibold text-foreground">No history yet</p>
-          <p className="text-sm text-muted-foreground">Pathways and reactions you explore will appear here</p>
+          <p className="text-sm text-muted-foreground">Reactions you run will appear here for this session</p>
         </div>
       ) : (
         <div className="flex flex-col gap-2">

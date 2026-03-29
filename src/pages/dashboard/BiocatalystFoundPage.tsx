@@ -105,7 +105,7 @@ const EnzymeInfoPanel = ({ enzyme }: { enzyme: Enzyme }) => (
     <div className="flex flex-wrap gap-2">
       {[
         { label: 'UniProt',   href: `https://www.uniprot.org/uniprotkb?query=${enzyme.id}`,           color: 'text-sky-500 border-sky-400/40 bg-sky-500/5 hover:bg-sky-500/15' },
-        { label: 'BRENDA',    href: 'https://www.brenda-enzymes.org/',                                 color: 'text-amber-500 border-amber-400/40 bg-amber-500/5 hover:bg-amber-500/15' },
+        { label: 'BRENDA',    href: `https://www.brenda-enzymes.org/enzyme.php?ecno=${enzyme.ecNumber.replace(/^EC\s*/i, '')}`, color: 'text-amber-500 border-amber-400/40 bg-amber-500/5 hover:bg-amber-500/15' },
         { label: 'ExplorEnz', href: `https://www.enzyme-database.org/query.php?ec=${enzyme.ecNumber}`, color: 'text-violet-500 border-violet-400/40 bg-violet-500/5 hover:bg-violet-500/15' },
       ].map(({ label, href, color }) => (
         <a
@@ -247,32 +247,56 @@ const GetEnzymePanel = ({ enzyme }: { enzyme: Enzyme }) => {
         <DialogContent className="max-w-sm" style={{ background: 'var(--bg-elevated)' }}>
           <DialogHeader><DialogTitle>Get the Enzyme</DialogTitle></DialogHeader>
           <div className="py-4 space-y-4">
-            <div className="rounded-xl border border-border bg-muted/30 p-4 flex items-start gap-4">
-              <div className="rounded-lg bg-white border border-border p-2 shrink-0 w-14 h-14 flex items-center justify-center">
-                <span className="text-xs font-bold text-muted-foreground text-center leading-tight">Sigma<br />Aldrich</span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-foreground text-sm">{enzyme.name}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Catalog: {enzyme.catalogNumber || 'E-2002'}</p>
-                <p className="text-xs text-muted-foreground">Purity: ≥95% · Lyophilised · 1000 U</p>
-                <div className="mt-2 flex items-center gap-2">
-                  <span className="text-base font-bold font-mono text-foreground">{enzyme.price || '$285.00'}</span>
-                  <span className="text-[10px] text-muted-foreground uppercase tracking-wider">per 5 mg</span>
-                </div>
-              </div>
+            <p className="text-sm text-muted-foreground">
+              Search for <span className="font-semibold text-foreground">{enzyme.name}</span> directly on these suppliers:
+            </p>
+            <div className="space-y-2">
+              {[
+                {
+                  name: 'Sigma-Aldrich',
+                  note: 'Merck · broad enzyme catalogue',
+                  href: `https://www.sigmaaldrich.com/search/results?query=${encodeURIComponent(enzyme.name)}`,
+                  color: 'hover:border-red-400/40 hover:bg-red-500/5',
+                },
+                {
+                  name: 'Abcam',
+                  note: 'Recombinant & native enzyme proteins',
+                  href: `https://www.abcam.com/en-us/search?keywords=${encodeURIComponent(enzyme.name)}`,
+                  color: 'hover:border-sky-400/40 hover:bg-sky-500/5',
+                },
+                {
+                  name: 'Cayman Chemical',
+                  note: 'Biochemical assay enzymes',
+                  href: `https://www.caymanchem.com/search?q=${encodeURIComponent(enzyme.name)}`,
+                  color: 'hover:border-teal-400/40 hover:bg-teal-500/5',
+                },
+                {
+                  name: 'R&D Systems',
+                  note: 'Research-grade enzyme proteins',
+                  href: `https://www.rndsystems.com/search#q=${encodeURIComponent(enzyme.name)}`,
+                  color: 'hover:border-violet-400/40 hover:bg-violet-500/5',
+                },
+              ].map(({ name, note, href, color }) => (
+                <a
+                  key={name}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={cn(
+                    'flex items-center justify-between rounded-xl border border-border bg-muted/30 px-4 py-3 transition-colors group',
+                    color,
+                  )}
+                >
+                  <div>
+                    <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{name}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{note}</p>
+                  </div>
+                  <ExternalLink className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
+                </a>
+              ))}
             </div>
-
-            <div className="flex items-center gap-2 text-xs text-success-600">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>In stock · Ships in 3–5 business days</span>
-            </div>
-
-            <Button className="w-full gap-2" disabled>
-              <ShoppingCart className="w-4 h-4" />
-              Add to cart — vendor integration coming soon
-            </Button>
             <p className="text-[10px] text-center text-muted-foreground/60">
-              Pricing shown is indicative. Final pricing subject to vendor confirmation.
+              Links open vendor search results for this enzyme name. Availability varies by supplier.
             </p>
           </div>
         </DialogContent>
@@ -350,10 +374,40 @@ const GetEnzymePanel = ({ enzyme }: { enzyme: Enzyme }) => {
                 <p className="text-xs text-muted-foreground">Host: {selectedHost}</p>
                 <p className="text-xs text-muted-foreground">Format: pET-28a(+) compatible insert · 5′ NdeI / 3′ XhoI</p>
               </div>
-              <Button className="w-full gap-2" disabled>
-                <Dna className="w-4 h-4" />
-                Order gene construct — coming soon
-              </Button>
+              <p className="text-sm text-muted-foreground">Order a codon-optimised gene construct from:</p>
+              <div className="space-y-2">
+                {[
+                  {
+                    name: 'Twist Bioscience',
+                    note: 'Synthetic genes · high accuracy',
+                    href: `https://www.twistbioscience.com/products/genes`,
+                    color: 'hover:border-sky-400/40 hover:bg-sky-500/5',
+                  },
+                  {
+                    name: 'GenScript',
+                    note: 'Gene synthesis · codon optimisation',
+                    href: `https://www.genscript.com/gene-synthesis.html`,
+                    color: 'hover:border-green-400/40 hover:bg-green-500/5',
+                  },
+                ].map(({ name, note, href, color }) => (
+                  <a
+                    key={name}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={cn(
+                      'flex items-center justify-between rounded-xl border border-border bg-muted/30 px-4 py-3 transition-colors group',
+                      color,
+                    )}
+                  >
+                    <div>
+                      <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{name}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{note}</p>
+                    </div>
+                    <ExternalLink className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
+                  </a>
+                ))}
+              </div>
               <button
                 type="button"
                 className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors"
@@ -561,7 +615,7 @@ export default function BiocatalystFoundPage() {
               </h1>
             </div>
             <p className="text-base text-muted-foreground mt-2">
-              <span className="font-semibold text-foreground">{enzyme.name}</span>
+              <span className="text-lg font-semibold text-foreground">{enzyme.name}</span>
               {' '}is predicted to catalyse this reaction with a match score of{' '}
               <span
                 className="font-semibold"
