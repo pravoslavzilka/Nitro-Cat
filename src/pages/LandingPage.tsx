@@ -20,7 +20,7 @@ export const LandingPage = () => {
 
       {/* Hero */}
       <section className="min-h-[calc(100vh-57px)] flex flex-col items-center justify-center text-center">
-        <h1 className="text-6xl font-bold text-glow tracking-tight text-foreground">NitroCat</h1>
+        <h1 className="text-6xl font-bold tracking-tight text-foreground">NitroCat</h1>
         <div className="flex gap-4 mt-10">
           <Button
             variant="outline"

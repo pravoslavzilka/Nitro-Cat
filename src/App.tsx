@@ -17,6 +17,8 @@ import NewReactionPage from "@/pages/NewReactionPage";
 import ImportPathwayPage from "@/pages/dashboard/ImportPathwayPage";
 import PathwayDetailPage from "@/pages/dashboard/PathwayDetailPage";
 import PathwayResultsPage from "@/pages/dashboard/PathwayResultsPage";
+import BiocatalystFoundPage from "@/pages/dashboard/BiocatalystFoundPage";
+import TestBiocatalysisPage from "@/pages/dashboard/TestBiocatalysisPage";
 import HistoryPage from "@/pages/dashboard/HistoryPage";
 import SettingsPage from "@/pages/dashboard/SettingsPage";
 import ProfilePage from "@/pages/dashboard/ProfilePage";
@@ -43,6 +45,8 @@ const App = () => (
                 <Route path="/pathways/import" element={<ImportPathwayPage />} />
                 <Route path="/pathways/:id" element={<PathwayDetailPage />} />
                 <Route path="/pathways/:id/results" element={<PathwayResultsPage />} />
+                <Route path="/pathways/:pathwayId/biocatalyst/:reactionId" element={<BiocatalystFoundPage />} />
+                <Route path="/pathways/:pathwayId/test/:reactionId" element={<TestBiocatalysisPage />} />
                 <Route path="/history" element={<HistoryPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/profile" element={<ProfilePage />} />

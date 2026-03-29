@@ -32,9 +32,19 @@ export interface MoleculeNodeData {
   formula?: string;
 }
 
+export type ReactionLabel = 'Chemical synthesis' | 'Biocatalyst found' | 'Test biocatalysis';
+
 export interface ReactionNodeData {
-  label: 'Chemical synthesis' | 'Suggested biocatalysis';
+  label: ReactionLabel;
+  confidence?: 'high' | 'medium' | 'low';
   enzyme?: Enzyme;
+  // injected by PathwayBuilder from edge/node graph
+  substrateSmiles?: string;   // dot-joined if multi-substrate
+  productSmiles?: string;
+  substrateName?: string;
+  productName?: string;
+  pathwayId?: string;
+  reactionId?: string;
 }
 
 export interface PathwayNode {
@@ -47,7 +57,4 @@ export interface PathwayGraph {
   id: string;
   name: string;
   description?: string;
-  status: 'draft' | 'analyzing' | 'complete';
-  nodes: PathwayNode[];
-  edges: { id: string; source: string; target: string }[];
-}
+  status: 'draft' | 'analyzi
