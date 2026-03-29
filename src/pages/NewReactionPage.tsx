@@ -245,7 +245,7 @@ const FindEnzymesButton = ({ active, loading, onClick }: { active: boolean; load
       }
     >
       {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Dna className="w-5 h-5" />}
-      {loading ? 'Searching…' : 'Find Enzymes'}
+      {loading ? 'Searching…' : 'Find Biocatalyst'}
     </button>
   </div>
 );
@@ -728,7 +728,7 @@ export const NewReactionPage = () => {
       </div>
       <div className="flex-1 flex flex-col items-center justify-center px-8 pb-16 gap-8">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-foreground">Import Reaction</h1>
+          <h1 className="text-2xl font-bold text-foreground">Find Biocatalyst</h1>
           <p className="text-sm text-muted-foreground mt-1">Choose how you'd like to input your reaction</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-2xl">
