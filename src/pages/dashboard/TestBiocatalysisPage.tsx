@@ -41,6 +41,26 @@ const scoreColor = (score: number): string => {
   return 'text-orange-600 dark:text-orange-400';
 };
 
+// ── Seeded price helper ───────────────────────────────────────────────────────
+
+const seedPrice = (id: string, min: number, max: number): number => {
+  let h = 5381;
+  for (let i = 0; i < id.length; i++) h = (h * 33 + id.charCodeAt(i)) & 0x7fffffff;
+  return min + (h % (max - min + 1));
+};
+
+const QTY_MG          = [1, 5, 10, 50]                              as const;
+const QTY_RXNS         = [10, 50, 100, 500]                          as const;
+const QTY_MUG          = ['1 µg', '5 µg', '10 µg', '50 µg']         as const;
+const MUG_MULT         = [1, 3, 5, 15]                               as const;
+const DNA_CNS          = [1, 2, 5, 10]                               as const;
+const ENZYME_DISCOUNT  = [1.00, 0.90, 0.82, 0.70]                   as const;
+const DNA_MUG_DISCOUNT = [1.00, 0.88, 0.80, 0.65]                   as const;
+const DNA_CNS_DISCOUNT = [1.00, 0.92, 0.85, 0.75]                   as const;
+
+const SEL_BTN  = 'border-emerald-500 bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold ring-1 ring-emerald-500/30';
+const IDLE_BTN = 'border-border bg-muted/30 text-muted-foreground hover:border-emerald-500/40';
+
 // ── Get-Enzyme dialog ─────────────────────────────────────────────────────────
 
 type GetView = 'chooser' | 'enzyme' | 'dna' | 'design';
@@ -51,9 +71,13 @@ const GetEnzymeDialog = ({ enzyme, open, onOpenChange }: {
   onOpenChange: (v: boolean) => void;
 }) => {
   const [view, setView] = useState<GetView>('chooser');
+  const [enzymeQtyIdx, setEnzymeQtyIdx] = useState(0); // drives both qty AND reactions
+  const [dnaMugIdx,    setDnaMugIdx]    = useState(0);
+  const [dnaSubStep,    setDnaSubStep]    = useState<'config' | 'review'>('config');
+  const [orderPlaced,   setOrderPlaced]   = useState<'enzyme' | 'dna' | null>(null);
 
   const handleOpenChange = (v: boolean) => {
-    if (!v) setView('chooser');
+    if (!v) { setView('chooser'); setOrderPlaced(null); setDnaSubStep('config'); }
     onOpenChange(v);
   };
 
@@ -109,67 +133,122 @@ const GetEnzymeDialog = ({ enzyme, open, onOpenChange }: {
         {view === 'enzyme' && (
           <>
             <DialogHeader><DialogTitle>Get the Enzyme</DialogTitle></DialogHeader>
-            <div className="py-2 space-y-3">
-              <p className="text-sm text-muted-foreground">
-                Search for <span className="font-semibold text-foreground">{enzyme.name}</span> on these suppliers:
-              </p>
-              <div className="space-y-2">
-                {[
-                  { name: 'Sigma-Aldrich', note: 'Merck · broad enzyme catalogue',    href: `https://www.sigmaaldrich.com/search/results?query=${encodeURIComponent(enzyme.name)}`,        color: 'hover:border-red-400/40 hover:bg-red-500/5' },
-                  { name: 'Abcam',         note: 'Recombinant & native proteins',      href: `https://www.abcam.com/en-us/search?keywords=${encodeURIComponent(enzyme.name)}`,              color: 'hover:border-sky-400/40 hover:bg-sky-500/5' },
-                  { name: 'Cayman Chemical', note: 'Biochemical assay enzymes',        href: `https://www.caymanchem.com/search?q=${encodeURIComponent(enzyme.name)}`,                     color: 'hover:border-teal-400/40 hover:bg-teal-500/5' },
-                  { name: 'R&D Systems',   note: 'Research-grade enzyme proteins',     href: `https://www.rndsystems.com/search#q=${encodeURIComponent(enzyme.name)}`,                     color: 'hover:border-violet-400/40 hover:bg-violet-500/5' },
-                ].map(({ name, note, href, color }) => (
-                  <a
-                    key={name}
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={cn('flex items-center justify-between rounded-xl border border-border bg-muted/30 px-4 py-3 transition-colors group', color)}
-                  >
-                    <div>
-                      <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{name}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{note}</p>
-                    </div>
-                    <ExternalLink className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
-                  </a>
-                ))}
+            {orderPlaced === 'enzyme' ? (
+              <div className="py-8 flex flex-col items-center gap-3 text-center">
+                <CheckCircle2 className="w-10 h-10 text-primary" />
+                <p className="text-sm font-semibold text-foreground">Order placed!</p>
+                <p className="text-xs text-muted-foreground">Your order for <span className="font-semibold text-foreground">{enzyme.name}</span> is being processed.</p>
+                <Button size="sm" variant="outline" className="mt-2" onClick={() => handleOpenChange(false)}>Done</Button>
               </div>
-              {backLink}
-            </div>
+            ) : (
+              <div className="py-2 space-y-5">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">Quantity</p>
+                  <div className="grid grid-cols-4 gap-2">
+                    {QTY_MG.map((mg, i) => (
+                      <button key={mg} type="button" onClick={() => setEnzymeQtyIdx(i)}
+                        className={cn('rounded-lg border py-2 text-sm transition-colors', enzymeQtyIdx === i ? SEL_BTN : IDLE_BTN)}
+                      >{mg} mg</button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">Reactions</p>
+                  <div className="grid grid-cols-4 gap-2">
+                    {QTY_RXNS.map((n, i) => (
+                      <button key={n} type="button" onClick={() => setEnzymeQtyIdx(i)}
+                        className={cn('rounded-lg border py-2 text-sm transition-colors', enzymeQtyIdx === i ? SEL_BTN : IDLE_BTN)}
+                      >{n}</button>
+                    ))}
+                  </div>
+                </div>
+                {(() => {
+                  const base  = seedPrice(enzyme.id, 150, 380);
+                  const unit  = Math.round(base * ENZYME_DISCOUNT[enzymeQtyIdx]);
+                  const total = QTY_MG[enzymeQtyIdx] * unit;
+                  return (
+                    <div className="rounded-lg bg-muted/40 border border-border px-4 py-3 flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-muted-foreground">Estimated cost</p>
+                        <p className="text-xl font-bold text-foreground font-mono mt-0.5">${total.toLocaleString()}</p>
+                        {enzymeQtyIdx > 0 && (
+                          <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5">
+                            {Math.round((1 - ENZYME_DISCOUNT[enzymeQtyIdx]) * 100)}% volume discount applied
+                          </p>
+                        )}
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs text-muted-foreground">Unit price</p>
+                        <p className="text-sm font-mono text-muted-foreground">${unit}/mg</p>
+                      </div>
+                    </div>
+                  );
+                })()}
+                <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold" onClick={() => setOrderPlaced('enzyme')}>Place Order</Button>
+                {backLink}
+              </div>
+            )}
           </>
         )}
 
         {view === 'dna' && (
           <>
             <DialogHeader><DialogTitle>Get DNA</DialogTitle></DialogHeader>
-            <div className="py-2 space-y-3">
-              <p className="text-sm text-muted-foreground">
-                Order a codon-optimised gene construct for{' '}
-                <span className="font-semibold text-foreground">{enzyme.name}</span>:
-              </p>
-              <div className="space-y-2">
-                {[
-                  { name: 'Twist Bioscience', note: 'Synthetic genes · high accuracy', href: 'https://www.twistbioscience.com/products/genes',      color: 'hover:border-sky-400/40 hover:bg-sky-500/5' },
-                  { name: 'GenScript',        note: 'Gene synthesis · codon optimisation', href: 'https://www.genscript.com/gene-synthesis.html', color: 'hover:border-green-400/40 hover:bg-green-500/5' },
-                ].map(({ name, note, href, color }) => (
-                  <a
-                    key={name}
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={cn('flex items-center justify-between rounded-xl border border-border bg-muted/30 px-4 py-3 transition-colors group', color)}
-                  >
-                    <div>
-                      <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{name}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{note}</p>
-                    </div>
-                    <ExternalLink className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
-                  </a>
-                ))}
+            {orderPlaced === 'dna' ? (
+              <div className="py-8 flex flex-col items-center gap-3 text-center">
+                <CheckCircle2 className="w-10 h-10 text-primary" />
+                <p className="text-sm font-semibold text-foreground">Order placed!</p>
+                <p className="text-xs text-muted-foreground">Your gene synthesis order is being processed.</p>
+                <Button size="sm" variant="outline" className="mt-2" onClick={() => handleOpenChange(false)}>Done</Button>
               </div>
-              {backLink}
-            </div>
+            ) : dnaSubStep === 'config' ? (
+              <div className="py-2 space-y-5">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">Quantity</p>
+                  <div className="grid grid-cols-4 gap-2">
+                    {QTY_MUG.map((q, i) => (
+                      <button key={q} type="button" onClick={() => setDnaMugIdx(i)}
+                        className={cn('rounded-lg border py-2 text-sm transition-colors', dnaMugIdx === i ? SEL_BTN : IDLE_BTN)}
+                      >{q}</button>
+                    ))}
+                  </div>
+                </div>
+                <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold" onClick={() => setDnaSubStep('review')}>Continue</Button>
+                {backLink}
+              </div>
+            ) : (
+              <div className="py-2 space-y-4">
+                <div className="rounded-lg bg-muted/40 border border-border p-3 space-y-1">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Order summary</p>
+                  <p className="text-sm text-foreground font-semibold">{enzyme.name} — codon-optimised gene</p>
+                  <p className="text-xs text-muted-foreground">Quantity: {QTY_MUG[dnaMugIdx]}</p>
+                </div>
+                {(() => {
+                  const base    = seedPrice(enzyme.id + 'dna', 80, 220);
+                  const total   = Math.round(base * MUG_MULT[dnaMugIdx] * DNA_MUG_DISCOUNT[dnaMugIdx]);
+                  const discPct = Math.round((1 - DNA_MUG_DISCOUNT[dnaMugIdx]) * 100);
+                  return (
+                    <div className="rounded-lg bg-muted/40 border border-border px-4 py-3 flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-muted-foreground">Estimated cost</p>
+                        <p className="text-xl font-bold text-foreground font-mono mt-0.5">${total.toLocaleString()}</p>
+                        {discPct > 0 && (
+                          <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5">{discPct}% volume discount applied</p>
+                        )}
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs text-muted-foreground">Base price</p>
+                        <p className="text-sm font-mono text-muted-foreground">${base}</p>
+                      </div>
+                    </div>
+                  );
+                })()}
+                <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold" onClick={() => setOrderPlaced('dna')}>Place Order</Button>
+                <button type="button" className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors" onClick={() => setDnaSubStep('config')}>
+                  ← Edit quantity
+                </button>
+              </div>
+            )}
           </>
         )}
 
