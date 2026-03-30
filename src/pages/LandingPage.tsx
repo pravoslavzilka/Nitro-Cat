@@ -20,7 +20,7 @@ export const LandingPage = () => {
 
       {/* Hero */}
       <section className="min-h-[calc(100vh-57px)] flex flex-col items-center justify-center text-center">
-        <h1 className="text-6xl font-bold text-glow tracking-tight text-foreground">NitroCat</h1>
+        <h1 className="text-6xl font-bold tracking-tight text-foreground">NitroCat</h1>
         <div className="flex gap-4 mt-10">
           <Button
             variant="outline"
@@ -28,15 +28,7 @@ export const LandingPage = () => {
             onClick={() => navigate('/pathways/new')}
           >
             <Upload className="w-7 h-7" />
-            <span className="text-lg font-semibold">Import Reaction</span>
-          </Button>
-          <Button
-            variant="outline"
-            className="group w-72 h-36 rounded-xl border-2 border-border hover:border-primary hover:bg-primary/5 hover:text-primary transition-all flex flex-col gap-1"
-            onClick={() => navigate('/pathways/import')}
-          >
-            <Upload className="w-7 h-7" />
-            <span className="text-lg font-semibold">Import Pathway</span>
+            <span className="text-lg font-semibold">Find Biocatalyst</span>
           </Button>
         </div>
       </section>

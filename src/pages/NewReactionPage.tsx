@@ -14,7 +14,7 @@ import {
   PencilLine, ScrollText, Beaker, Clock, AlertTriangle, BookOpen, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { formatScore, formatConfidenceLabel } from "@/lib/utils/formatting";
+import { formatScore, formatConfidenceLabel, transformClipzymeScore } from "@/lib/utils/formatting";
 import SmilesDrawer from "smiles-drawer";
 import { allExamplePathways } from "@/data/allExamplePathways";
 import { addHistoryEntry } from "@/lib/history";
@@ -34,8 +34,8 @@ class RenderGuard extends Component<{ children: ReactNode; fallback: ReactNode }
 
 // ── Enzyme lookup ─────────────────────────────────────────────────────────────
 
-const HEXANOIC    = 'CCCCCC(=O)O';
-const OLIVETOLIC  = 'OC(=O)c1cc(O)cc(O)c1CCCCC';
+const ACETOPHENONE     = 'CC(=O)c1ccccc1';
+const R_PHENYLETHANOL  = 'C[C@@H](O)c1ccccc1';
 const COMPOUND3   = 'C#C[C@]1(CO)[C@@H](O)C[C@@H](OP(=O)(O)O)O1';
 const COMPOUND4   = 'C#C[C@]1(COP(=O)(O)O)[C@@H](O)C[C@@H](O)O1';
 const AMINO_KETONE   = 'CC(=O)CCc1cccc(N)c1';
@@ -70,7 +70,7 @@ function getEnzymeForSubstrate(smiles: string): Enzyme {
   };
 
   const s = smiles.trim();
-  if (s === HEXANOIC)    return pick(cannabinoid,    'r1') ?? DEFAULT_ENZYME;
+  if (s === ACETOPHENONE) return DEFAULT_ENZYME; // backend will handle this
   if (s === COMPOUND3)   return pick(islatravir,     'r2') ?? DEFAULT_ENZYME;
   if (s === AMINO_KETONE) return pick(chemoEnzymatic, 'r3') ?? DEFAULT_ENZYME;
   return DEFAULT_ENZYME;
@@ -81,8 +81,8 @@ function getEnzymeForSubstrate(smiles: string): Enzyme {
 // Pre-converted MOL V2000 strings for use in the Kekule structure editor
 // (Kekule can write SMILES but only reads MOL natively)
 const MOL: Record<string, string> = {
-  HEXANOIC: "\n     RDKit          2D\n\n  8  7  0  0  0  0  0  0  0  0999 V2000\n   -4.2551   -0.1865    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.8948    0.4455    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.6672   -0.4165    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.3069    0.2155    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.9207   -0.6465    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.2810   -0.0145    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.4138    1.4796    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5085   -0.8766    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  1  0\n  5  6  1  0\n  6  7  2  0\n  6  8  1  0\nM  END\n",
-  OLIVETOLIC: "\n     RDKit          2D\n\n 16 16  0  0  0  0  0  0  0  0999 V2000\n    0.0339   -3.1915    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.2853   -1.7127    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.6917   -1.1910    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.8697   -0.7555    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.2760   -1.2772    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.4310   -0.3201    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.8373   -0.8417    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.1795    1.1587    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.7732    1.6804    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5218    3.1591    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.6182    0.7232    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7881    1.2449    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.9431    0.2878    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.3495    0.8094    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    4.5044   -0.1477    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    5.9108    0.3739    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  2  0\n  2  4  1  0\n  4  5  2  0\n  5  6  1  0\n  6  7  1  0\n  6  8  2  0\n  8  9  1  0\n  9 10  1  0\n  9 11  2  0\n 11 12  1  0\n 12 13  1  0\n 13 14  1  0\n 14 15  1  0\n 15 16  1  0\n 11  4  1  0\nM  END\n",
+  ACETOPHENONE: "\n     RDKit          2D\n\n  9  9  0  0  0  0  0  0  0  0999 V2000\n    2.5833   -1.2990    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.8333    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.5833    1.2990    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.3333   -0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.4167   -1.2990    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.9167   -1.2990    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.6667    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.9167    1.2990    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.4167    1.2990    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  2  0\n  2  4  1  0\n  4  5  2  0\n  5  6  1  0\n  6  7  2  0\n  7  8  1  0\n  8  9  2  0\n  9  4  1  0\nM  END\n",
+  R_PHENYLETHANOL: "\n     RDKit          2D\n\n  9  9  0  0  0  0  0  0  0  0999 V2000\n    2.5833   -1.2990    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.8333    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.5833    1.2990    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.3333   -0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.4167   -1.2990    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.9167   -1.2990    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.6667    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.9167    1.2990    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.4167    1.2990    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  2  1  1  6\n  2  3  1  0\n  2  4  1  0\n  4  5  2  0\n  5  6  1  0\n  6  7  2  0\n  7  8  1  0\n  8  9  2  0\n  9  4  1  0\nM  END\n",
   COMPOUND3: "\n     RDKit          2D\n\n 15 15  0  0  0  0  0  0  0  0999 V2000\n    4.4193    1.0120    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.0691    0.3585    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.7190   -0.2950    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.5100   -1.5695    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.8018   -2.8918    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    1.2102    1.1160    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.0527    2.3571    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.2891    1.0682    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.7068   -0.3724    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.1179   -0.8812    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.2641    0.0864    0.0000 P   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2317   -1.0598    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.2965    1.2325    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.4103    1.0540    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5342   -1.2150    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  3  0\n  3  2  1  1\n  3  4  1  0\n  4  5  1  0\n  3  6  1  0\n  6  7  1  6\n  6  8  1  0\n  8  9  1  0\n  9 10  1  6\n 10 11  1  0\n 11 12  2  0\n 11 13  1  0\n 11 14  1  0\n  9 15  1  0\n 15  3  1  0\nM  END\n",
   COMPOUND4: "\n     RDKit          2D\n\n 15 15  0  0  0  0  0  0  0  0999 V2000\n    1.3499   -3.3001    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1412   -1.8147    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.9324   -0.3293    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5230   -0.6921    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5650    0.3869    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.0204    0.0241    0.0000 P   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.3833    1.4795    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.6576   -1.4314    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.4759   -0.3387    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    2.4315   -0.2770    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.3550   -1.4590    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    2.8450    1.1649    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.6015    2.0037    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.5492    3.5028    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.4195    1.0803    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  3  0\n  3  2  1  1\n  3  4  1  0\n  4  5  1  0\n  5  6  1  0\n  6  7  2  0\n  6  8  1  0\n  6  9  1  0\n  3 10  1  0\n 10 11  1  6\n 10 12  1  0\n 12 13  1  0\n 13 14  1  6\n 13 15  1  0\n 15  3  1  0\nM  END\n",
   AMINO_KETONE: "\n     RDKit          2D\n\n 12 12  0  0  0  0  0  0  0  0999 V2000\n   -4.6788    0.8925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5433   -0.0877    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.8243   -1.5611    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.1267    0.4057    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.9912   -0.5745    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.4253   -0.0811    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7064    1.3923    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.1230    1.8856    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.2585    0.9055    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.9774   -0.5679    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    4.1129   -1.5480    0.0000 N   0  0  0  0  0  0  0  0  0  0  0  0\n    1.5608   -1.0612    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  2  0\n  2  4  1  0\n  4  5  1  0\n  5  6  1  0\n  6  7  2  0\n  7  8  1  0\n  8  9  2  0\n  9 10  1  0\n 10 11  1  0\n 10 12  2  0\n 12  6  1  0\nM  END\n",
@@ -91,28 +91,28 @@ const MOL: Record<string, string> = {
 };
 
 const SUBSTRATE_EXAMPLES = [
-  { label: 'Hexanoic acid',   smiles: HEXANOIC,     mol: MOL.HEXANOIC    },
-  { label: 'Amino ketone',    smiles: AMINO_KETONE,  mol: MOL.AMINO_KETONE },
-  { label: 'Compound 3',      smiles: COMPOUND3,     mol: MOL.COMPOUND3   },
+  { label: 'Acetophenone',  smiles: ACETOPHENONE,    mol: MOL.ACETOPHENONE    },
+  { label: 'Amino ketone',  smiles: AMINO_KETONE,    mol: MOL.AMINO_KETONE    },
+  { label: 'Compound 3',    smiles: COMPOUND3,       mol: MOL.COMPOUND3       },
 ];
 
 const PRODUCT_EXAMPLES = [
-  { label: 'Olivetolic acid', smiles: OLIVETOLIC,    mol: MOL.OLIVETOLIC  },
-  { label: 'CBGA',            smiles: 'OC(=O)CCc1c(O)cc(O)c(CC=C(C)CCC=C(C)C)c1', mol: MOL.CBGA },
-  { label: 'Compound 4',      smiles: COMPOUND4,     mol: MOL.COMPOUND4   },
+  { label: '(R)-1-Phenylethanol', smiles: R_PHENYLETHANOL, mol: MOL.R_PHENYLETHANOL },
+  { label: 'CBGA',                smiles: 'OC(=O)CCc1c(O)cc(O)c(CC=C(C)CCC=C(C)C)c1', mol: MOL.CBGA },
+  { label: 'Compound 4',          smiles: COMPOUND4,        mol: MOL.COMPOUND4        },
 ];
 
 const EXAMPLE_PAIRS = [
-  { label: 'Hexanoic acid → Olivetolic acid', shortLabel: 'Hexanoic → Olivetolic', substrate: HEXANOIC,     subMol: MOL.HEXANOIC,     product: OLIVETOLIC,     prodMol: MOL.OLIVETOLIC     },
-  { label: 'Compound 3 → Compound 4',         shortLabel: 'Compound 3 → 4',        substrate: COMPOUND3,    subMol: MOL.COMPOUND3,    product: COMPOUND4,      prodMol: MOL.COMPOUND4      },
-  { label: 'Amino ketone → Chiral alcohol',   shortLabel: 'Amino ketone → Chiral', substrate: AMINO_KETONE, subMol: MOL.AMINO_KETONE, product: CHIRAL_ALCOHOL, prodMol: MOL.CHIRAL_ALCOHOL },
+  { label: 'Acetophenone → (R)-1-Phenylethanol', shortLabel: 'Acetophenone → Phenylethanol', substrate: ACETOPHENONE, subMol: MOL.ACETOPHENONE, product: R_PHENYLETHANOL, prodMol: MOL.R_PHENYLETHANOL },
+  { label: 'Compound 3 → Compound 4',               shortLabel: 'Compound 3 → 4',      substrate: COMPOUND3,       subMol: MOL.COMPOUND3,       product: COMPOUND4,       prodMol: MOL.COMPOUND4       },
+  { label: 'Amino ketone → Chiral alcohol',         shortLabel: 'Amino ketone → Chiral', substrate: AMINO_KETONE,  subMol: MOL.AMINO_KETONE,    product: CHIRAL_ALCOHOL,  prodMol: MOL.CHIRAL_ALCOHOL  },
 ];
 
 const REACTION_EXAMPLES = [
   {
-    label: 'Hexanoic acid → Olivetolic acid',
-    substrate: HEXANOIC,
-    product: OLIVETOLIC,
+    label: 'Acetophenone → (R)-1-Phenylethanol',
+    substrate: ACETOPHENONE,
+    product: R_PHENYLETHANOL,
   },
   {
     label: 'Compound 3 → Compound 4',
@@ -245,7 +245,7 @@ const FindEnzymesButton = ({ active, loading, onClick }: { active: boolean; load
       }
     >
       {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Dna className="w-5 h-5" />}
-      {loading ? 'Searching…' : 'Find Enzymes'}
+      {loading ? 'Searching…' : 'Find Biocatalyst'}
     </button>
   </div>
 );
@@ -627,7 +627,25 @@ export const NewReactionPage = () => {
     if (!isActive || apiLoading) return;
     setApiError(null);
 
-    let enzyme = DEFAULT_ENZYME;
+    let enzyme     = DEFAULT_ENZYME;
+    let candidates: Enzyme[] = [];
+
+    const fmt     = (v: unknown) => (v != null && v !== '' ? String(v) : 'Unavailable');
+    const fmtTemp = (v: unknown) => (v != null && v !== '' ? `${v}°C` : 'Unavailable');
+    const toEnzyme = (r: Record<string, unknown>): Enzyme => ({
+      id:            (r.uniprot_id ?? r.uniprot ?? 'unknown') as string,
+      name:          (r.protein_name ?? 'Unavailable') as string,
+      ecNumber:      (r.ec_number ?? 'Unavailable') as string,
+      score:         transformClipzymeScore(typeof r.score === 'number' ? r.score : 0),
+      organism:      (r.organism ?? 'Unavailable') as string,
+      description:   (r.function ?? 'Unavailable') as string,
+      optimalPh:     fmt(r.ph_optimum ?? r.optimal_ph),
+      optimalTemp:   fmtTemp(r.temp_optimum ?? r.optimal_temp),
+      kcat:          fmt(r.kcat),
+      km:            fmt(r.km),
+      projectedYield: 'Unavailable',
+      vendor: '', vendorLogo: '', price: 'Unavailable', catalogNumber: 'Unavailable',
+    });
 
     if (substrateSmiles.trim() && productSmiles.trim()) {
       setApiLoading(true);
@@ -637,8 +655,8 @@ export const NewReactionPage = () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             substrate_smiles: substrateSmiles.trim(),
-            product_smiles: productSmiles.trim(),
-            top_k: 5,
+            product_smiles:   productSmiles.trim(),
+            top_k: 10,
             enrich: true,
           }),
         });
@@ -652,28 +670,10 @@ export const NewReactionPage = () => {
           return;
         }
 
-        const first = data?.result?.[0];
-        if (first) {
-          const fmt = (v: unknown) => (v != null && v !== '' ? String(v) : 'Unavailable');
-          const fmtTemp = (v: unknown) => (v != null && v !== '' ? `${v}°C` : 'Unavailable');
-          enzyme = {
-            id: first.uniprot_id ?? first.uniprot ?? 'unknown',
-            name: first.protein_name ?? 'Unavailable',
-            ecNumber: first.ec_number ?? 'Unavailable',
-            score: typeof first.score === 'number' ? first.score : 0,
-            organism: first.organism ?? 'Unavailable',
-            description: first.function ?? 'Unavailable',
-            optimalPh: fmt(first.ph_optimum ?? first.optimal_ph),
-            optimalTemp: fmtTemp(first.temp_optimum ?? first.optimal_temp),
-            kcat: fmt(first.kcat),
-            km: fmt(first.km),
-            projectedYield: 'Unavailable',
-            vendor: '',
-            vendorLogo: '',
-            price: 'Unavailable',
-            catalogNumber: 'Unavailable',
-          };
-        }
+        candidates = (Array.isArray(data?.result) ? data.result : [])
+          .map((r: Record<string, unknown>) => toEnzyme(r));
+        if (candidates.length > 0) enzyme = candidates[0];
+
       } catch {
         setApiError('Backend is unreachable. The server may be down — please try again later.');
         setApiLoading(false);
@@ -681,17 +681,39 @@ export const NewReactionPage = () => {
       }
       setApiLoading(false);
     } else {
-      enzyme = getEnzymeForSubstrate(substrateSmiles);
+      enzyme     = getEnzymeForSubstrate(substrateSmiles);
+      candidates = [enzyme];
     }
 
     setResultEnzyme(enzyme);
+    const substrateName = MW_TABLE[substrateSmiles.trim()]?.name ?? substrateSmiles.slice(0, 24);
+    const productName   = MW_TABLE[productSmiles.trim()]?.name  ?? productSmiles.slice(0, 24);
+    const confidence    = formatConfidenceLabel(enzyme.score);
+    const reactionState: import('@/types/pathway').ReactionNodeData = {
+      label:         confidence === 'high' ? 'Biocatalyst found' : 'Test biocatalysis',
+      confidence,
+      enzyme,
+      substrateSmiles: substrateSmiles.trim(),
+      productSmiles:   productSmiles.trim(),
+      substrateName,
+      productName,
+      pathwayId:   'import',
+      reactionId:  'result',
+    };
     addHistoryEntry({
-      id: `reaction-${Date.now()}`,
-      type: 'reaction',
-      name: `${MW_TABLE[substrateSmiles.trim()]?.name ?? substrateSmiles.slice(0, 16)} → ${MW_TABLE[productSmiles.trim()]?.name ?? productSmiles.slice(0, 16)}`,
+      id:       `reaction-${Date.now()}`,
+      type:     'reaction',
+      name:     `${substrateName} → ${productName}`,
       subtitle: enzyme.name,
+      reactionState,
     });
-    goTo('result');
+    if (confidence === 'high') {
+      navigate('/pathways/import/biocatalyst/result', { state: { reaction: reactionState } });
+    } else {
+      // medium → top 5, low → all 10
+      const candidatesForTest = confidence === 'low' ? candidates : candidates.slice(0, 5);
+      navigate('/pathways/import/test/result', { state: { reaction: reactionState, candidates: candidatesForTest } });
+    }
   };
 
   // ── Select view ─────────────────────────────────────────────────────────────
@@ -706,7 +728,7 @@ export const NewReactionPage = () => {
       </div>
       <div className="flex-1 flex flex-col items-center justify-center px-8 pb-16 gap-8">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-foreground">Import Reaction</h1>
+          <h1 className="text-2xl font-bold text-foreground">Find Biocatalyst</h1>
           <p className="text-sm text-muted-foreground mt-1">Choose how you'd like to input your reaction</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-2xl">

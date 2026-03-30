@@ -8,7 +8,6 @@ import {
   ChevronLeft,
   ChevronRight,
   History,
-  GitBranch,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
@@ -48,8 +47,8 @@ export const Sidebar = () => {
         </Button>
       </div>
 
-      {/* New Reaction Button */}
-      <div className="p-2 pb-1">
+      {/* Find Biocatalyst Button */}
+      <div className="p-2 pb-2">
         <Button
           onClick={() => navigate('/pathways/new')}
           variant="outline"
@@ -60,23 +59,7 @@ export const Sidebar = () => {
           size="sm"
         >
           <Plus className="w-4 h-4" />
-          {!collapsed && <span className="ml-2">New Reaction</span>}
-        </Button>
-      </div>
-
-      {/* New Pathway Button */}
-      <div className="px-2 pb-2">
-        <Button
-          onClick={() => navigate('/pathways/import')}
-          variant="outline"
-          className={cn(
-            "w-full border-dashed border-sidebar-border text-sidebar-foreground hover:text-foreground hover:border-primary",
-            collapsed ? "px-0 justify-center" : "justify-start"
-          )}
-          size="sm"
-        >
-          <GitBranch className="w-4 h-4" />
-          {!collapsed && <span className="ml-2">New Pathway</span>}
+          {!collapsed && <span className="ml-2">Find Biocatalyst</span>}
         </Button>
       </div>
 

@@ -1,29 +1,31 @@
+import type { ReactionNodeData } from '@/types/pathway';
+
 export interface HistoryEntry {
-  id: string;        // pathway id or a generated reaction id
+  id: string;
   type: 'pathway' | 'reaction';
-  name: string;      // pathway name or "Substrate → Product" label
-  subtitle: string;  // citation for pathways, enzyme name for reactions
-  visitedAt: number; // Date.now() timestamp
+  name: string;       // pathway name or "Substrate → Product"
+  subtitle: string;   // enzyme name or pathway citation
+  visitedAt: number;
+  // for reaction entries — used to reopen BiocatalystFoundPage
+  reactionState?: ReactionNodeData;
 }
 
-const KEY = 'nitrocat_history';
-const MAX = 20;
+const MAX = 50;
+
+// In-memory only — cleared on page refresh, no persistence
+const _entries: HistoryEntry[] = [];
 
 export function addHistoryEntry(entry: Omit<HistoryEntry, 'visitedAt'>) {
-  const existing: HistoryEntry[] = getHistory();
-  const deduped = existing.filter(e => e.id !== entry.id);
-  const updated = [{ ...entry, visitedAt: Date.now() }, ...deduped].slice(0, MAX);
-  localStorage.setItem(KEY, JSON.stringify(updated));
+  const idx = _entries.findIndex(e => e.id === entry.id);
+  if (idx !== -1) _entries.splice(idx, 1);
+  _entries.unshift({ ...entry, visitedAt: Date.now() });
+  if (_entries.length > MAX) _entries.length = MAX;
 }
 
 export function getHistory(): HistoryEntry[] {
-  try {
-    return JSON.parse(localStorage.getItem(KEY) ?? '[]');
-  } catch {
-    return [];
-  }
+  return [..._entries];
 }
 
 export function clearHistory(): void {
-  localStorage.removeItem(KEY);
+  _entries.length = 0;
 }

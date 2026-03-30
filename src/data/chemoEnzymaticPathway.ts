@@ -18,7 +18,8 @@ export const chemoEnzymaticPathway: PathwayGraph = {
     { id: 'r2', type: 'reaction', data: { label: 'Chemical synthesis' } },
     {
       id: 'r3', type: 'reaction', data: {
-        label: 'Suggested biocatalysis',
+        label: 'Biocatalyst found',
+        confidence: 'high',
         enzyme: {
           id: 'adh101', name: 'Alcohol Dehydrogenase ADH101', ecNumber: 'EC 1.1.1.1',
           organism: 'Johnson Matthey', score: 0.96, description: '',

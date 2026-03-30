@@ -17,7 +17,8 @@ export const islatravirPathway: PathwayGraph = {
     // Reaction nodes
     {
       id: 'r1', type: 'reaction', data: {
-        label: 'Suggested biocatalysis',
+        label: 'Biocatalyst found',
+        confidence: 'high',
         enzyme: {
           id: 'pnp', name: 'Purine Nucleoside Phosphorylase', ecNumber: 'EC 2.4.2.1',
           organism: 'E. coli', score: 0.95, description: '',
@@ -28,7 +29,8 @@ export const islatravirPathway: PathwayGraph = {
     },
     {
       id: 'r2', type: 'reaction', data: {
-        label: 'Suggested biocatalysis',
+        label: 'Biocatalyst found',
+        confidence: 'high',
         enzyme: {
           id: 'ppm', name: 'Phosphopentomutase', ecNumber: 'EC 5.4.2.7',
           organism: 'E. coli', score: 0.91, description: '',
@@ -37,17 +39,7 @@ export const islatravirPathway: PathwayGraph = {
         },
       },
     },
-    {
-      id: 'r3', type: 'reaction', data: {
-        label: 'Suggested biocatalysis',
-        enzyme: {
-          id: 'dera', name: 'Deoxyribose 5-Phosphate Aldolase', ecNumber: 'EC 4.1.2.4',
-          organism: 'E. coli', score: 0.88, description: '',
-          optimalPh: '7.6', optimalTemp: '37°C', kcat: '67 s⁻¹', km: '0.55 mM',
-          projectedYield: '81%', vendor: '', vendorLogo: '', catalogNumber: '', price: '$350 / 10mg',
-        },
-      },
-    },
+    { id: 'r3', type: 'reaction', data: { label: 'Chemical synthesis' } },
   ],
   edges: [
     { id: 'e1', source: 'm6', target: 'r3' },
