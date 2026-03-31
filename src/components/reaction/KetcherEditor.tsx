@@ -11,15 +11,17 @@ import { Loader2 } from 'lucide-react';
 
 export interface KetcherEditorProps {
   onSmiles: (smiles: string) => void;
+  /** Called with the MOL V2000 string whenever the structure changes (debounced). */
+  onMolfile?: (molfile: string) => void;
   height?: number;
   /** Optional label shown above the editor */
   label?: string;
   /**
    * To programmatically load a molecule, pass a new object here.
-   * `molfile` must be a V2000 MOL string (Kekule reads mol natively).
-   * Increment `key` to re-trigger even if the same molfile is passed.
+   * Provide either `molfile` (V2000 MOL) or `smiles` — Kekule reads both.
+   * Increment `key` to re-trigger even if the same structure is passed.
    */
-  loadTrigger?: { molfile: string; key: number };
+  loadTrigger?: { molfile?: string; smiles?: string; key: number };
 }
 
 const KEKULE_CSS = 'https://cdn.jsdelivr.net/npm/kekule@1.0.3/dist/themes/default/kekule.css';
@@ -59,7 +61,7 @@ function loadStyle(href: string) {
   document.head.appendChild(l);
 }
 
-export default function KetcherEditor({ onSmiles, height = 320, label, loadTrigger }: KetcherEditorProps) {
+export default function KetcherEditor({ onSmiles, onMolfile, height = 320, label, loadTrigger }: KetcherEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const composerRef  = useRef<unknown>(null);
   const debounceRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -91,6 +93,12 @@ export default function KetcherEditor({ onSmiles, height = 320, label, loadTrigg
               if (!mol) return;
               const smiles = Kekule.IO.saveFormatData(mol, 'smi');
               if (smiles) onSmiles(smiles);
+              if (onMolfile) {
+                try {
+                  const molfile = Kekule.IO.saveFormatData(mol, 'mol');
+                  if (molfile) onMolfile(molfile);
+                } catch { /* ignore if mol export fails */ }
+              }
             } catch { /* empty canvas */ }
           }, 600);
         });
@@ -114,11 +122,14 @@ export default function KetcherEditor({ onSmiles, height = 320, label, loadTrigg
 
   // ── Load external molecule when loadTrigger changes ──────────────────────────
   useEffect(() => {
-    if (!loadTrigger?.molfile || !composerRef.current || status !== 'ready') return;
+    if (!loadTrigger || (!loadTrigger.molfile && !loadTrigger.smiles)) return;
+    if (!composerRef.current || status !== 'ready') return;
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const Kekule = (window as any).Kekule;
-      const chemObj = Kekule.IO.loadFormatData(loadTrigger.molfile, 'mol');
+      const chemObj = loadTrigger.smiles
+        ? Kekule.IO.loadFormatData(loadTrigger.smiles, 'smi')
+        : Kekule.IO.loadFormatData(loadTrigger.molfile, 'mol');
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (composerRef.current as any).setChemObj(chemObj);
     } catch (e) {

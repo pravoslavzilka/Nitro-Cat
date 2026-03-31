@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { MoleculeViewer } from "@/components/molecule/MoleculeViewer";
 import {
-  ArrowLeft, Upload, Download, CheckCircle2, FlaskConical, FileText,
+  ArrowLeft, ArrowRight, Upload, Download, CheckCircle2, FlaskConical, FileText,
   Dna, Check, X, TrendingUp, ShoppingCart, Droplets, Thermometer, Activity, Target,
   PencilLine, ScrollText, Beaker, Clock, AlertTriangle, BookOpen, Loader2,
 } from "lucide-react";
@@ -573,8 +573,9 @@ export const NewReactionPage = () => {
   const [substrateValid, setSubstrateValid] = useState<boolean | null>(null);
   const [productValid, setProductValid]     = useState<boolean | null>(null);
   const [rxnFile, setRxnFile] = useState<File | null>(null);
-  const [subLoadTrigger, setSubLoadTrigger] = useState<{ smiles: string; key: number } | undefined>(undefined);
-  const [prodLoadTrigger, setProdLoadTrigger] = useState<{ smiles: string; key: number } | undefined>(undefined);
+  const [subLoadTrigger,  setSubLoadTrigger]  = useState<{ molfile?: string; smiles?: string; key: number } | undefined>(undefined);
+  const [prodLoadTrigger, setProdLoadTrigger] = useState<{ molfile?: string; smiles?: string; key: number } | undefined>(undefined);
+  const [subMolfile, setSubMolfile] = useState<string>('');
   const firstMount = useRef(true);
   const [resultEnzyme, setResultEnzyme] = useState<Enzyme>(DEFAULT_ENZYME);
   const [apiLoading, setApiLoading] = useState(false);
@@ -899,26 +900,53 @@ export const NewReactionPage = () => {
                   ))}
                 </div>
 
-                {/* ── Labels + editors in a 2-col grid ────────────────── */}
-                <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Substrate</span>
-                  <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Product</span>
+                {/* ── Labels + editors with copy button ───────────────── */}
+                <div className="flex items-stretch gap-2">
 
-                  <Suspense fallback={<KetcherFallback />}>
-                    <KetcherEditor
-                      onSmiles={(s) => setSubstrate(s)}
-                      height={320}
-                      loadTrigger={subLoadTrigger}
-                    />
-                  </Suspense>
+                  {/* Substrate */}
+                  <div className="flex-1 flex flex-col gap-1.5 min-w-0">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Substrate</span>
+                    <Suspense fallback={<KetcherFallback />}>
+                      <KetcherEditor
+                        onSmiles={(s) => setSubstrate(s)}
+                        onMolfile={(m) => setSubMolfile(m)}
+                        height={320}
+                        loadTrigger={subLoadTrigger}
+                      />
+                    </Suspense>
+                  </div>
 
-                  <Suspense fallback={<KetcherFallback />}>
-                    <KetcherEditor
-                      onSmiles={(s) => setProduct(s)}
-                      height={320}
-                      loadTrigger={prodLoadTrigger}
-                    />
-                  </Suspense>
+                  {/* Copy substrate → product button */}
+                  <div className="flex flex-col items-center justify-center gap-1 pt-5 shrink-0">
+                    <button
+                      type="button"
+                      title="Copy substrate structure to product"
+                      disabled={!subMolfile}
+                      onClick={() => setProdLoadTrigger(t => ({ molfile: subMolfile, key: (t?.key ?? 0) + 1 }))}
+                      className={cn(
+                        'flex flex-col items-center gap-1 rounded-lg border px-2 py-3 transition-colors',
+                        subMolfile
+                          ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 cursor-pointer'
+                          : 'border-border bg-muted/20 text-muted-foreground/40 cursor-not-allowed',
+                      )}
+                    >
+                      <ArrowRight className="w-4 h-4" />
+                      <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ writingMode: 'vertical-lr' }}>Copy</span>
+                    </button>
+                  </div>
+
+                  {/* Product */}
+                  <div className="flex-1 flex flex-col gap-1.5 min-w-0">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Product</span>
+                    <Suspense fallback={<KetcherFallback />}>
+                      <KetcherEditor
+                        onSmiles={(s) => setProduct(s)}
+                        height={320}
+                        loadTrigger={prodLoadTrigger}
+                      />
+                    </Suspense>
+                  </div>
+
                 </div>
 
               </div>

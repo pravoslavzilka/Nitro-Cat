@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, FlaskConical, Dna, Wrench, ShoppingCart,
-  Activity, Target, TrendingUp,
+  Activity, Target, TrendingUp, Package, Check,
   BookOpen, ExternalLink, CheckCircle2, Clock,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -206,8 +206,10 @@ const GetEnzymePanel = ({ enzyme }: { enzyme: Enzyme }) => {
   const [selectedHost, setSelectedHost] = useState<string | null>(null);
   const [enzymeQtyIdx, setEnzymeQtyIdx] = useState(0); // drives both qty AND reactions
   const [dnaMugIdx,    setDnaMugIdx]    = useState(0);
-  const [dnaSubStep,    setDnaSubStep]    = useState<'config' | 'review'>('config');
-  const [orderPlaced,   setOrderPlaced]   = useState<'enzyme' | 'dna' | null>(null);
+  const [dnaSubStep,      setDnaSubStep]      = useState<'config' | 'review'>('config');
+  const [orderPlaced,        setOrderPlaced]        = useState<'enzyme' | 'dna' | null>(null);
+  const [selectedVariants,   setSelectedVariants]   = useState<Set<string>>(new Set());
+  const [variantOrderPlaced, setVariantOrderPlaced] = useState(false);
 
   const resetDna = () => { setDnaStep('host'); setSelectedHost(null); setDnaSubStep('config'); };
 
@@ -267,6 +269,146 @@ const GetEnzymePanel = ({ enzyme }: { enzyme: Enzyme }) => {
           </button>
         ))}
       </div>
+
+      {/* ── Enzyme variant selector ── */}
+      {(() => {
+        const VARIANT_ORGS   = [
+          `${enzyme.organism} (variant A)`,
+          'Bacillus subtilis',
+          'Streptomyces coelicolor',
+          'Rhodotorula glutinis',
+          'Pseudomonas putida',
+          'Aspergillus niger',
+          'Corynebacterium glutamicum',
+          'Saccharomyces cerevisiae',
+          'Thermoanaerobacter brockii',
+        ];
+        const SCORE_DELTAS = [-0.04, -0.09, -0.13, -0.17, -0.21, -0.25, -0.29, -0.33, -0.37];
+
+        const variants: Enzyme[] = VARIANT_ORGS.map((org, i) => ({
+          ...enzyme,
+          id:       `${enzyme.id}-v${i + 1}`,
+          organism: org,
+          score:    Math.max(0, +(enzyme.score + SCORE_DELTAS[i]).toFixed(3)),
+        }));
+
+        const toggle = (id: string) =>
+          setSelectedVariants(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) { next.delete(id); }
+            else if (next.size < 9) { next.add(id); } // max 9 variants + top enzyme = 10
+            return next;
+          });
+
+        const selectedList = variants.filter(v => selectedVariants.has(v.id));
+        const total = selectedList.reduce(
+          (sum, v) => sum + seedPrice(v.id, 280, 720), 0,
+        );
+
+        if (variantOrderPlaced) return (
+          <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 px-4 py-4 flex items-center gap-3">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-foreground">Order placed!</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {selectedList.length} enzyme variant{selectedList.length !== 1 ? 's' : ''} — being processed.
+              </p>
+            </div>
+            <button
+              type="button"
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0"
+              onClick={() => { setVariantOrderPlaced(false); setSelectedVariants(new Set()); }}
+            >
+              Reset
+            </button>
+          </div>
+        );
+
+        return (
+          <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center gap-2 px-4 py-3 border-b border-emerald-500/20">
+              <Package className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <p className="text-sm font-semibold text-foreground">Also order enzyme variants</p>
+              <span className="ml-auto text-[10px] font-semibold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
+                {selectedVariants.size} / 9 selected
+              </span>
+            </div>
+
+            {/* Variant rows */}
+            <div className="divide-y divide-emerald-500/10 max-h-64 overflow-y-auto">
+              {variants.map(v => {
+                const isSelected = selectedVariants.has(v.id);
+                const unitPrice  = seedPrice(v.id, 280, 720);
+                const scoreLabel = formatScore(v.score);
+                const scoreCls   = v.score >= 0.90
+                  ? 'text-emerald-600 dark:text-emerald-400'
+                  : v.score >= 0.75
+                    ? 'text-amber-600 dark:text-amber-400'
+                    : 'text-orange-600 dark:text-orange-400';
+                return (
+                  <button
+                    key={v.id}
+                    type="button"
+                    onClick={() => toggle(v.id)}
+                    disabled={!isSelected && selectedVariants.size >= 9}
+                    className={cn(
+                      'w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors',
+                      isSelected
+                        ? 'bg-emerald-500/10'
+                        : 'hover:bg-emerald-500/5 disabled:opacity-40',
+                    )}
+                  >
+                    {/* Checkbox */}
+                    <div className={cn(
+                      'w-4 h-4 rounded border-2 shrink-0 flex items-center justify-center transition-colors',
+                      isSelected
+                        ? 'border-emerald-500 bg-emerald-500'
+                        : 'border-muted-foreground/50',
+                    )}>
+                      {isSelected && <Check className="w-2.5 h-2.5 text-white" />}
+                    </div>
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-foreground truncate">{enzyme.name}</p>
+                      <p className="text-[10px] text-muted-foreground truncate">{v.organism}</p>
+                    </div>
+                    {/* Score */}
+                    <span className={cn('text-xs font-mono font-semibold shrink-0', scoreCls)}>
+                      {scoreLabel}
+                    </span>
+                    {/* Price */}
+                    <span className="text-xs font-mono text-muted-foreground shrink-0 w-16 text-right">
+                      ${unitPrice}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-center gap-3 px-4 py-3 border-t border-emerald-500/20 bg-emerald-500/5">
+              <div className="flex-1">
+                {selectedVariants.size > 0 ? (
+                  <>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Order total</p>
+                    <p className="text-base font-bold font-mono text-foreground">${total.toLocaleString()}</p>
+                  </>
+                ) : (
+                  <p className="text-xs text-muted-foreground">Select variants to order alongside your top hit.</p>
+                )}
+              </div>
+              <Button
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shrink-0 disabled:opacity-50"
+                disabled={selectedVariants.size === 0}
+                onClick={() => setVariantOrderPlaced(true)}
+              >
+                Place Order
+              </Button>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ── Get the Enzyme dialog ── */}
       <Dialog open={open === 'enzyme'} onOpenChange={v => { if (!v) { setOpen(null); setOrderPlaced(null); } }}>
