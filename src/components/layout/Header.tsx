@@ -1,4 +1,4 @@
-import { useLocation, Link } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { useAuth } from "@/lib/auth/context";
 import { ThemeToggle } from "./ThemeToggle";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -45,14 +45,11 @@ export const Header = () => {
       <div className="flex items-center gap-2">
         <ThemeToggle />
         {user && (
-          <Link to="/profile" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <span className="text-sm text-muted-foreground hidden sm:block">{user.name}</span>
-            <Avatar className="h-7 w-7">
-              <AvatarFallback className="text-xs bg-primary/15 text-primary">
-                {getInitials(user.name)}
-              </AvatarFallback>
-            </Avatar>
-          </Link>
+          <Avatar className="h-7 w-7">
+            <AvatarFallback className="text-xs bg-primary/15 text-primary">
+              {getInitials(user.name)}
+            </AvatarFallback>
+          </Avatar>
         )}
       </div>
     </header>

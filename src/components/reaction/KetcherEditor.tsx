@@ -4,19 +4,21 @@
  *
  * Communicates SMILES out via `onSmiles` (debounced 600 ms).
  * External molecules can be loaded by passing a new `loadTrigger` object —
- * provide a MOL V2000 string (Kekule can read mol but not SMILES natively).
+ * provide a MOL V2000 string (Kekule reads MOL reliably; SMILES reading is unavailable in the CDN build).
  */
 import { useEffect, useRef, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 
 export interface KetcherEditorProps {
   onSmiles: (smiles: string) => void;
+  /** Also emits the current MOL V2000 string on every edit (useful for copying between editors). */
+  onMolfile?: (molfile: string) => void;
   height?: number;
   /** Optional label shown above the editor */
   label?: string;
   /**
    * To programmatically load a molecule, pass a new object here.
-   * `molfile` must be a V2000 MOL string (Kekule reads mol natively).
+   * `molfile` is a MOL V2000 string (Kekule reads MOL reliably; SMILES reading unavailable in CDN build).
    * Increment `key` to re-trigger even if the same molfile is passed.
    */
   loadTrigger?: { molfile: string; key: number };
@@ -59,11 +61,17 @@ function loadStyle(href: string) {
   document.head.appendChild(l);
 }
 
-export default function KetcherEditor({ onSmiles, height = 320, label, loadTrigger }: KetcherEditorProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const composerRef  = useRef<unknown>(null);
-  const debounceRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
+export default function KetcherEditor({ onSmiles, onMolfile, height = 320, label, loadTrigger }: KetcherEditorProps) {
+  const containerRef  = useRef<HTMLDivElement>(null);
+  const composerRef   = useRef<unknown>(null);
+  const debounceRef   = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const onSmilesRef   = useRef(onSmiles);
+  const onMolfileRef  = useRef(onMolfile);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
+
+  // Keep refs current so event listeners always call the latest callbacks
+  useEffect(() => { onSmilesRef.current  = onSmiles;  }, [onSmiles]);
+  useEffect(() => { onMolfileRef.current = onMolfile; }, [onMolfile]);
 
   // ── Init Kekule once on mount ────────────────────────────────────────────────
   useEffect(() => {
@@ -90,7 +98,11 @@ export default function KetcherEditor({ onSmiles, height = 320, label, loadTrigg
               const mol = composer.getChemObj();
               if (!mol) return;
               const smiles = Kekule.IO.saveFormatData(mol, 'smi');
-              if (smiles) onSmiles(smiles);
+              if (smiles) onSmilesRef.current(smiles);
+              if (onMolfileRef.current) {
+                const molfile = Kekule.IO.saveFormatData(mol, 'mol');
+                if (molfile) onMolfileRef.current(molfile);
+              }
             } catch { /* empty canvas */ }
           }, 600);
         });
@@ -118,41 +130,41 @@ export default function KetcherEditor({ onSmiles, height = 320, label, loadTrigg
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const Kekule = (window as any).Kekule;
+      // Kekule reliably reads MOL V2000 format; SMILES reading is not available in the CDN build
       const chemObj = Kekule.IO.loadFormatData(loadTrigger.molfile, 'mol');
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (composerRef.current as any).setChemObj(chemObj);
-    } catch (e) {
-      console.error('KetcherEditor loadTrigger error:', e);
+    } catch (err) {
+      console.error('KetcherEditor: failed to load molecule', err);
     }
-  }, [loadTrigger]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // ── Error state ──────────────────────────────────────────────────────────────
-  if (status === 'error') return (
-    <div
-      className="rounded-xl border border-border bg-muted/30 flex items-center justify-center text-sm text-muted-foreground"
-      style={{ height }}
-    >
-      Structure editor failed to load. Please enter SMILES manually.
-    </div>
-  );
+  }, [loadTrigger, status]);
 
   // ── Render ───────────────────────────────────────────────────────────────────
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="rounded-xl border border-border overflow-hidden relative">
       {label && (
-        <p className="text-sm font-semibold text-foreground">{label}</p>
+        <p className="text-xs uppercase tracking-widest text-muted-foreground px-3 pt-3 pb-1">{label}</p>
       )}
-      <div className="rounded-xl border border-border overflow-hidden relative" style={{ height }}>
-        {status === 'loading' && (
-          <div className="absolute inset-0 bg-muted/50 flex items-center justify-center z-10">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Loading editor…
-            </div>
-          </div>
-        )}
-        <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
-      </div>
+
+      {status === 'loading' && (
+        <div
+          className="absolute inset-0 flex items-center justify-center bg-background/60 z-10"
+          style={{ minHeight: height }}
+        >
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        </div>
+      )}
+
+      {status === 'error' && (
+        <div
+          className="flex items-center justify-center text-sm text-destructive"
+          style={{ minHeight: height }}
+        >
+          Structure editor failed to load.
+        </div>
+      )}
+
+      <div ref={containerRef} style={{ width: '100%', minHeight: `${height}px` }} />
     </div>
   );
 }

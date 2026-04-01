@@ -4,7 +4,6 @@ import {
   Plus,
   FlaskConical,
   Settings,
-  User,
   ChevronLeft,
   ChevronRight,
   History,
@@ -98,7 +97,6 @@ export const Sidebar = () => {
 
       {/* Bottom section */}
       <div className="border-t border-sidebar-border p-2 space-y-1">
-        <ThemeToggle />
         <Button
           variant="ghost"
           onClick={() => navigate('/settings')}
@@ -111,19 +109,6 @@ export const Sidebar = () => {
         >
           <Settings className="w-4 h-4" />
           {!collapsed && <span className="ml-2">Settings</span>}
-        </Button>
-        <Button
-          variant="ghost"
-          onClick={() => navigate('/profile')}
-          className={cn(
-            "w-full text-sidebar-foreground hover:text-foreground",
-            collapsed ? "px-0 justify-center" : "justify-start",
-            isActive('/profile') && "bg-accent text-accent-foreground"
-          )}
-          size="sm"
-        >
-          <User className="w-4 h-4" />
-          {!collapsed && <span className="ml-2">Profile</span>}
         </Button>
       </div>
     </aside>
