@@ -21,7 +21,6 @@ import BiocatalystFoundPage from "@/pages/dashboard/BiocatalystFoundPage";
 import TestBiocatalysisPage from "@/pages/dashboard/TestBiocatalysisPage";
 import HistoryPage from "@/pages/dashboard/HistoryPage";
 import SettingsPage from "@/pages/dashboard/SettingsPage";
-import ProfilePage from "@/pages/dashboard/ProfilePage";
 
 const queryClient = new QueryClient();
 
@@ -49,7 +48,6 @@ const App = () => (
                 <Route path="/pathways/:pathwayId/test/:reactionId" element={<TestBiocatalysisPage />} />
                 <Route path="/history" element={<HistoryPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
-                <Route path="/profile" element={<ProfilePage />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />
