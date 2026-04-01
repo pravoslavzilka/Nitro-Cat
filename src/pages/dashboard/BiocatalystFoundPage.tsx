@@ -635,6 +635,8 @@ export default function BiocatalystFoundPage() {
   const substrateName   = reaction.substrateName   ?? 'Substrate';
   const productName     = reaction.productName     ?? 'Product';
 
+  const scorePct = Math.round(enzyme.score * 100);
+
   return (
     <div className="h-full overflow-y-auto">
 
@@ -649,44 +651,37 @@ export default function BiocatalystFoundPage() {
             style={{ backgroundColor: '#10B981' }}
           />
           <div className="flex-1 min-w-0">
+
+            {/* Header 1 */}
             <div className="flex items-center gap-3 flex-wrap">
               <FlaskConical className="w-7 h-7 shrink-0" style={{ color: '#10B981' }} />
               <h1 className="text-3xl font-bold tracking-tight" style={{ color: '#10B981' }}>
-                We found your biocatalyst
+                We found your biocatalysts!
               </h1>
             </div>
-            <p className="text-base text-muted-foreground mt-2">
-              <span className="text-lg font-semibold text-foreground">{enzyme.name}</span>
-              {' '}is predicted to catalyse this reaction with a match score of{' '}
-              <span
-                className="font-semibold"
-                style={{
-                  color: enzyme.score >= 0.9 ? '#10B981'
-                       : enzyme.score >= 0.75 ? '#F59E0B'
-                       : '#F97316',
-                }}
-              >
-                {formatScore(enzyme.score)}
-              </span>
-              {' '}
-              <span
-                className="text-sm font-medium"
-                style={{
-                  color: enzyme.score >= 0.9 ? '#10B981'
-                       : enzyme.score >= 0.75 ? '#F59E0B'
-                       : '#F97316',
-                }}
-              >
-                ({formatConfidenceLabel(enzyme.score)} confidence)
-              </span>.
+
+            {/* Header 2 */}
+            <p className="text-xl font-semibold text-foreground mt-3">
+              {enzyme.name} is a perfect match!
             </p>
+
+            {/* Message */}
+            <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+              With{' '}
+              <span className="font-semibold" style={{ color: '#10B981' }}>{scorePct}%</span>
+              {' '}confidence, testing the top{' '}
+              <span className="font-semibold text-foreground">5</span>
+              {' '}biocatalysts will yield the desired transformation of your substrate.
+            </p>
+
+            {/* Note toggle */}
             <button
               type="button"
               onClick={() => setConfidenceOpen(v => !v)}
               className="mt-3 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               <span className="text-base leading-none">{confidenceOpen ? '▾' : '▸'}</span>
-              How we assess confidence
+              How do we assess biocatalyst confidence?
             </button>
             {confidenceOpen && (
               <div
@@ -697,10 +692,30 @@ export default function BiocatalystFoundPage() {
                   Each enzyme is scored against the reaction by a deep-learning model trained on
                   characterised enzyme–reaction pairs. The best match is picked from over 262 000 known enzymes.
                 </p>
-                <p>
-                  <span className="font-semibold" style={{ color: '#10B981' }}>High</span> ≥ 90 % ·{' '}
-                  <span className="font-semibold text-amber-500">Medium</span> 75–89 % ·{' '}
-                  <span className="font-semibold text-orange-500">Low</span> &lt; 75 %
+                <p className="space-x-2">
+                  <span className="font-semibold" style={{ color: '#10B981' }}>Perfect match</span>
+                  <span className="opacity-50">·</span>
+                  <span className="text-xs">90–100 % · test top 5</span>
+                </p>
+                <p className="space-x-2">
+                  <span className="font-semibold text-amber-500">Very promising</span>
+                  <span className="opacity-50">·</span>
+                  <span className="text-xs">80–90 % · test top 10</span>
+                </p>
+                <p className="space-x-2">
+                  <span className="font-semibold text-orange-500">Solid option</span>
+                  <span className="opacity-50">·</span>
+                  <span className="text-xs">70–80 % · test top 20</span>
+                </p>
+                <p className="space-x-2">
+                  <span className="font-semibold text-orange-600">Worth exploring</span>
+                  <span className="opacity-50">·</span>
+                  <span className="text-xs">50–70 % · test top 40</span>
+                </p>
+                <p className="space-x-2">
+                  <span className="font-semibold text-red-500">Not found</span>
+                  <span className="opacity-50">·</span>
+                  <span className="text-xs">&lt; 50 % · no established biocatalyst identified</span>
                 </p>
               </div>
             )}
