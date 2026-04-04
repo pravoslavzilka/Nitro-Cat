@@ -6,7 +6,7 @@ export interface Molecule {
   formula?: string;
 }
 
-export interface PathwayStep {
+export interface ReactionStep {
   id: string;
   startMolecule: Molecule;
   productMolecule: Molecule;
@@ -14,17 +14,17 @@ export interface PathwayStep {
   enzymes: Enzyme[];
 }
 
-export interface Pathway {
+export interface Reaction {
   id: string;
   name: string;
   description: string;
-  steps: PathwayStep[];
+  steps: ReactionStep[];
   createdAt: string;
   updatedAt: string;
   status: 'draft' | 'analyzing' | 'complete';
 }
 
-// ── Graph-based pathway representation ───────────────────────────────────────
+// ── Graph-based reaction representation ──────────────────────────────────────
 
 export interface MoleculeNodeData {
   name: string;
@@ -36,25 +36,27 @@ export type ReactionLabel = 'Chemical synthesis' | 'Biocatalyst found' | 'Test b
 
 export interface ReactionNodeData {
   label: ReactionLabel;
-  confidence?: 'high' | 'medium' | 'low';
+  confidence?: 'high' | 'good' | 'medium' | 'low';
   enzyme?: Enzyme;
-  // injected by PathwayBuilder from edge/node graph
+  // injected by ReactionBuilder from edge/node graph
   substrateSmiles?: string;   // dot-joined if multi-substrate
   productSmiles?: string;
   substrateName?: string;
   productName?: string;
-  pathwayId?: string;
   reactionId?: string;
 }
 
-export interface PathwayNode {
+export interface ReactionGraphNode {
   id: string;
   type: 'molecule' | 'reaction';
   data: MoleculeNodeData | ReactionNodeData;
 }
 
-export interface PathwayGraph {
+export interface ReactionGraph {
   id: string;
   name: string;
   description?: string;
-  status: 'draft' | 'analyzi
+  status: 'draft' | 'analyzing' | 'complete';
+  nodes: ReactionGraphNode[];
+  edges: { id: string; source: string; target: string }[];
+}

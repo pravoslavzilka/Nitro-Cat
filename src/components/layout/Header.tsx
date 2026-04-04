@@ -5,8 +5,9 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { FlaskConical } from "lucide-react";
 
 const routeTitles: Record<string, string> = {
-  '/pathways': 'Pathways',
-  '/pathways/new': 'New Pathway',
+  '/reactions': 'Reactions',
+  '/reactions/new': 'New Reaction',
+  '/reactions/import': 'Import Reaction',
   '/history': 'History',
   '/settings': 'Settings',
   '/profile': 'Profile',
@@ -14,10 +15,6 @@ const routeTitles: Record<string, string> = {
 
 function getTitle(pathname: string): string {
   if (routeTitles[pathname]) return routeTitles[pathname];
-  const match = pathname.match(/^\/pathways\/([^/]+)\/results$/);
-  if (match) return 'Pathway Results';
-  const matchDetail = pathname.match(/^\/pathways\/([^/]+)$/);
-  if (matchDetail) return 'Pathway Detail';
   return 'NitroCat';
 }
 

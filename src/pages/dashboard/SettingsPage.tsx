@@ -22,7 +22,7 @@ export const SettingsPage = () => {
       <div className="max-w-lg mx-auto space-y-8">
         <div>
           <h1 className="text-xl font-bold text-foreground">Settings</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Configure your NitroAI experience</p>
+          <p className="text-sm text-muted-foreground mt-0.5">Configure your NitroCat experience</p>
         </div>
 
         {/* Appearance */}

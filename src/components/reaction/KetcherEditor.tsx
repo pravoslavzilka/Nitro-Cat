@@ -1,145 +1,100 @@
 /**
- * Molecule structure editor backed by Kekule.js (loaded from jsDelivr CDN).
- * Kekule is pure browser JavaScript — no Node.js/CJS deps, no bundler issues.
+ * Molecule structure editor backed by Ketcher (EPAM).
  *
  * Communicates SMILES out via `onSmiles` (debounced 600 ms).
- * External molecules can be loaded by passing a new `loadTrigger` object —
- * provide a MOL V2000 string (Kekule reads MOL reliably; SMILES reading is unavailable in the CDN build).
+ * Communicates KET (Ketcher native format) out via `onKet` — use this for
+ * lossless round-trip restoration between step switches.
+ * External molecules can be loaded by passing a new `loadTrigger` object.
  */
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Loader2 } from 'lucide-react';
+import { Editor } from 'ketcher-react';
+import { StandaloneStructServiceProvider } from 'ketcher-standalone';
+import type { Ketcher } from 'ketcher-core';
+import 'ketcher-react/dist/index.css';
 
 export interface KetcherEditorProps {
   onSmiles: (smiles: string) => void;
-  /** Also emits the current MOL V2000 string on every edit (useful for copying between editors). */
+  /** Emits the current MOL V2000 string on every edit (used for substrate→product copy). */
   onMolfile?: (molfile: string) => void;
+  /** Emits the current KET string on every edit — preferred for lossless step-switch restoration. */
+  onKet?: (ket: string) => void;
   height?: number;
   /** Optional label shown above the editor */
   label?: string;
   /**
    * To programmatically load a molecule, pass a new object here.
-   * `molfile` is a MOL V2000 string (Kekule reads MOL reliably; SMILES reading unavailable in CDN build).
-   * Increment `key` to re-trigger even if the same molfile is passed.
+   * Accepts any format Ketcher supports: SMILES, MOL V2000, KET, etc.
+   * Increment `key` to re-trigger even if the same struct is passed.
    */
   loadTrigger?: { molfile: string; key: number };
 }
 
-const KEKULE_CSS = 'https://cdn.jsdelivr.net/npm/kekule@1.0.3/dist/themes/default/kekule.css';
-const KEKULE_JS  = 'https://cdn.jsdelivr.net/npm/kekule@1.0.3/dist/kekule.min.js';
+const structServiceProvider = new StandaloneStructServiceProvider();
 
-// Module-level promise cache so concurrent callers share one load.
-// Checking window.Kekule first handles HMR-triggered cache resets.
-const _scriptCache = new Map<string, Promise<void>>();
-
-function loadScript(src: string): Promise<void> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  if ((window as any).Kekule) return Promise.resolve(); // already loaded
-  if (_scriptCache.has(src)) return _scriptCache.get(src)!;
-
-  const p = new Promise<void>((resolve, reject) => {
-    const existing = document.querySelector<HTMLScriptElement>(`script[src="${src}"]`);
-    if (existing) {
-      // Tag was inserted by a concurrent call — wait for it to finish
-      existing.addEventListener('load',  () => resolve(), { once: true });
-      existing.addEventListener('error', () => reject(new Error(`Failed to load ${src}`)), { once: true });
-      return;
-    }
-    const s = document.createElement('script');
-    s.src = src; s.async = true;
-    s.onload  = () => resolve();
-    s.onerror = () => reject(new Error(`Failed to load ${src}`));
-    document.head.appendChild(s);
-  });
-  _scriptCache.set(src, p);
-  return p;
-}
-
-function loadStyle(href: string) {
-  if (document.querySelector(`link[href="${href}"]`)) return;
-  const l = document.createElement('link');
-  l.rel = 'stylesheet'; l.href = href;
-  document.head.appendChild(l);
-}
-
-export default function KetcherEditor({ onSmiles, onMolfile, height = 320, label, loadTrigger }: KetcherEditorProps) {
-  const containerRef  = useRef<HTMLDivElement>(null);
-  const composerRef   = useRef<unknown>(null);
-  const debounceRef   = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const onSmilesRef   = useRef(onSmiles);
-  const onMolfileRef  = useRef(onMolfile);
+export default function KetcherEditor({ onSmiles, onMolfile, onKet, height = 320, label, loadTrigger }: KetcherEditorProps) {
+  const ketcherRef = useRef<Ketcher | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const onSmilesRef = useRef(onSmiles);
+  const onMolfileRef = useRef(onMolfile);
+  const onKetRef = useRef(onKet);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
 
-  // Keep refs current so event listeners always call the latest callbacks
-  useEffect(() => { onSmilesRef.current  = onSmiles;  }, [onSmiles]);
+  // Keep refs current so callbacks always call the latest versions
+  useEffect(() => { onSmilesRef.current = onSmiles; }, [onSmiles]);
   useEffect(() => { onMolfileRef.current = onMolfile; }, [onMolfile]);
+  useEffect(() => { onKetRef.current = onKet; }, [onKet]);
 
-  // ── Init Kekule once on mount ────────────────────────────────────────────────
-  useEffect(() => {
-    let mounted = true;
+  // Emit SMILES + MOL + KET on structure change (debounced)
+  const emitStructure = useCallback(() => {
+    const ketcher = ketcherRef.current;
+    if (!ketcher) return;
 
-    async function init() {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(async () => {
       try {
-        loadStyle(KEKULE_CSS);
-        await loadScript(KEKULE_JS);
-        if (!mounted || !containerRef.current) return;
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const Kekule = (window as any).Kekule;
-        if (!Kekule) throw new Error('Kekule not available');
-
-        const composer = new Kekule.Editor.Composer(containerRef.current);
-        composer.setDimension('100%', `${height}px`);
-
-        // Emit SMILES whenever the user edits the structure
-        composer.addEventListener('editObjsChanged', () => {
-          if (debounceRef.current) clearTimeout(debounceRef.current);
-          debounceRef.current = setTimeout(() => {
-            try {
-              const mol = composer.getChemObj();
-              if (!mol) return;
-              const smiles = Kekule.IO.saveFormatData(mol, 'smi');
-              if (smiles) onSmilesRef.current(smiles);
-              if (onMolfileRef.current) {
-                const molfile = Kekule.IO.saveFormatData(mol, 'mol');
-                if (molfile) onMolfileRef.current(molfile);
-              }
-            } catch { /* empty canvas */ }
-          }, 600);
-        });
-
-        composerRef.current = composer;
-        if (mounted) setStatus('ready');
-      } catch (err) {
-        console.error('KetcherEditor init error:', err);
-        if (mounted) setStatus('error');
+        const smiles = await ketcher.getSmiles();
+        if (smiles) onSmilesRef.current(smiles);
+        if (onMolfileRef.current) {
+          const molfile = await ketcher.getMolfile();
+          if (molfile) onMolfileRef.current(molfile);
+        }
+        if (onKetRef.current) {
+          const ket = await ketcher.getKet();
+          if (ket) onKetRef.current(ket);
+        }
+      } catch {
+        /* empty canvas or conversion error */
       }
-    }
+    }, 600);
+  }, []);
 
-    init();
-    return () => {
-      mounted = false;
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (composerRef.current as any)?.finalize?.();
-    };
-  }, []); // run once
+  // Called by Ketcher once the editor is fully initialized
+  const handleInit = useCallback((ketcher: Ketcher) => {
+    ketcherRef.current = ketcher;
+    setStatus('ready');
 
-  // ── Load external molecule when loadTrigger changes ──────────────────────────
+    // ketcher.changeEvent is a Subscription — use .add() to listen for edits
+    ketcher.changeEvent.add(() => {
+      emitStructure();
+    });
+  }, [emitStructure]);
+
+  // Load external molecule when loadTrigger changes
   useEffect(() => {
-    if (!loadTrigger?.molfile || !composerRef.current || status !== 'ready') return;
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const Kekule = (window as any).Kekule;
-      // Kekule reliably reads MOL V2000 format; SMILES reading is not available in the CDN build
-      const chemObj = Kekule.IO.loadFormatData(loadTrigger.molfile, 'mol');
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (composerRef.current as any).setChemObj(chemObj);
-    } catch (err) {
+    if (!loadTrigger?.molfile || !ketcherRef.current || status !== 'ready') return;
+    ketcherRef.current.setMolecule(loadTrigger.molfile).catch((err) => {
       console.error('KetcherEditor: failed to load molecule', err);
-    }
+    });
   }, [loadTrigger, status]);
 
-  // ── Render ───────────────────────────────────────────────────────────────────
+  // Cleanup debounce on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, []);
+
   return (
     <div className="rounded-xl border border-border overflow-hidden relative">
       {label && (
@@ -155,6 +110,17 @@ export default function KetcherEditor({ onSmiles, onMolfile, height = 320, label
         </div>
       )}
 
+      <div style={{ width: '100%', height: `${height}px` }}>
+        <Editor
+          staticResourcesUrl="/ketcher/"
+          structServiceProvider={structServiceProvider}
+          onInit={handleInit}
+          errorHandler={(message: string) => {
+            console.error('KetcherEditor error:', message);
+          }}
+        />
+      </div>
+
       {status === 'error' && (
         <div
           className="flex items-center justify-center text-sm text-destructive"
@@ -163,8 +129,6 @@ export default function KetcherEditor({ onSmiles, onMolfile, height = 320, label
           Structure editor failed to load.
         </div>
       )}
-
-      <div ref={containerRef} style={{ width: '100%', minHeight: `${height}px` }} />
     </div>
   );
 }
