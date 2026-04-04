@@ -415,7 +415,7 @@ const SmilesColumn = ({
   onChange: (v: string) => void;
   placeholder: string;
 }) => (
-  <div className="flex flex-col gap-3 flex-1 min-w-0">
+  <div className="flex flex-col gap-2 flex-1 min-w-0">
     <div className="flex items-center justify-between">
       <p className="text-sm font-semibold text-foreground">{label}</p>
       <ValidityBadge valid={value.trim() ? valid : null} />
@@ -424,16 +424,16 @@ const SmilesColumn = ({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
-      rows={3}
+      rows={2}
       className={cn(
-        'font-mono text-sm resize-none transition-colors',
+        'font-mono text-sm resize-none transition-colors rounded-xl',
         value.trim() && valid === false && 'border-destructive focus-visible:ring-destructive/30'
       )}
     />
-    <div className="bg-muted/30 rounded-xl p-4 flex items-center justify-center min-h-[360px]">
+    <div className="bg-muted/30 rounded-xl p-3 flex items-center justify-center min-h-[240px]">
       {value.trim().length >= 2 ? (
         <RenderGuard fallback={<p className="text-xs text-muted-foreground italic">Could not render structure</p>}>
-          <MoleculeViewer key={value} smiles={value} width={460} height={345} />
+          <MoleculeViewer key={value} smiles={value} width={340} height={225} />
         </RenderGuard>
       ) : (
         <p className="text-xs text-muted-foreground italic">Enter SMILES to preview</p>
@@ -464,8 +464,8 @@ const FindEnzymesButton = ({ active, loading, onClick }: { active: boolean; load
       {loading ? 'Searching…' : 'Find Biocatalyst'}
     </button>
     {loading && (
-      <p className="text-sm text-muted-foreground">
-        This may take 1 – 4 minutes. Feel free to grab a coffee ☕
+      <p className="text-sm text-muted-foreground text-center whitespace-nowrap">
+        This may take 1 – 4 minutes.. Grab a coffee ☕
       </p>
     )}
   </div>
@@ -897,9 +897,11 @@ export const NewReactionPage = () => {
 
     const fmt     = (v: unknown) => (v != null && v !== '' ? String(v) : 'Unavailable');
     const fmtTemp = (v: unknown) => (v != null && v !== '' ? `${v}°C` : 'Unavailable');
+    // Lowercase the first letter of every word in an enzyme name
+    const lowerName = (s: string) => s.replace(/\b\w/g, c => c.toLowerCase());
     const toEnzyme = (r: Record<string, unknown>): Enzyme => ({
       id:            (r.uniprot_id ?? r.uniprot ?? 'unknown') as string,
-      name:          (r.protein_name ?? 'Unavailable') as string,
+      name:          r.protein_name ? lowerName(String(r.protein_name)) : 'Unavailable',
       ecNumber:      (r.ec_number ?? 'Unavailable') as string,
       score:         transformClipzymeScore(typeof r.score === 'number' ? r.score : 0),
       organism:      (r.organism ?? 'Unavailable') as string,
@@ -937,6 +939,46 @@ export const NewReactionPage = () => {
 
         candidates = (Array.isArray(data?.result) ? data.result : [])
           .map((r: Record<string, unknown>) => toEnzyme(r));
+
+        // Fallback: fetch missing name/EC from UniProt for any 'Unavailable' entries
+        const needsEnrich = candidates
+          .map((c, i) => ({ c, i }))
+          .filter(({ c }) => (c.name === 'Unavailable' || c.ecNumber === 'Unavailable') && c.id && c.id !== 'unknown');
+
+        if (needsEnrich.length > 0) {
+          const fetched = await Promise.all(
+            needsEnrich.map(({ c }) => {
+              const cleanId = c.id.includes('|') ? c.id.split('|')[1] : c.id;
+              return fetch(`https://rest.uniprot.org/uniprotkb/${cleanId}.json`)
+                .then(r => r.ok ? r.json() : null)
+                .then((data): { name: string | null; ecNumber: string | null } => {
+                  if (!data) return { name: null, ecNumber: null };
+                  const pd = data?.proteinDescription;
+                  const recommended = pd?.recommendedName;
+                  const submitted   = pd?.submissionNames?.[0];
+                  const name =
+                    recommended?.fullName?.value ??
+                    submitted?.fullName?.value ??
+                    null;
+                  const ecNumber =
+                    recommended?.ecNumbers?.[0]?.value ??
+                    submitted?.ecNumbers?.[0]?.value ??
+                    null;
+                  return { name: name ? lowerName(name) : null, ecNumber };
+                })
+                .catch(() => ({ name: null, ecNumber: null }));
+            })
+          );
+          fetched.forEach(({ name, ecNumber }, fi) => {
+            const idx = needsEnrich[fi].i;
+            candidates[idx] = {
+              ...candidates[idx],
+              ...(name     && { name }),
+              ...(ecNumber && { ecNumber }),
+            };
+          });
+        }
+
         if (candidates.length > 0) enzyme = candidates[0];
 
       } catch {
@@ -1065,12 +1107,17 @@ export const NewReactionPage = () => {
         {mode === 'smiles' && (
           <>
             {/* Heading + examples — centered */}
-            <div className="w-full px-[95px] pt-6 space-y-4">
+            <div className="w-full px-[95px] pt-2 space-y-2">
               <div className="space-y-1">
                 <h1 className="text-xl font-bold text-foreground">Enter SMILES</h1>
-                <p className="text-sm text-muted-foreground">Paste SMILES strings for your substrate and product, or pick an example below.</p>
+                <p className="text-sm text-muted-foreground">
+                  Paste SMILES for your substrates and product.
+                  <br />
+                  Separate multiple substrates with dots. Or pick an example below.
+                </p>
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs text-muted-foreground font-medium shrink-0">Examples:</span>
                 {REACTION_EXAMPLES.map((ex) => (
                   <ExampleChip
                     key={ex.label}
@@ -1082,7 +1129,7 @@ export const NewReactionPage = () => {
             </div>
 
             {/* Columns — full width with symmetric margins for centering */}
-            <div className="w-full px-[95px] py-6">
+            <div className="w-full px-[95px] py-3">
               <div className="flex flex-col sm:flex-row gap-4 items-stretch">
 
                 {/* Substrate column */}
@@ -1094,15 +1141,6 @@ export const NewReactionPage = () => {
                     onChange={setSubstrate}
                     placeholder="e.g. CCCCCC(=O)O"
                   />
-                  <button
-                    type="button"
-                    onClick={() => editInDraw(1)}
-                    disabled={substrateSmiles.trim().length < 2}
-                    className="w-full inline-flex items-center justify-center px-3 py-2 rounded-full text-xs font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed border"
-                    style={{ borderColor: 'var(--primary-500)', color: 'var(--primary-500)', background: 'transparent' }}
-                  >
-                    Edit Substrate in Drawing Tool
-                  </button>
                 </div>
 
                 {/* Middle column — desktop only */}
@@ -1118,27 +1156,8 @@ export const NewReactionPage = () => {
                     Copy substrate<br />SMILES into product
                   </button>
 
-                  {/* Spacer pushes Find Biocatalysts to bottom */}
+                  {/* Spacer fills remaining height */}
                   <div className="flex-1" />
-
-                  {/* Find Biocatalysts — at edit-button level */}
-                  <button
-                    type="button"
-                    onClick={handleFindEnzymes}
-                    disabled={!canSubmit || apiLoading}
-                    className={cn(
-                      'inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-all whitespace-nowrap',
-                      (canSubmit && !apiLoading) ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
-                    )}
-                    style={
-                      canSubmit
-                        ? { background: 'var(--primary-500)', color: '#fff', boxShadow: '0 2px 12px 0 rgba(16,185,129,0.25)' }
-                        : { border: '2px solid var(--border-default)', background: 'var(--bg-secondary)', color: 'var(--text-muted)' }
-                    }
-                  >
-                    {apiLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Dna className="w-4 h-4" />}
-                    {apiLoading ? 'Searching…' : 'Find Biocatalysts'}
-                  </button>
                 </div>
 
                 {/* Product column */}
@@ -1150,21 +1169,60 @@ export const NewReactionPage = () => {
                     onChange={setProduct}
                     placeholder="e.g. OC(=O)c1cc(O)cc(O)c1CCCCC"
                   />
-                  <button
-                    type="button"
-                    onClick={() => editInDraw(2)}
-                    disabled={productSmiles.trim().length < 2}
-                    className="w-full inline-flex items-center justify-center px-3 py-2 rounded-full text-xs font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed border"
-                    style={{ borderColor: 'var(--primary-500)', color: 'var(--primary-500)', background: 'transparent' }}
-                  >
-                    Edit Product in Drawing Tool
-                  </button>
                 </div>
               </div>
+
+              {/* Bottom row — three buttons on the same line (desktop only) */}
+              <div className="hidden sm:flex gap-3 items-center mt-3">
+                <button
+                  type="button"
+                  onClick={() => editInDraw(1)}
+                  disabled={substrateSmiles.trim().length < 2}
+                  className="flex-1 inline-flex items-center justify-center px-3 py-2 rounded-full text-xs font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed border"
+                  style={{ borderColor: 'var(--primary-500)', color: 'var(--primary-500)', background: 'transparent' }}
+                >
+                  Edit Substrate in Drawing Tool
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleFindEnzymes}
+                  disabled={!canSubmit || apiLoading}
+                  className={cn(
+                    'inline-flex items-center gap-2 px-5 py-2 rounded-full text-sm font-semibold transition-all whitespace-nowrap shrink-0',
+                    (canSubmit && !apiLoading) ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
+                  )}
+                  style={
+                    canSubmit
+                      ? { background: 'var(--primary-500)', color: '#fff', boxShadow: '0 2px 12px 0 rgba(16,185,129,0.25)' }
+                      : { border: '2px solid var(--border-default)', background: 'var(--bg-secondary)', color: 'var(--text-muted)' }
+                  }
+                >
+                  {apiLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Dna className="w-4 h-4" />}
+                  {apiLoading ? 'Searching…' : 'Find Biocatalysts'}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => editInDraw(2)}
+                  disabled={productSmiles.trim().length < 2}
+                  className="flex-1 inline-flex items-center justify-center px-3 py-2 rounded-full text-xs font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed border"
+                  style={{ borderColor: 'var(--primary-500)', color: 'var(--primary-500)', background: 'transparent' }}
+                >
+                  Edit Product in Drawing Tool
+                </button>
+              </div>
+
+              {/* Coffee message — shown below all buttons while loading */}
+              {apiLoading && (
+                <p className="hidden sm:block text-sm text-muted-foreground text-center mt-2 whitespace-nowrap">
+                  This may take 1 – 4 minutes… Grab a coffee ☕
+                </p>
+              )}
             </div>
 
             {/* Mobile: copy + find biocatalysts + error */}
-            <div className="px-[95px] pb-12 space-y-3 sm:space-y-0">
+            <div className="px-[95px] pb-4 space-y-3 sm:space-y-0">
               <div className="flex flex-col gap-3 sm:hidden">
                 <button
                   type="button"
@@ -1222,11 +1280,15 @@ export const NewReactionPage = () => {
         )}
 
         {mode === 'draw' && (
-          <div className="max-w-3xl mx-auto w-full px-6 pt-6 pb-12 space-y-6">
+          <div className="max-w-3xl mx-auto w-full px-6 pt-1 pb-4 space-y-4">
             <>
             <h1 className="text-xl font-bold text-foreground">
               {drawStep === 1 ? 'Draw substrate(s)' : 'Draw your product'}
             </h1>
+
+            {drawStep === 1 && (
+              <p className="text-sm text-muted-foreground">Draw each substrate separately on the same drawing board.</p>
+            )}
 
             {/* ── Examples above the canvas ─────────────────────────────── */}
             <div className="flex items-center gap-2 flex-wrap">
@@ -1261,7 +1323,7 @@ export const NewReactionPage = () => {
                     onSmiles={(s) => { subFromEditorRef.current = true; setSubstrate(s); }}
                     onMolfile={(m) => { subMolfileRef.current = m; }}
                     onKet={(k) => { subKetRef.current = k; }}
-                    height={460}
+                    height={400}
                     loadTrigger={subLoadTrigger}
                   />
                 </Suspense>
@@ -1271,7 +1333,7 @@ export const NewReactionPage = () => {
                     onSmiles={(s) => { prodFromEditorRef.current = true; setProduct(s); }}
                     onMolfile={(m) => { prodMolfileRef.current = m; }}
                     onKet={(k) => { prodKetRef.current = k; }}
-                    height={460}
+                    height={400}
                     loadTrigger={prodLoadTrigger}
                   />
                 </Suspense>

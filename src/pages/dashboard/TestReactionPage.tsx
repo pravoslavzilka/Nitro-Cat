@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, FlaskConical, ShoppingCart, Dna, Wrench,
@@ -273,33 +273,94 @@ const GetEnzymeDialog = ({ enzyme, open, onOpenChange }: {
   );
 };
 
+// ── PubChem name lookup ──────────────────────────────────────────────────────
+
+type PubChemInfo = { name: string; cid: number } | null;
+
+async function fetchPubChemName(smiles: string): Promise<PubChemInfo> {
+  try {
+    // Use POST to avoid issues with slashes (E/Z stereochemistry) in the URL path
+    const cidRes = await fetch(
+      'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles/cids/JSON',
+      { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `smiles=${encodeURIComponent(smiles)}` },
+    );
+    if (!cidRes.ok) return null;
+    const cidData = await cidRes.json();
+    const cid = cidData?.IdentifierList?.CID?.[0];
+    if (!cid) return null;
+
+    const synRes = await fetch(
+      `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${cid}/synonyms/JSON`
+    );
+    if (!synRes.ok) return { name: `CID ${cid}`, cid };
+    const synData = await synRes.json();
+    const synonyms = synData?.InformationList?.Information?.[0]?.Synonym;
+    if (!synonyms?.length) return { name: `CID ${cid}`, cid };
+
+    return { name: synonyms[0], cid };
+  } catch {
+    return null;
+  }
+}
+
 // ── Reaction header ───────────────────────────────────────────────────────────
 
-const ReactionHeader = ({ substrateSmiles, productSmiles, substrateName, productName }: {
+const ReactionHeader = ({ substrateSmiles, productSmiles, substrateInfo, productInfo, loading, enzymeName, accentColor }: {
   substrateSmiles: string; productSmiles: string;
   substrateName: string;   productName: string;
-}) => (
-  <div className="h-full rounded-xl border border-border bg-muted/20 p-6 flex flex-col justify-center">
-    <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-5 text-center">Reaction</p>
-    <div className="flex items-center justify-center gap-8">
-      {/* Substrate */}
-      <div className="flex flex-col items-center gap-3">
-        <MoleculeViewer smiles={substrateSmiles} width={260} height={190} />
-        <span className="text-sm font-medium text-muted-foreground text-center max-w-[260px] truncate">{substrateName}</span>
-      </div>
-      {/* Arrow */}
-      <div className="flex items-center shrink-0">
-        <div className="w-16 h-0.5 bg-primary/60" />
-        <div className="w-0 h-0 border-t-[6px] border-b-[6px] border-l-[12px] border-t-transparent border-b-transparent border-l-primary/60" />
-      </div>
-      {/* Product */}
-      <div className="flex flex-col items-center gap-3">
-        <MoleculeViewer smiles={productSmiles} width={260} height={190} />
-        <span className="text-sm font-medium text-muted-foreground text-center max-w-[260px] truncate">{productName}</span>
+  substrateInfo?: PubChemInfo; productInfo?: PubChemInfo; loading?: boolean;
+  enzymeName?: string; accentColor?: string;
+}) => {
+  const renderLabel = (fallback: string, info?: PubChemInfo) => {
+    if (loading) return <span className="text-base font-semibold text-muted-foreground animate-pulse">…</span>;
+    if (info) {
+      return (
+        <a
+          href={`https://pubchem.ncbi.nlm.nih.gov/compound/${info.cid}`}
+          target="_blank"
+          rel="noreferrer"
+          className="text-base font-semibold text-muted-foreground hover:text-primary hover:underline transition-colors inline-flex items-center gap-1 text-center"
+        >
+          {info.name}
+          <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+        </a>
+      );
+    }
+    return <span className="text-base font-semibold text-muted-foreground">{fallback}</span>;
+  };
+
+  return (
+    <div className="h-full rounded-xl border border-border bg-muted/20 px-1 py-0 flex flex-col justify-center overflow-hidden">
+      <div className="flex items-center justify-center gap-2">
+        {/* Substrate */}
+        <div className="flex flex-col items-center">
+          <MoleculeViewer smiles={substrateSmiles} width={390} height={220} />
+          <div className="-mt-1">{renderLabel('Substrate', substrateInfo)}</div>
+        </div>
+
+        {/* Enzyme name + arrow — one word per line, column sizes to longest word */}
+        <div className="flex flex-col items-center gap-1 shrink-0 w-fit">
+          <div className="flex flex-col items-center leading-snug" style={{ color: accentColor ?? '#6CA033' }}>
+            {(enzymeName ?? 'Enzyme').split(' ').map((word, i) => (
+              <span key={i} className="text-base font-semibold text-center whitespace-nowrap">
+                {word}
+              </span>
+            ))}
+          </div>
+          <span className="text-4xl leading-none shrink-0" style={{ color: 'var(--color-primary, #538b5e)', opacity: 0.75 }}>
+            ⟶
+          </span>
+        </div>
+
+        {/* Product */}
+        <div className="flex flex-col items-center">
+          <MoleculeViewer smiles={productSmiles} width={390} height={220} />
+          <div className="-mt-1">{renderLabel('Product', productInfo)}</div>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 // ── Candidate card (accordion) ────────────────────────────────────────────────
 
@@ -543,6 +604,10 @@ export const TestReactionPage = () => {
   const location   = useLocation();
   const [expandedId, setExpandedId]   = useState<string | null>(null);
   const [bulkOpen, setBulkOpen]       = useState(false);
+  const candidatesRef = useRef<HTMLDivElement>(null);
+  const [pubchemLoading, setPubchemLoading] = useState(false);
+  const [substrateInfo, setSubstrateInfo]   = useState<PubChemInfo>(null);
+  const [productInfo, setProductInfo]       = useState<PubChemInfo>(null);
 
   const state      = location.state as { reaction: ReactionNodeData; candidates?: Enzyme[] } | null;
   const reaction   = state?.reaction;
@@ -553,6 +618,31 @@ export const TestReactionPage = () => {
   const productSmiles   = reaction?.productSmiles   ?? '';
   const substrateName   = reaction?.substrateName   ?? 'Substrate';
   const productName     = reaction?.productName     ?? 'Product';
+
+  // Fetch common names from PubChem
+  useEffect(() => {
+    if (!substrateSmiles && !productSmiles) return;
+    let cancelled = false;
+
+    // Pick the longest substrate (dot-separated SMILES)
+    const longestSubstrate = substrateSmiles
+      .split('.')
+      .reduce((a, b) => (b.length > a.length ? b : a), '');
+
+    setPubchemLoading(true);
+    Promise.all([
+      longestSubstrate ? fetchPubChemName(longestSubstrate) : Promise.resolve(null),
+      productSmiles    ? fetchPubChemName(productSmiles)    : Promise.resolve(null),
+    ]).then(([sub, prod]) => {
+      if (cancelled) return;
+      setSubstrateInfo(sub);
+      setProductInfo(prod);
+    }).finally(() => {
+      if (!cancelled) setPubchemLoading(false);
+    });
+
+    return () => { cancelled = true; };
+  }, [substrateSmiles, productSmiles]);
 
   if (!enzyme || !reaction) {
     return (
@@ -662,7 +752,7 @@ export const TestReactionPage = () => {
       </div>
 
       {/* Scrollable body */}
-      <div className="max-w-6xl mx-auto px-8 py-6 space-y-6">
+      <div className="w-full px-8 py-3 space-y-4">
 
         {/* Back button */}
         <button
@@ -683,30 +773,99 @@ export const TestReactionPage = () => {
             productSmiles={productSmiles}
             substrateName={substrateName}
             productName={productName}
+            substrateInfo={substrateInfo}
+            productInfo={productInfo}
+            loading={pubchemLoading}
+            enzymeName={enzyme.name}
+            accentColor={accentColor}
           />
 
-          {/* Bulk action box */}
-          <div className="flex flex-col justify-between rounded-xl border border-border bg-muted/20 px-6 py-6">
-            <div>
-              <p className="text-base font-semibold text-foreground">Get all {candidates.length} candidates at once</p>
-              <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-                Order purified enzyme, gene constructs, or engineering designs for the full ranked list.
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              className="mt-6 w-full gap-2 border-primary/40 text-primary hover:bg-primary/10 hover:border-primary"
-              onClick={() => setBulkOpen(true)}
-            >
-              <ShoppingCart className="w-4 h-4" />
-              Get all {candidates.length} candidates
-            </Button>
-          </div>
+          {/* Kit card */}
+          {(() => {
+            const kitPrice = candidates.length * 40;
+            return (
+              <div className="flex flex-col rounded-xl border border-border bg-muted/20 px-4 py-2 gap-2">
+
+                {/* Primary CTA */}
+                <button
+                  type="button"
+                  onClick={() => setBulkOpen(true)}
+                  className="w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-all cursor-pointer"
+                  style={{ background: 'var(--primary-500)', color: '#fff', boxShadow: '0 2px 12px 0 rgba(16,185,129,0.25)' }}
+                >
+                  <ShoppingCart className="w-4 h-4" />
+                  Get custom kit for this reaction
+                </button>
+
+                <div className="border-t border-border/50" />
+
+                {/* Biocatalysts in kit */}
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Biocatalysts in kit</p>
+                  <ul className="text-sm text-foreground space-y-0.5 list-disc list-inside leading-snug">
+                    <li>{candidates.length} enzymes most likely to catalyze your transformation</li>
+                    <li>Each 1 mg, lyophilized — protocol and all reagents included</li>
+                  </ul>
+                </div>
+
+                <div className="border-t border-border/50" />
+
+                {/* Price */}
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Price for kit</p>
+                  <p className="text-2xl font-bold text-foreground">${kitPrice}</p>
+                </div>
+
+                <div className="border-t border-border/50" />
+
+                {/* Delivery */}
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Delivery</p>
+                  <ul className="text-sm text-foreground space-y-0.5 list-disc list-inside leading-snug">
+                    <li>5 business days</li>
+                    <li>Free shipping</li>
+                  </ul>
+                </div>
+
+                <div className="border-t border-border/50 mt-auto" />
+
+                {/* Secondary actions */}
+                <div className="flex flex-col gap-2">
+                  <button
+                    type="button"
+                    className="w-full inline-flex items-center justify-center px-3 py-1.5 rounded-full text-xs font-medium transition-all border disabled:opacity-30 disabled:cursor-not-allowed"
+                    style={{ borderColor: 'var(--primary-500)', color: 'var(--primary-500)', background: 'transparent' }}
+                  >
+                    Explore protocol
+                  </button>
+                  <button
+                    type="button"
+                    className="w-full inline-flex items-center justify-center px-3 py-1.5 rounded-full text-xs font-medium transition-all border disabled:opacity-30 disabled:cursor-not-allowed"
+                    style={{ borderColor: 'var(--primary-500)', color: 'var(--primary-500)', background: 'transparent' }}
+                  >
+                    How do we select biocatalysts?
+                  </button>
+                </div>
+
+              </div>
+            );
+          })()}
 
         </div>
 
+        {/* Full-width scroll-to-candidates button */}
+        <button
+          type="button"
+          onClick={() => candidatesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+          className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full text-sm font-semibold transition-all cursor-pointer"
+          style={{ background: 'var(--primary-500)', color: '#fff', boxShadow: '0 2px 12px 0 rgba(16,185,129,0.25)' }}
+        >
+          <Dna className="w-4 h-4" />
+          Explore selected biocatalysts
+        </button>
+
         {/* Candidate list */}
-        <div className="space-y-3">
+        <div ref={candidatesRef} className="space-y-3">
           <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
             Enzyme Candidates · Ranked by Compatibility Score
           </p>
