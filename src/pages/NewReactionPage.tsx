@@ -347,19 +347,25 @@ function validateInput(value: string, onResult: (valid: boolean) => void) {
 
 // ── Confidence badge ──────────────────────────────────────────────────────────
 
-const labelStyles: Record<'high' | 'medium' | 'low', string> = {
-  high:   'bg-success-100 text-success-700 border border-success-500',
-  medium: 'bg-warning-100 text-warning-700 border border-warning-500',
-  low:    'bg-danger-100  text-danger-700  border border-danger-500',
+const confidenceColorMap: Record<'high' | 'good' | 'medium' | 'low', string> = {
+  high:   '#25512B',
+  good:   '#6CA033',
+  medium: '#F69B05',
+  low:    '#C00000',
 };
 
 const ConfidenceBadge = ({ score }: { score: number }) => {
   const label = formatConfidenceLabel(score);
+  const color = confidenceColorMap[label];
   return (
-    <span className={cn(
-      'inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-sm font-mono font-semibold shrink-0',
-      labelStyles[label]
-    )}>
+    <span
+      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-sm font-mono font-semibold shrink-0"
+      style={{
+        color,
+        backgroundColor: color + '1a',
+        border: `1px solid ${color}66`,
+      }}
+    >
       {formatScore(score)}
       <span className="font-normal opacity-80">confidence</span>
     </span>
@@ -898,8 +904,8 @@ export const NewReactionPage = () => {
     const substrateName = MW_TABLE[substrateSmiles.trim()]?.name ?? substrateSmiles.slice(0, 24);
     const productName   = MW_TABLE[productSmiles.trim()]?.name  ?? productSmiles.slice(0, 24);
     const confidence    = formatConfidenceLabel(enzyme.score);
-    const reactionState: import('@/types/pathway').ReactionNodeData = {
-      label:         confidence === 'high' ? 'Biocatalyst found' : 'Test biocatalysis',
+    const reactionState: import('@/types/reaction').ReactionNodeData = {
+      label:         (confidence === 'high' || confidence === 'good') ? 'Biocatalyst found' : 'Test biocatalysis',
       confidence,
       enzyme,
       substrateSmiles: substrateSmiles.trim(),
@@ -914,15 +920,8 @@ export const NewReactionPage = () => {
       type:     'reaction',
       name:     `${substrateName} → ${productName}`,
       subtitle: enzyme.name,
-      reactionState,
     });
-    if (confidence === 'high') {
-      navigate('/pathways/import/biocatalyst/result', { state: { reaction: reactionState } });
-    } else {
-      // medium → top 5, low → all 10
-      const candidatesForTest = confidence === 'low' ? candidates : candidates.slice(0, 5);
-      navigate('/pathways/import/test/result', { state: { reaction: reactionState, candidates: candidatesForTest } });
-    }
+    navigate('/reactions/test/result', { state: { reaction: reactionState, candidates } });
   };
 
   // ── Select view ─────────────────────────────────────────────────────────────

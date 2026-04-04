@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   Plus,
-  FlaskConical,
   Settings,
   ChevronLeft,
   ChevronRight,
@@ -49,7 +48,7 @@ export const Sidebar = () => {
       {/* Find Biocatalyst Button */}
       <div className="p-2 pb-2">
         <Button
-          onClick={() => navigate('/pathways/new')}
+          onClick={() => navigate('/reactions/new')}
           variant="outline"
           className={cn(
             "w-full border-dashed border-sidebar-border text-sidebar-foreground hover:text-foreground hover:border-primary",
@@ -65,18 +64,6 @@ export const Sidebar = () => {
       {/* Nav links */}
       {!collapsed && (
         <div className="px-2 pb-2 space-y-1">
-          <button
-            onClick={() => navigate('/pathways')}
-            className={cn(
-              "w-full text-left flex items-center gap-2 px-2 py-1.5 rounded-md text-sm transition-colors",
-              isActive('/pathways')
-                ? "bg-accent text-accent-foreground font-medium"
-                : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-foreground"
-            )}
-          >
-            <FlaskConical className="w-4 h-4" />
-            Pathways
-          </button>
           <button
             onClick={() => navigate('/history')}
             className={cn(

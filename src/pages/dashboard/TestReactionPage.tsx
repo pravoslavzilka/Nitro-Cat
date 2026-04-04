@@ -1,23 +1,23 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
-  ArrowLeft, FlaskConical, AlertTriangle, ShoppingCart, Dna, Wrench,
+  ArrowLeft, FlaskConical, ShoppingCart, Dna, Wrench,
   Activity, Target, TrendingUp, ExternalLink,
   ChevronDown, ChevronUp, BookOpen, CheckCircle2, Clock,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { MoleculeViewer } from '@/components/molecule/MoleculeViewer';
 import { cn } from '@/lib/utils';
 import { formatScore } from '@/lib/utils/formatting';
-import type { ReactionNodeData } from '@/types/pathway';
+import { MoleculeViewer } from '@/components/molecule/MoleculeViewer';
+import type { ReactionNodeData } from '@/types/reaction';
 import type { Enzyme } from '@/types/enzyme';
 
 // ── Mock candidate generator ──────────────────────────────────────────────────
 
 // TODO: wire backend — call API with top_k: N to get all candidates
-const buildCandidates = (top1: Enzyme, confidence: 'medium' | 'low'): Enzyme[] => {
-  const count = confidence === 'low' ? 5 : 4;
+const buildCandidates = (top1: Enzyme, confidence: 'high' | 'good' | 'medium' | 'low'): Enzyme[] => {
+  const count = confidence === 'low' ? 5 : confidence === 'medium' ? 4 : 3;
   const variants: { scoreDelta: number; organism: string }[] = [
     { scoreDelta: 0,     organism: top1.organism },
     { scoreDelta: -0.07, organism: `${top1.organism} (variant A)` },
@@ -35,10 +35,11 @@ const buildCandidates = (top1: Enzyme, confidence: 'medium' | 'low'): Enzyme[] =
 
 // ── Score colour ──────────────────────────────────────────────────────────────
 
-const scoreColor = (score: number): string => {
-  if (score >= 0.90) return 'text-emerald-600 dark:text-emerald-400';
-  if (score >= 0.75) return 'text-amber-600 dark:text-amber-400';
-  return 'text-orange-600 dark:text-orange-400';
+const getScoreColor = (score: number): string => {
+  if (score >= 0.9) return '#25512B';
+  if (score >= 0.8) return '#6CA033';
+  if (score >= 0.5) return '#F69B05';
+  return '#C00000';
 };
 
 // ── Seeded price helper ───────────────────────────────────────────────────────
@@ -278,32 +279,24 @@ const ReactionHeader = ({ substrateSmiles, productSmiles, substrateName, product
   substrateSmiles: string; productSmiles: string;
   substrateName: string;   productName: string;
 }) => (
-  <div className="rounded-xl border border-border bg-muted/20 p-5">
-    <div className="flex items-center justify-center gap-6">
-      {/* Substrate left */}
-      <div className="flex flex-col items-center gap-2">
-        <MoleculeViewer smiles={substrateSmiles} width={180} height={130} />
-        <span className="text-xs font-medium text-muted-foreground text-center max-w-[180px] truncate">{substrateName}</span>
+  <div className="h-full rounded-xl border border-border bg-muted/20 p-6 flex flex-col justify-center">
+    <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-5 text-center">Reaction</p>
+    <div className="flex items-center justify-center gap-8">
+      {/* Substrate */}
+      <div className="flex flex-col items-center gap-3">
+        <MoleculeViewer smiles={substrateSmiles} width={260} height={190} />
+        <span className="text-sm font-medium text-muted-foreground text-center max-w-[260px] truncate">{substrateName}</span>
       </div>
-      {/* Arrow → */}
-      <div className="flex flex-col items-center gap-1 shrink-0">
-        <div className="flex items-center gap-1">
-          <div className="w-12 h-0.5 bg-primary/60" />
-          <div className="w-0 h-0 border-t-4 border-b-4 border-l-6 border-transparent border-l-primary/60" />
-        </div>
-        <span className="text-[10px] font-mono text-primary/60 uppercase tracking-widest">biocatalysis</span>
+      {/* Arrow */}
+      <div className="flex items-center shrink-0">
+        <div className="w-16 h-0.5 bg-primary/60" />
+        <div className="w-0 h-0 border-t-[6px] border-b-[6px] border-l-[12px] border-t-transparent border-b-transparent border-l-primary/60" />
       </div>
-      {/* Product right */}
-      <div className="flex flex-col items-center gap-2">
-        <MoleculeViewer smiles={productSmiles} width={180} height={130} />
-        <span className="text-xs font-medium text-muted-foreground text-center max-w-[180px] truncate">{productName}</span>
+      {/* Product */}
+      <div className="flex flex-col items-center gap-3">
+        <MoleculeViewer smiles={productSmiles} width={260} height={190} />
+        <span className="text-sm font-medium text-muted-foreground text-center max-w-[260px] truncate">{productName}</span>
       </div>
-    </div>
-    <div className="mt-4 rounded-lg bg-muted/60 border border-border px-3 py-2">
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-1">Reaction SMILES</p>
-      <p className="text-xs font-mono text-foreground break-all leading-relaxed">
-        {substrateSmiles} <span className="text-primary font-bold mx-1">{'>>'}</span> {productSmiles}
-      </p>
     </div>
   </div>
 );
@@ -344,7 +337,7 @@ const CandidateCard = ({ enzyme, rank, reaction, expanded, onToggle }: {
         <span className="shrink-0 text-xs font-mono bg-muted border border-border px-2 py-0.5 rounded hidden sm:block">
           {enzyme.ecNumber}
         </span>
-        <span className={cn('shrink-0 text-sm font-mono font-bold', scoreColor(enzyme.score))}>
+        <span className='shrink-0 text-sm font-mono font-bold' style={{ color: getScoreColor(enzyme.score) }}>
           {Math.round(enzyme.score * 100)}%
         </span>
         {expanded
@@ -400,7 +393,7 @@ const CandidateCard = ({ enzyme, rank, reaction, expanded, onToggle }: {
               const clamped = Math.min(100, Math.max(0, isNaN(pct) ? 0 : pct));
               return (
                 <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
-                  <div className="h-full rounded-full" style={{ width: `${clamped}%`, backgroundColor: '#10B981' }} />
+                  <div className="h-full rounded-full" style={{ width: `${clamped}%`, backgroundColor: '#538b5e' }} />
                 </div>
               );
             })()}
@@ -430,7 +423,7 @@ const CandidateCard = ({ enzyme, rank, reaction, expanded, onToggle }: {
             <Button
               size="sm"
               className="gap-1.5 flex-1 font-semibold"
-              style={{ background: '#10B981', color: '#fff' }}
+              style={{ background: '#538b5e', color: '#fff' }}
               onClick={() => setGetOpen(true)}
             >
               <ShoppingCart className="w-3.5 h-3.5" />
@@ -545,17 +538,16 @@ const CandidateCard = ({ enzyme, rank, reaction, expanded, onToggle }: {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
-export const TestBiocatalysisPage = () => {
+export const TestReactionPage = () => {
   const navigate   = useNavigate();
   const location   = useLocation();
   const [expandedId, setExpandedId]   = useState<string | null>(null);
   const [bulkOpen, setBulkOpen]       = useState(false);
-  const [confidenceOpen, setConfidenceOpen] = useState(false);
 
   const state      = location.state as { reaction: ReactionNodeData; candidates?: Enzyme[] } | null;
   const reaction   = state?.reaction;
   const enzyme     = reaction?.enzyme ?? null;
-  const confidence = (reaction?.confidence === 'low' ? 'low' : 'medium') as 'medium' | 'low';
+  const confidence = (reaction?.confidence ?? 'medium') as 'high' | 'good' | 'medium' | 'low';
 
   const substrateSmiles = reaction?.substrateSmiles ?? '';
   const productSmiles   = reaction?.productSmiles   ?? '';
@@ -574,155 +566,103 @@ export const TestBiocatalysisPage = () => {
   const candidates = (state?.candidates && state.candidates.length > 0)
     ? state.candidates
     : buildCandidates(enzyme, confidence);
-  const topK = candidates.length;
 
   const scorePct = Math.round(enzyme.score * 100);
 
   // 5-tier wording + palette based on raw score
-  const tier = enzyme.score >= 0.8 ? 'veryPromising'
-             : enzyme.score >= 0.7 ? 'solid'
-             : enzyme.score >= 0.5 ? 'exploring'
-             : 'notFound';
+  const tier = enzyme.score >= 0.9 ? 'high'
+             : enzyme.score >= 0.8 ? 'good'
+             : enzyme.score >= 0.5 ? 'medium'
+             : 'low';
 
   const TIER_CFG = {
-    veryPromising: {
+    high: {
       header1:     'We found your biocatalysts!',
-      header2:     `${enzyme.name} is a very promising option!`,
+      phrase:      'is a perfect match',
+      showEnzyme:  true,
+      zz:          5,
+      accentColor: '#25512B',
+      accentBg:    'rgba(37,81,43,0.04)',
+      accentBorder:'rgba(37,81,43,0.2)',
+      accentPanel: 'rgba(37,81,43,0.06)',
+    },
+    good: {
+      header1:     'We found your biocatalysts!',
+      phrase:      'is a very promising option',
+      showEnzyme:  true,
       zz:          10,
-      found:       true,
-      accentColor: '#F59E0B',
-      accentBg:    'rgba(245,158,11,0.04)',
-      accentBorder:'rgba(245,158,11,0.2)',
-      accentPanel: 'rgba(245,158,11,0.06)',
+      accentColor: '#6CA033',
+      accentBg:    'rgba(108,160,51,0.04)',
+      accentBorder:'rgba(108,160,51,0.2)',
+      accentPanel: 'rgba(108,160,51,0.06)',
     },
-    solid: {
+    medium: {
       header1:     'We found your biocatalysts!',
-      header2:     `${enzyme.name} is a solid option!`,
+      phrase:      'is an option worth exploring',
+      showEnzyme:  true,
       zz:          20,
-      found:       true,
-      accentColor: '#F97316',
-      accentBg:    'rgba(249,115,22,0.04)',
-      accentBorder:'rgba(249,115,22,0.2)',
-      accentPanel: 'rgba(249,115,22,0.06)',
+      accentColor: '#F69B05',
+      accentBg:    'rgba(246,155,5,0.04)',
+      accentBorder:'rgba(246,155,5,0.2)',
+      accentPanel: 'rgba(246,155,5,0.06)',
     },
-    exploring: {
-      header1:     'We found your biocatalysts!',
-      header2:     `${enzyme.name} is an option worth exploring!`,
-      zz:          40,
-      found:       true,
-      accentColor: '#EA580C',
-      accentBg:    'rgba(234,88,12,0.04)',
-      accentBorder:'rgba(234,88,12,0.2)',
-      accentPanel: 'rgba(234,88,12,0.06)',
-    },
-    notFound: {
+    low: {
       header1:     'Biocatalyst not found yet!',
-      header2:     "Unfortunately we haven't found any established biocatalyst for this step.",
-      zz:          null,
-      found:       false,
-      accentColor: '#EF4444',
-      accentBg:    'rgba(239,68,68,0.04)',
-      accentBorder:'rgba(239,68,68,0.2)',
-      accentPanel: 'rgba(239,68,68,0.06)',
+      phrase:      'no established biocatalyst was identified',
+      showEnzyme:  false,
+      zz:          40,
+      accentColor: '#C00000',
+      accentBg:    'rgba(192,0,0,0.04)',
+      accentBorder:'rgba(192,0,0,0.2)',
+      accentPanel: 'rgba(192,0,0,0.06)',
     },
   } as const;
 
-  const { header1, header2, zz, found, accentColor, accentBg, accentBorder, accentPanel } = TIER_CFG[tier];
+  const { header1, phrase, showEnzyme, zz, accentColor, accentBg, accentBorder, accentPanel } = TIER_CFG[tier];
 
   return (
     <div className="h-full overflow-y-auto">
 
       {/* Title section — full width */}
       <div
-        className="w-full border-b px-8 py-6"
+        className="w-full border-b px-8 py-8"
         style={{ borderColor: accentBorder, backgroundColor: accentBg }}
       >
-        <div className="flex items-start gap-5">
+        <div className="flex items-start gap-5 max-w-6xl mx-auto">
           {/* Accent bar */}
           <div
             className="w-1.5 self-stretch rounded-full shrink-0"
             style={{ backgroundColor: accentColor }}
           />
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 space-y-2">
 
-            {/* Header 1 */}
-            <div className="flex items-center gap-3 flex-wrap">
-              <AlertTriangle className="w-7 h-7 shrink-0" style={{ color: accentColor }} />
-              <h1 className="text-3xl font-bold tracking-tight" style={{ color: accentColor }}>
-                {header1}
-              </h1>
-            </div>
+            {/* Line 1 — label */}
+            <h1 className="text-2xl font-bold tracking-tight leading-none" style={{ color: accentColor }}>
+              {header1}
+            </h1>
 
-            {/* Header 2 */}
-            <p className={cn(
-              'text-xl font-semibold mt-3',
-              found ? 'text-foreground' : 'text-muted-foreground',
-            )}>
-              {header2}
+            {/* Line 2 — confidence + enzyme description */}
+            <p className="text-3xl font-bold tracking-tight leading-snug text-foreground">
+              With <span style={{ color: accentColor }}>{scorePct}%</span> confidence,{' '}
+              {showEnzyme
+                ? <><span style={{ color: accentColor }}>{enzyme.name}</span>{' '}{phrase}</>
+                : phrase
+              }!
             </p>
 
-            {/* Message — only when a biocatalyst was found */}
-            {found && zz !== null && (
-              <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                With{' '}
-                <span className="font-semibold" style={{ color: accentColor }}>{scorePct}%</span>
-                {' '}confidence, testing the top{' '}
-                <span className="font-semibold text-foreground">{zz}</span>
-                {' '}biocatalysts will yield the desired transformation of your substrate.
-              </p>
-            )}
+            {/* Line 3 — testing recommendation */}
+            <p className="text-xl text-foreground pt-1">
+              Testing the top{' '}
+              <span style={{ color: accentColor }}>{zz}</span>
+              {' '}biocatalysts will yield the desired transformation of your substrate.
+            </p>
 
-            {/* Note toggle */}
-            <button
-              type="button"
-              onClick={() => setConfidenceOpen(v => !v)}
-              className="mt-3 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <span className="text-base leading-none">{confidenceOpen ? '▾' : '▸'}</span>
-              How do we assess biocatalyst confidence?
-            </button>
-            {confidenceOpen && (
-              <div
-                className="mt-3 rounded-xl border p-4 space-y-2 text-sm text-muted-foreground leading-relaxed max-w-2xl"
-                style={{ borderColor: accentBorder, backgroundColor: accentPanel }}
-              >
-                <p>
-                  Each enzyme is scored against the reaction by a deep-learning model trained on
-                  characterised enzyme–reaction pairs. The best match is picked from over 262 000 known enzymes.
-                </p>
-                <p className="space-x-2">
-                  <span className="font-semibold" style={{ color: '#10B981' }}>Perfect match</span>
-                  <span className="opacity-50">·</span>
-                  <span className="text-xs">90–100 % · test top 5</span>
-                </p>
-                <p className="space-x-2">
-                  <span className="font-semibold text-amber-500">Very promising</span>
-                  <span className="opacity-50">·</span>
-                  <span className="text-xs">80–90 % · test top 10</span>
-                </p>
-                <p className="space-x-2">
-                  <span className="font-semibold text-orange-500">Solid option</span>
-                  <span className="opacity-50">·</span>
-                  <span className="text-xs">70–80 % · test top 20</span>
-                </p>
-                <p className="space-x-2">
-                  <span className="font-semibold text-orange-600">Worth exploring</span>
-                  <span className="opacity-50">·</span>
-                  <span className="text-xs">50–70 % · test top 40</span>
-                </p>
-                <p className="space-x-2">
-                  <span className="font-semibold text-red-500">Not found</span>
-                  <span className="opacity-50">·</span>
-                  <span className="text-xs">&lt; 50 % · no established biocatalyst identified</span>
-                </p>
-              </div>
-            )}
           </div>
         </div>
       </div>
 
       {/* Scrollable body */}
-      <div className="max-w-2xl mx-auto px-6 py-6 space-y-6">
+      <div className="max-w-6xl mx-auto px-8 py-6 space-y-6">
 
         {/* Back button */}
         <button
@@ -734,31 +674,35 @@ export const TestBiocatalysisPage = () => {
           {reaction.pathwayId === 'import' ? 'Back to input' : 'Back to pathway'}
         </button>
 
-        {/* Reaction structural view */}
-        <ReactionHeader
-          substrateSmiles={substrateSmiles}
-          productSmiles={productSmiles}
-          substrateName={substrateName}
-          productName={productName}
-        />
+        {/* Two main boxes side by side */}
+        <div className="grid grid-cols-[2fr_1fr] gap-6 items-stretch">
 
-        {/* Bulk action bar */}
-        <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-muted/20 px-4 py-3">
-          <div>
-            <p className="text-sm font-semibold text-foreground">Get all {candidates.length} candidates at once</p>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Order purified enzyme, gene constructs, or engineering designs for the full ranked list.
-            </p>
+          {/* Reaction structural view */}
+          <ReactionHeader
+            substrateSmiles={substrateSmiles}
+            productSmiles={productSmiles}
+            substrateName={substrateName}
+            productName={productName}
+          />
+
+          {/* Bulk action box */}
+          <div className="flex flex-col justify-between rounded-xl border border-border bg-muted/20 px-6 py-6">
+            <div>
+              <p className="text-base font-semibold text-foreground">Get all {candidates.length} candidates at once</p>
+              <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+                Order purified enzyme, gene constructs, or engineering designs for the full ranked list.
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              className="mt-6 w-full gap-2 border-primary/40 text-primary hover:bg-primary/10 hover:border-primary"
+              onClick={() => setBulkOpen(true)}
+            >
+              <ShoppingCart className="w-4 h-4" />
+              Get all {candidates.length} candidates
+            </Button>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="shrink-0 gap-2 border-primary/40 text-primary hover:bg-primary/10 hover:border-primary"
-            onClick={() => setBulkOpen(true)}
-          >
-            <ShoppingCart className="w-4 h-4" />
-            Get all
-          </Button>
+
         </div>
 
         {/* Candidate list */}
@@ -777,10 +721,6 @@ export const TestBiocatalysisPage = () => {
             />
           ))}
         </div>
-
-        <p className="text-[10px] text-muted-foreground/60 text-center pb-2">
-          Ranked by AI compatibility score · top_k={topK} · {scorePct}% confidence
-        </p>
 
       </div>
 
@@ -821,4 +761,4 @@ export const TestBiocatalysisPage = () => {
   );
 };
 
-export default TestBiocatalysisPage;
+export default TestReactionPage;

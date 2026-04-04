@@ -1,14 +1,14 @@
-import type { Pathway, PathwayGraph, PathwayNode } from '@/types/pathway';
+import type { Reaction, ReactionGraph, ReactionGraphNode } from '@/types/reaction';
 
-/** Convert a linear Pathway (step-based) to a graph PathwayGraph (node/edge). */
-export function pathwayToGraph(p: Pathway): PathwayGraph {
-  const nodes: PathwayNode[] = [];
+/** Convert a linear Reaction (step-based) to a graph ReactionGraph (node/edge). */
+export function reactionToGraph(r: Reaction): ReactionGraph {
+  const nodes: ReactionGraphNode[] = [];
   const edges: { id: string; source: string; target: string }[] = [];
 
   // First molecule node
-  nodes.push({ id: 'm0', type: 'molecule', data: p.steps[0].startMolecule });
+  nodes.push({ id: 'm0', type: 'molecule', data: r.steps[0].startMolecule });
 
-  p.steps.forEach((step, idx) => {
+  r.steps.forEach((step, idx) => {
     const rId = `r${idx + 1}`;
     const mId = `m${idx + 1}`;
     const prevMId = idx === 0 ? 'm0' : `m${idx}`;
@@ -29,10 +29,10 @@ export function pathwayToGraph(p: Pathway): PathwayGraph {
   });
 
   return {
-    id: p.id,
-    name: p.name,
-    description: p.description,
-    status: p.status,
+    id: r.id,
+    name: r.name,
+    description: r.description,
+    status: r.status,
     nodes,
     edges,
   };
