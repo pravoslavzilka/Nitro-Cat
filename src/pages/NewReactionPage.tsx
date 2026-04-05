@@ -35,10 +35,12 @@ class RenderGuard extends Component<{ children: ReactNode; fallback: ReactNode }
 // ── Example SMILES ────────────────────────────────────────────────────────────
 const HOMOFARNESOL   = 'CC(C)=CCC/C(C)=C/CC/C(C)=C/CCO';
 const AMBROX         = 'CC1(C)CCC[C@@]2(C)[C@H]1CC[C@@]3(C)OCC[C@H]23';
-const TAXADIENE      = 'CC1=C2CC[C@@]3(C)CC/C=C(/C)[C@H]3C[C@@H]2CC1(C)C';
-const TAXADIENOL     = 'OC1(C)CC[C@@]2(C)[C@@H]3CC=C(C)C[C@H]3CC[C@@]2(C)C1';
+const TAXADIENE      = 'CC1=C2CC[C@@]3(CCC=C([C@H]3C[C@@H](C2(C)C)CC1)C)C';
+const TAXADIENOL     = 'CC1CC[C@@H]2C(C)(C)C=1CC[C@@]1(C)C(C2)C(=C)[C@@H](O)CC1';
 const COMPOUND1 = 'C#C[C@]1(CO)[C@@H](O)C[C@@H](OP(=O)(O)O)O1';
 const COMPOUND2 = 'C#C[C@]1(COP(=O)(O)O)[C@@H](O)C[C@@H](O)O1';
+const PROPANEDIOIC       = 'CC(=O)CCC(C(=O)OC)C(=O)OC.N';
+const AMINOBUTYL_MALONATE = 'C[C@H](CCC(C(=O)OC)C(=O)OC)N';
 
 // ── Example MOL V2000 strings (used by Ketcher editor) ───
 const MOL = {
@@ -123,98 +125,10 @@ M  END
  17 12  1  0  0  0  0
 M  END
 `,
-  TAXADIENE: `
-  -INDIGO-04012621222D
-
- 19 21  0  0  0  0  0  0  0  0999 V2000
-    3.8727    0.0886    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-    3.1816   -0.6342    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-    2.1906   -0.5000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-    1.7568    0.4010    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-    0.7818    0.6235    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-   -0.0747    0.9972    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-   -0.8660    0.5000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-   -1.7321    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-   -1.7321   -1.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-   -0.8660   -1.5000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-   -0.8660   -2.5000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-    0.0000   -1.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-    0.7818   -1.6235    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-    1.7568   -1.4010    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-    2.4796   -2.0920    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-    3.3602   -1.6182    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-    3.7394   -2.5435    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-    4.3200   -1.3377    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-  1  2  1  0  0  0  0
-  2  3  2  0  0  0  0
-  3  4  1  0  0  0  0
-  4  5  1  0  0  0  0
-  5  6  1  0  0  0  0
-  6  7  1  0  0  0  0
-  6  8  1  0  0  0  0
-  8  9  1  0  0  0  0
-  9 10  1  0  0  0  0
- 10 11  2  0  0  0  0
- 11 12  1  0  0  0  0
- 11 13  1  0  0  0  0
- 13  6  1  0  0  0  0
- 13 14  1  0  0  0  0
- 14 15  1  0  0  0  0
- 15  3  1  0  0  0  0
- 15 16  1  0  0  0  0
- 16 17  1  0  0  0  0
- 17  2  1  0  0  0  0
- 17 18  1  0  0  0  0
- 17 19  1  0  0  0  0
-M  END
-`,
-  TAXADIENOL: `
-  -INDIGO-04012621222D
-
- 19 21  0  0  0  0  0  0  0  0999 V2000
-   -2.7660   -0.6428    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0
-   -2.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-   -2.7660    0.6428    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-   -1.5000    0.8660    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-   -0.5000    0.8660    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-    0.5000    0.8660    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-    1.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-    1.5000    0.8660    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-    2.5000    0.8660    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-    3.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-    4.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-    2.5000   -0.8660    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-    1.5000   -0.8660    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-    1.0000   -1.7321    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-    0.0000   -1.7321    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-   -0.5000   -0.8660    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-   -1.0000   -1.7321    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-   -1.5000   -0.8660    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-  1  2  1  0  0  0  0
-  2  3  1  0  0  0  0
-  2  4  1  0  0  0  0
-  4  5  1  0  0  0  0
-  5  6  1  0  0  0  0
-  6  7  1  0  0  0  0
-  6  8  1  0  0  0  0
-  8  9  1  0  0  0  0
-  9 10  1  0  0  0  0
- 10 11  2  0  0  0  0
- 11 12  1  0  0  0  0
- 11 13  1  0  0  0  0
- 13 14  1  0  0  0  0
- 14  8  1  0  0  0  0
- 14 15  1  0  0  0  0
- 15 16  1  0  0  0  0
- 16 17  1  0  0  0  0
- 17  6  1  0  0  0  0
- 17 18  1  0  0  0  0
- 17 19  1  0  0  0  0
- 19  2  1  0  0  0  0
-M  END
-`,
+  TAXADIENE:   'CC1=C2CC[C@@]3(CCC=C([C@H]3C[C@@H](C2(C)C)CC1)C)C',
+  TAXADIENOL:  'CC1CC[C@@H]2C(C)(C)C=1CC[C@@]1(C)C(C2)C(=C)[C@@H](O)CC1',
+  PROPANEDIOIC:       'CC(=O)CCC(C(=O)OC)C(=O)OC.N',
+  AMINOBUTYL_MALONATE: 'C[C@H](CCC(C(=O)OC)C(=O)OC)N',
   COMPOUND1: `
   -INDIGO-04012621462D
 
@@ -331,6 +245,12 @@ const EXAMPLE_PAIRS = [
     shortLabel: 'Compound 1 → 2',
     substrate:  COMPOUND1, subMol: MOL.COMPOUND1,
     product:    COMPOUND2, prodMol: MOL.COMPOUND2,
+  },
+  {
+    label:      'Propanedioic acid → Dimethyl 2-[(3R)-3-aminobutyl]propanedioate',
+    shortLabel: 'Propanedioate → Aminobutylmalonate',
+    substrate:  PROPANEDIOIC,        subMol: MOL.PROPANEDIOIC,
+    product:    AMINOBUTYL_MALONATE, prodMol: MOL.AMINOBUTYL_MALONATE,
   },
 ];
 
@@ -923,7 +843,7 @@ export const NewReactionPage = () => {
           body: JSON.stringify({
             substrate_smiles: substrateSmiles.trim(),
             product_smiles:   productSmiles.trim(),
-            top_k: 10,
+            top_k: 96,
             enrich: true,
           }),
         });
@@ -1150,10 +1070,11 @@ export const NewReactionPage = () => {
                     type="button"
                     onClick={() => setProduct(substrateSmiles)}
                     disabled={substrateSmiles.trim().length < 2}
-                    className="inline-flex items-center justify-center px-3 py-2 rounded-full text-xs font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed border text-center leading-snug"
-                    style={{ borderColor: 'var(--primary-500)', color: 'var(--primary-500)', background: 'transparent' }}
+                    className="inline-flex flex-col items-center justify-center px-3 py-2 text-xs font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed text-center leading-snug"
+                    style={{ color: 'var(--primary-500)', background: 'transparent' }}
                   >
-                    Copy substrate<br />SMILES into product
+                    <span>click to copy substrate<br />SMILES to product</span>
+                    <span className="text-2xl leading-none mt-0.5" style={{ color: 'var(--color-primary, #538b5e)', opacity: 0.75 }}>⟶</span>
                   </button>
 
                   {/* Spacer fills remaining height */}
@@ -1228,10 +1149,11 @@ export const NewReactionPage = () => {
                   type="button"
                   onClick={() => setProduct(substrateSmiles)}
                   disabled={substrateSmiles.trim().length < 2}
-                  className="w-full inline-flex items-center justify-center px-3 py-2 rounded-full text-xs font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed border"
-                  style={{ borderColor: 'var(--primary-500)', color: 'var(--primary-500)', background: 'transparent' }}
+                  className="w-full inline-flex flex-col items-center justify-center px-3 py-2 text-xs font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                  style={{ color: 'var(--primary-500)', background: 'transparent' }}
                 >
-                  Copy substrate SMILES into product
+                  <span>click to copy substrate SMILES to product</span>
+                  <span className="text-2xl leading-none mt-0.5" style={{ color: 'var(--color-primary, #538b5e)', opacity: 0.75 }}>⟶</span>
                 </button>
                 <FindEnzymesButton active={canSubmit} loading={apiLoading} onClick={handleFindEnzymes} />
               </div>
