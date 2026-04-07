@@ -1,5 +1,5 @@
-import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useSidebar } from "@/lib/context/SidebarContext";
 import {
   Plus,
   Settings,
@@ -12,7 +12,7 @@ import { ThemeToggle } from "./ThemeToggle";
 import { cn } from "@/lib/utils";
 
 export const Sidebar = () => {
-  const [collapsed, setCollapsed] = useState(false);
+  const { collapsed, setCollapsed } = useSidebar();
   const navigate = useNavigate();
   const location = useLocation();
   const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(path + '/');
