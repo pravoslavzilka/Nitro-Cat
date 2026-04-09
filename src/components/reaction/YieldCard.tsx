@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { FlaskConical, Beaker, BookOpen, ExternalLink, Dna, HelpCircle, Shuffle, GitCompareArrows } from 'lucide-react';
-import type { Enzyme } from '@/types/enzyme';
+import type { Enzyme, GroupStats } from '@/types/enzyme';
 import {
   fetchPubChemMolecularWeight,
   fetchUniProtMolecularWeight,
@@ -29,6 +29,7 @@ export interface YieldCardProps {
   enzymeMassMg: number;
   accentColor: string;
   onExploreBiocatalysts: () => void;
+  groupStats?: GroupStats | null;
 }
 
 type ReferenceCategory =
@@ -112,6 +113,7 @@ export const YieldCard = ({
   enzymeMassMg,
   accentColor,
   onExploreBiocatalysts,
+  groupStats,
 }: YieldCardProps) => {
   const [mwE, setMwE] = useState<number | null>(null);
   const [mwS, setMwS] = useState<number | null>(null);
@@ -183,13 +185,31 @@ export const YieldCard = ({
           </header>
           <dl className="flex flex-col gap-2">
             {([
-              { label: 'substrate mass needed', value: `${SUBSTRATE_MASS_UG} µg`,        placeholder: false },
-              { label: 'temperature',           value: enzyme.optimalTemp || '—',         placeholder: !enzyme.optimalTemp },
-              { label: 'pH',                    value: enzyme.optimalPh   || '—',         placeholder: !enzyme.optimalPh   },
+              { label: 'substrate mass needed', value: `${SUBSTRATE_MASS_UG} µg`, placeholder: false },
+              (() => {
+                const individual = enzyme.optimalTemp && enzyme.optimalTemp !== 'Unavailable';
+                const fallback   = !individual && groupStats?.temperature;
+                const value      = individual
+                  ? enzyme.optimalTemp
+                  : fallback
+                    ? `${groupStats!.temperature!.median}°C`
+                    : '—';
+                return { label: 'temperature', value, placeholder: !individual && !fallback, note: fallback ? 'group median' : undefined };
+              })(),
+              (() => {
+                const individual = enzyme.optimalPh && enzyme.optimalPh !== 'Unavailable';
+                const fallback   = !individual && groupStats?.ph;
+                const value      = individual
+                  ? enzyme.optimalPh
+                  : fallback
+                    ? String(groupStats!.ph!.median)
+                    : '—';
+                return { label: 'pH', value, placeholder: !individual && !fallback, note: fallback ? 'group median' : undefined };
+              })(),
               { label: 'time',                  value: formatTimeHours(prediction?.timeS ?? null), placeholder: !prediction },
               { label: 'solvent',               value: <span>H<sub>2</sub>O<sub>2</sub></span>, placeholder: false        },
               { label: 'co-factors',            value: 'not needed',                      placeholder: false               },
-            ] as { label: string; value: React.ReactNode; placeholder: boolean }[]).map(({ label, value, placeholder }) => (
+            ] as { label: string; value: React.ReactNode; placeholder: boolean; note?: string }[]).map(({ label, value, placeholder, note }) => (
               <div
                 key={label}
                 className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-muted/40 border border-border/40"
@@ -197,11 +217,16 @@ export const YieldCard = ({
                 <dt className="text-sm text-muted-foreground">
                   {label}
                 </dt>
-                <dd
-                  className="text-sm font-mono font-semibold"
-                  style={{ color: placeholder ? undefined : accentColor }}
-                >
-                  {value}
+                <dd className="flex flex-col items-end gap-0.5">
+                  <span
+                    className="text-sm font-mono font-semibold"
+                    style={{ color: placeholder ? undefined : accentColor }}
+                  >
+                    {value}
+                  </span>
+                  {note && (
+                    <span className="text-[10px] text-muted-foreground/60">{note}</span>
+                  )}
                 </dd>
               </div>
             ))}

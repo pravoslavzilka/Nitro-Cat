@@ -12,8 +12,64 @@ import { cn } from '@/lib/utils';
 import { formatScore } from '@/lib/utils/formatting';
 import { MoleculeViewer } from '@/components/molecule/MoleculeViewer';
 import type { ReactionNodeData } from '@/types/reaction';
-import type { Enzyme } from '@/types/enzyme';
+import type { Enzyme, GroupStats } from '@/types/enzyme';
 import { YieldCard } from '@/components/reaction/YieldCard';
+
+// ── Group stats panel ─────────────────────────────────────────────────────────
+
+const GroupStatsPanel = ({ groupStats, comments }: { groupStats: GroupStats; comments: string[] }) => {
+  const rankedComment = comments.find(c => c.toLowerCase().includes('ranked'));
+
+  const fmtN = (n: number, d = 1) => Number.isInteger(n) ? String(n) : n.toFixed(d);
+
+  const metrics: { label: string; unit: string; stat: import('@/types/enzyme').GroupStatNumeric }[] = [
+    ...(groupStats.temperature ? [{ label: 'Temperature', unit: '°C',   stat: groupStats.temperature }] : []),
+    ...(groupStats.ph          ? [{ label: 'pH',          unit: '',     stat: groupStats.ph          }] : []),
+    ...(groupStats.km_mM       ? [{ label: 'Km',          unit: ' mM',  stat: groupStats.km_mM       }] : []),
+    ...(groupStats.kcat_per_s  ? [{ label: 'kcat',        unit: ' s⁻¹', stat: groupStats.kcat_per_s  }] : []),
+  ];
+
+  const cofactors = groupStats.cofactors.filter(c => c.name !== 'more').slice(0, 4);
+
+  if (metrics.length === 0 && cofactors.length === 0) return null;
+
+  return (
+    <div className="rounded-xl border border-border bg-muted/20 px-4 py-3 space-y-3">
+      <div className="flex items-center justify-between">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+          Candidate pool — known kinetics &amp; conditions ({groupStats.n_enzymes} returned)
+        </p>
+        {rankedComment && (
+          <span className="text-[10px] text-muted-foreground">{rankedComment}</span>
+        )}
+      </div>
+      <div className="flex flex-wrap gap-4">
+        {metrics.map(({ label, unit, stat }) => (
+          <div key={label} className="min-w-[100px]">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-0.5">{label}</p>
+            <p className="text-sm font-bold text-foreground">{fmtN(stat.median)}{unit}</p>
+            <p className="text-[11px] text-muted-foreground">
+              {fmtN(stat.min)}–{fmtN(stat.max)}{unit}
+              <span className="text-muted-foreground/60 ml-1">(n={stat.n})</span>
+            </p>
+          </div>
+        ))}
+        {cofactors.length > 0 && (
+          <div className="min-w-[100px]">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-1">Cofactors</p>
+            <div className="flex flex-wrap gap-1">
+              {cofactors.map(c => (
+                <span key={c.name} className="text-[11px] bg-muted border border-border rounded-full px-2 py-0.5 text-foreground">
+                  {c.name} <span className="text-muted-foreground/70">×{c.count}</span>
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 // ── Mock candidate generator ──────────────────────────────────────────────────
 
@@ -556,7 +612,7 @@ export const TestReactionPage = () => {
   const { collapsed: sidebarCollapsed } = useSidebar();
 
   // Derive tier early so useState can use ZZ as its initial value
-  const state0     = location.state as { reaction: ReactionNodeData; candidates?: Enzyme[] } | null;
+  const state0     = location.state as { reaction: ReactionNodeData; candidates?: Enzyme[]; groupStats?: GroupStats; comments?: string[] } | null;
   const score0     = state0?.reaction?.enzyme?.score ?? 0;
   const initZZ     = score0 >= 0.9 ? 16 : score0 >= 0.8 ? 24 : score0 >= 0.51 ? 48 : 96;
   const enzyme0    = state0?.reaction?.enzyme ?? null;
@@ -588,9 +644,11 @@ export const TestReactionPage = () => {
   const [substrateInfo, setSubstrateInfo]   = useState<PubChemInfo>(null);
   const [productInfo, setProductInfo]       = useState<PubChemInfo>(null);
 
-  const state      = location.state as { reaction: ReactionNodeData; candidates?: Enzyme[] } | null;
+  const state      = location.state as { reaction: ReactionNodeData; candidates?: Enzyme[]; groupStats?: GroupStats; comments?: string[] } | null;
   const reaction   = state?.reaction;
   const enzyme     = reaction?.enzyme ?? null;
+  const groupStats = state?.groupStats ?? null;
+  const comments   = state?.comments  ?? [];
 
   const substrateSmiles = reaction?.substrateSmiles ?? '';
   const productSmiles   = reaction?.productSmiles   ?? '';
@@ -933,6 +991,11 @@ export const TestReactionPage = () => {
 
         </div>
 
+        {/* Group stats — candidate pool kinetics & conditions */}
+        {groupStats && (
+          <GroupStatsPanel groupStats={groupStats} comments={comments} />
+        )}
+
         {/* Explore reaction details — jumps to yield card */}
         <button
           type="button"
@@ -952,6 +1015,7 @@ export const TestReactionPage = () => {
             productCid={productInfo?.cid ?? null}
             enzymeMassMg={reactionCount * 0.025}
             accentColor={accentColor}
+            groupStats={groupStats}
             onExploreBiocatalysts={() =>
               candidatesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
             }

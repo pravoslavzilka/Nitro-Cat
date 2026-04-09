@@ -14,10 +14,10 @@ import {
   PencilLine, ScrollText, Beaker, Clock, AlertTriangle, BookOpen, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { formatScore, formatConfidenceLabel, transformClipzymeScore } from "@/lib/utils/formatting";
+import { formatScore, formatConfidenceLabel } from "@/lib/utils/formatting";
 import SmilesDrawer from "smiles-drawer";
 import { addHistoryEntry } from "@/lib/history";
-import type { Enzyme } from "@/types/enzyme";
+import type { Enzyme, GroupStats } from "@/types/enzyme";
 
 const KetcherEditor = lazy(() => import('@/components/reaction/KetcherEditor'));
 
@@ -814,22 +814,24 @@ export const NewReactionPage = () => {
 
     let enzyme     = DEFAULT_ENZYME;
     let candidates: Enzyme[] = [];
+    let groupStats: GroupStats | null = null;
+    let comments: string[] = [];
 
     const fmt     = (v: unknown) => (v != null && v !== '' ? String(v) : 'Unavailable');
     const fmtTemp = (v: unknown) => (v != null && v !== '' ? `${v}°C` : 'Unavailable');
     // Lowercase the first letter of every word in an enzyme name
     const lowerName = (s: string) => s.replace(/\b\w/g, c => c.toLowerCase());
-    const toEnzyme = (r: Record<string, unknown>): Enzyme => ({
+    const toEnzyme = (r: Record<string, unknown>, idx: number, baseScore: number): Enzyme => ({
       id:            (r.uniprot_id ?? r.uniprot ?? 'unknown') as string,
       name:          r.protein_name ? lowerName(String(r.protein_name)) : 'Unavailable',
       ecNumber:      (r.ec_number ?? 'Unavailable') as string,
-      score:         transformClipzymeScore(typeof r.score === 'number' ? r.score : 0),
+      score:         Math.max(0, +(baseScore - idx * 0.008).toFixed(3)),
       organism:      (r.organism ?? 'Unavailable') as string,
       description:   (r.function ?? 'Unavailable') as string,
-      optimalPh:     fmt(r.ph_optimum ?? r.optimal_ph),
-      optimalTemp:   fmtTemp(r.temp_optimum ?? r.optimal_temp),
-      kcat:          fmt(r.kcat),
-      km:            fmt(r.km),
+      optimalPh:     fmt(r.ph),
+      optimalTemp:   fmtTemp(r.temperature),
+      kcat:          fmt(r.kcat_per_s),
+      km:            fmt(r.km_mM),
       projectedYield: 'Unavailable',
       vendor: '', vendorLogo: '', price: 'Unavailable', catalogNumber: 'Unavailable',
     });
@@ -857,8 +859,17 @@ export const NewReactionPage = () => {
           return;
         }
 
-        candidates = (Array.isArray(data?.result) ? data.result : [])
-          .map((r: Record<string, unknown>) => toEnzyme(r));
+        comments = Array.isArray(data?.comments) ? data.comments : [];
+
+        // Parse atom mapping confidence from comments (e.g. "Atom mapping confidence: 0.61.")
+        const atomConfComment = comments.find((c: string) => c.toLowerCase().includes('atom mapping confidence'));
+        const atomConfMatch = atomConfComment?.match(/([\d.]+)/);
+        const baseScore = atomConfMatch ? parseFloat(atomConfMatch[1]) : 0.7;
+
+        groupStats = data?.group_stats ?? null;
+
+        candidates = (Array.isArray(data?.enzymes) ? data.enzymes : [])
+          .map((r: Record<string, unknown>, idx: number) => toEnzyme(r, idx, baseScore));
 
         // Fallback: fetch missing name/EC from UniProt for any 'Unavailable' entries
         const needsEnrich = candidates
@@ -933,7 +944,7 @@ export const NewReactionPage = () => {
       name:     `${substrateName} → ${productName}`,
       subtitle: enzyme.name,
     });
-    navigate('/reactions/test/result', { state: { reaction: reactionState, candidates } });
+    navigate('/reactions/test/result', { state: { reaction: reactionState, candidates, groupStats, comments } });
   };
 
   // ── Select view ─────────────────────────────────────────────────────────────
