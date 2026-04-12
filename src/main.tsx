@@ -6,7 +6,10 @@ import { clarity } from 'clarity-js';
 import { StrictMode } from 'react';
 
 
-if (import.meta.env.VITE_ENV === 'production') {
+if (
+  import.meta.env.VITE_ENV === 'production' &&
+  localStorage.getItem('disable_clarity') !== 'true'
+) {
   clarity.start({
     projectId: import.meta.env.VITE_CLARITY_PROJECT_ID,
     upload: 'https://m.clarity.ms/collect',
